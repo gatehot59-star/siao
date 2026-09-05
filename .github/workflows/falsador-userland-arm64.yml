@@ -1,0 +1,79 @@
+name: FALSADOR-001 userland openKylin arm64
+
+# Se dispara solo con el push de la rama y a mano. Commitea su propia salida:
+# el TEXTO de un log de Actions da 403 por API incluso en repo publico, asi que
+# un resultado que no se commitea es invisible para cualquier agente.
+on:
+  push:
+    branches:
+      - 'titan/falsador-userland-arm64'
+    paths:
+      - 'tools/falsador_userland_arm64.py'
+      - '.github/workflows/falsador-userland-arm64.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  falsador:
+    name: ${{ matrix.etiqueta }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # El sujeto del falsador: aarch64 NATIVO.
+          - runner: ubuntu-24.04-arm
+            etiqueta: arm64-nativo
+            slug: arm64
+          # Control de instrumento: el lector de ELF esta escrito a mano, asi
+          # que A tiene que dar el MISMO numero aca. Si difiere, el defecto es
+          # del lector y no de los binarios de openKylin.
+          - runner: ubuntu-24.04
+            etiqueta: x64-control-de-instrumento
+            slug: x64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          getconf PAGESIZE
+          nproc
+          python3 --version
+          id
+
+      - name: md5 del instrumento (el mismo en las dos maquinas)
+        run: md5sum tools/falsador_userland_arm64.py
+
+      - name: zstandard, por si algun .deb usa data.tar.zst
+        run: python3 -m pip install --quiet --break-system-packages zstandard || true
+
+      - name: Correr el falsador
+        env:
+          FALSADOR_OUT: mediciones/falsador-001/${{ matrix.slug }}
+          FALSADOR_WORK: /tmp/falsador-work
+        run: sudo -E python3 tools/falsador_userland_arm64.py
+
+      - name: Commitear la salida cruda
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          sudo chown -R "$(id -u):$(id -g)" mediciones || true
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(falsador-001): salida cruda en ${{ matrix.slug }} (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin "${{ github.ref_name }}" && \
+            git push origin HEAD:"${{ github.ref_name }}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+
+      - name: Resumen
+        if: always()
+        run: cat "mediciones/falsador-001/${{ matrix.slug }}/FALSADOR-001-userland-arm64.md" >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo de salida' >> "$GITHUB_STEP_SUMMARY"
