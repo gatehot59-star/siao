@@ -1,7 +1,7 @@
 {
   "falsador": "FALSADOR-001",
-  "version": 2,
-  "fecha_utc": "2026-09-05T19:48:32Z",
+  "version": 3,
+  "fecha_utc": "2026-09-05T19:52:10Z",
   "maquina": {
     "arch": "aarch64",
     "nproc": 2,
@@ -9,7 +9,7 @@
     "pagesize": 4096,
     "runner_os": "Linux",
     "runner_arch": "ARM64",
-    "github_run_id": "33988212256"
+    "github_run_id": "33988392695"
   },
   "fuente": {
     "mirror": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
@@ -1342,18 +1342,74 @@
     ]
   },
   "B_ejecucion": {
-    "veredicto": "NO MEDIDO",
+    "veredicto": "VERDE",
     "sujeto": "/usr/bin/bash",
-    "motivo": "el rootfs esta incompleto: ['PT_INTERP /lib/ld-linux-aarch64.so.1']. Un ENOENT aca seria de MI rootfs, no de openKylin"
-  },
-  "controles": {
-    "symlinks_creados_a_mano": [],
-    "precondicion_faltantes": [
-      "PT_INTERP /lib/ld-linux-aarch64.so.1"
+    "pruebas": [
+      {
+        "cmd": [
+          "/usr/bin/bash",
+          "-c",
+          "echo OPENKYLIN_USERLAND_VIVO"
+        ],
+        "rc": 0,
+        "stdout": "OPENKYLIN_USERLAND_VIVO\n",
+        "stderr": ""
+      },
+      {
+        "cmd": [
+          "/usr/bin/bash",
+          "--version"
+        ],
+        "rc": 0,
+        "stdout": "GNU bash, version 5.3.9(1)-release (aarch64-unknown-linux-gnu)\nCopyright (C) 2025 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+        "stderr": ""
+      },
+      {
+        "cmd": [
+          "/usr/bin/uname",
+          "-m"
+        ],
+        "rc": 127,
+        "stdout": "",
+        "stderr": "chroot: failed to run command ‘/usr/bin/uname’: No such file or directory\n"
+      },
+      {
+        "cmd": [
+          "/usr/bin/env",
+          "true"
+        ],
+        "rc": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "cmd": [
+          "/usr/bin/bash",
+          "-c",
+          "cat /etc/os-release 2>/dev/null | head -4"
+        ],
+        "rc": 0,
+        "stdout": "NAME=\"openKylin\"\nFULL_NAME=\"openKylin\"\nVERSION=\"3.0 (huanghe)\"\nVERSION_US=\"3.0 (huanghe)\"\n",
+        "stderr": ""
+      }
     ]
   },
-  "no_medido": [
-    "B: rootfs incompleto: ['PT_INTERP /lib/ld-linux-aarch64.so.1']"
-  ],
-  "segundos": 15.6
+  "controles": {
+    "ensamblado_del_rootfs": [
+      "symlink /lib/ld-linux-aarch64.so.1 -> ../usr/lib/ld-linux-aarch64.so.1 (loader)"
+    ],
+    "precondicion_faltantes": [],
+    "positivo_chroot_del_runner": true,
+    "negativo_elf_corrupto": {
+      "rc": 127,
+      "err": "chroot: failed to run command ‘/bin/roto’: No such file or directory"
+    },
+    "negativo_ruta_inexistente": {
+      "rc": 127,
+      "err": "chroot: failed to run command ‘/bin/no-existe-nunca’: No such file or directory"
+    },
+    "negativo_discrimina": false
+  },
+  "no_medido": [],
+  "segundos": 20.0
 }
