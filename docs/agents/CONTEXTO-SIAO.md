@@ -1,7 +1,7 @@
 # CONTEXTO-SIAO · el contexto vivo del proyecto
 
 **Creado:** 2026-09-05
-**Última actualización:** 2026-09-05 (segunda del día: se declara el alcance)
+**Última actualización:** 2026-09-05 (tercera del día: FALSADOR-001 cerrado en VERDE)
 
 Este archivo es lo primero que se lee antes de trabajar en SIAO, y se actualiza en
 el mismo turno en que algo cambia.
@@ -39,39 +39,47 @@ vuelta el tablero es lo que destraba esa limitación.
 | 2026-09-05 | El inventario de entornos **no se copia**, se linkea | Copiar 7.000 palabras a un repo más multiplica las copias a sincronizar. Divergencia declarada en `AGENTS.md` |
 | 2026-09-05 | **Alcance declarado** (sección 1) | Abraham lo definió: Sistema de Inteligencia Artificial Operativo |
 | 2026-09-05 | **Arquitectura: openKylin userland + contrato Treble + contenedor de apps sin vendor.** NO virtualización | ADR-001. En SoC móvil no hay passthrough de GPU/ISP/módem usable por terceros |
-| 2026-09-05 | **openKylin SE QUEDA.** No era un nombre de relleno | Medido en vivo: existe, 3.0 del 2026-08-28, con agentes por MCP en el OS. Ver ADR-001 §Correcciones |
+| 2026-09-05 | **openKylin SE QUEDA.** No era un nombre de relleno | Medido en vivo: existe, 3.0 del 2026-08-28, con agentes por MCP en el OS |
+| 2026-09-05 | **NO hace falta recompilar el userland para páginas de 16 KB** | FALSADOR-001: los 146 ELF arm64 vienen con `p_align 65536`, que es múltiplo de 16384 |
+| 2026-09-05 | **Actions arm64 sirve aunque el repo sea privado** | Medido: 6 jobs, 6 con runner real. Contradice mi propia predicción |
 
 ## 3. Estado medido
 
-- **Repo creado:** sí, `gatehot59-star/siao`, id `1358498188`.
-- **Código:** cero archivos de código. Cero compilación. Cero dispositivo.
-- **CI:** no hay `.github/workflows/`. **Ningún workflow corrió nunca acá.**
-- **Verificado en vivo el 2026-09-05:** la existencia y el contenido de openKylin 3.0,
-  y el contrato de la API AppFunctions de Android. Evidencia cruda en la bitácora
-  `docs/agents/respuestas/2026-09-05-02-*`.
-- **Nada de este repo se ejecutó en ninguna de las tres máquinas.** Las escrituras
-  son por la API de GitHub.
+- **Repo:** `gatehot59-star/siao`, id `1358498188`, privado.
+- **FALSADOR-001: A VERDE, B VERDE**, medido en aarch64 nativo de Actions.
+  - A: 146 ELF de openKylin 3.0 huanghe arm64, `p_align 65536` en todos, cruzado
+    con un job x64 que dio el mismo número con el mismo md5 de instrumento.
+  - B: `bash 5.3.9 aarch64` de openKylin corriendo en `chroot` y leyendo su propio
+    `/etc/os-release`: `NAME="openKylin" VERSION="3.0 (huanghe)"`.
+  - Evidencia cruda: `mediciones/falsador-001/` en la rama
+    `titan/falsador-userland-arm64`, commiteada por el propio runner.
+- **CI:** existe `.github/workflows/falsador-userland-arm64.yml`. Tres corridas,
+  seis jobs, seis exitosos.
+- **Código de producto:** cero. No hay kernel compilado, ni HAL hablado, ni
+  dispositivo elegido.
 
 ## 4. NO MEDIDO
 
-- **Todo lo ejecutable.** No se arrancó un rootfs, no se compiló un kernel, no se
-  habló un HAL por binder, no hay dispositivo elegido.
-- Si el userland ARM64 de openKylin 3.0 arranca en un aarch64 ajeno. **Se puede
-  medir gratis hoy** en Actions arm64 (4 vCPU, 16 GB, aarch64 nativo): es el
-  falsador más barato del proyecto y todavía no se corrió.
-- Alineación de páginas de 16 KB en los binarios de openKylin arm64: se lee con
-  `readelf`, no se supone.
-- Que NNAPI esté deprecado desde Android 15 y el estado de QNN/NeuroPilot: viene del
-  documento fuente, **no lo verifiqué**.
-- Todos los números de HarmonyOS NEXT, HyperOS y BlueOS del análisis competitivo son
-  **hallazgos ajenos**, no mediciones propias.
-- Si SIAO comparte código o infraestructura con MUDH, AURA (el proyecto, no el
-  nombre muerto) o `icca-engine`.
+- **Un kernel de páginas de 16 KB.** El runner tiene `pagesize 4096`: lo medido es
+  que la alineación es compatible, no que cargue en un kernel de 16 KB.
+- **El userland completo:** 12 paquetes y un shell, no `systemd`, UKUI, Wayland,
+  AI SDK ni KylinBot.
+- **El ISO Embedded ARM64 (2,29 GiB, Beta).** El falsador midió el repo `apt`, que
+  es otro sujeto.
+- La ruta real de `uname` en el `coreutils` de openKylin (dio 127 en `/usr/bin`).
+- Todo lo del teléfono: GKI, `/vendor`, binder, HALs, AppFunctions en un device.
+- La deprecación de NNAPI y el estado de QNN / NeuroPilot: vienen del documento
+  fuente, **no verificados**.
+- Los números de HarmonyOS NEXT, HyperOS y BlueOS son **hallazgos ajenos**.
+- Si SIAO comparte código o infraestructura con MUDH o `icca-engine`.
 
 ## 5. Cementerio de hipótesis
 
 | # | Hipótesis | Cómo murió |
 |---|---|---|
-| H-001 | "Virtualizar Android completo (host/guest) sobre el OS base" | Descartada en ADR-001: en SoC móvil no hay passthrough de GPU/ISP/módem con IOMMU usable por terceros; el guest necesita el kernel del vendor y el host queda sin hardware. Costo: 1,5–2,5 GB de RAM y batería. Es una demo |
-| H-002 | "La I de SIAO es de inferencia activa (Friston)" | Apuesta perdida de BRAIN el 2026-09-05, refutada por Abraham en el turno siguiente: es **Inteligencia Artificial**. Se registra porque se apostó en público antes de saber |
-| H-003 | "openKylin era un nombre de relleno que el análisis arrastró de un paper asiático" | **Falsa, medida en vivo.** openKylin 3.0 existe, salió el 2026-08-28 y es justamente un OS con agentes en la capa del sistema. Ver ADR-001 |
+| H-001 | "Virtualizar Android completo (host/guest) sobre el OS base" | Descartada en ADR-001: en SoC móvil no hay passthrough de GPU/ISP/módem con IOMMU usable por terceros; el guest necesita el kernel del vendor y el host queda sin hardware |
+| H-002 | "La I de SIAO es de inferencia activa (Friston)" | Apuesta perdida de BRAIN, refutada por Abraham: es **Inteligencia Artificial** |
+| H-003 | "openKylin era un nombre de relleno arrastrado de un paper asiático" | **Falsa, medida en vivo.** openKylin 3.0 existe y salió el 2026-08-28 |
+| H-004 | "El userland arm64 de openKylin NO ejecuta fuera de su ISO" (mi propio v1 del falsador la afirmó con un ROJO) | **Falsa, y el ROJO era MÍO:** faltaba el `PT_INTERP`, no el binario. El v3 lo ejecutó: `bash 5.3.9 aarch64` leyendo `os-release`. Y mi control negativo no discriminaba corrupto de inexistente |
+| H-005 | "El runner arm64 no va a nacer porque el repo es privado" | **Falsa.** `runner_id 1000002018`, labels `['ubuntu-24.04-arm']`, seis jobs con runner real. Apliqué un hallazgo de otro repo y otra semana como propiedad de la cuenta |
+| H-006 | "Hay que compilar la variante ARM64 con alineación 16K desde el día 1" (tarea del roadmap del ADR-001) | **Innecesaria:** los binarios ya vienen a 65536, múltiplo de 16384 |
