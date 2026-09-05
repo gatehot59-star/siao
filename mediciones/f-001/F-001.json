@@ -1,7 +1,7 @@
 {
   "falsador": "F-001",
-  "version": 2,
-  "fecha_utc": "2026-09-05T20:21:11Z",
+  "version": 3,
+  "fecha_utc": "2026-09-05T20:25:45Z",
   "maquina": {
     "arch": "aarch64",
     "nproc": 2,
@@ -9,7 +9,7 @@
     "pagesize": 4096,
     "kvm": false,
     "runner_arch": "ARM64",
-    "run_id": "33989825239"
+    "run_id": "33990043567"
   },
   "C_config_real_del_gki": {
     "veredicto": "ROJO",
@@ -76,10 +76,17 @@
     "ausentes": [
       "CONFIG_IPC_NS"
     ],
-    "criticos_lxc_apagados": [
+    "criticos_lxc": [
       "CONFIG_PID_NS",
       "CONFIG_USER_NS",
       "CONFIG_IPC_NS"
+    ],
+    "criticos_systemd": [
+      "CONFIG_DEVTMPFS",
+      "CONFIG_TMPFS_XATTR",
+      "CONFIG_FANOTIFY",
+      "CONFIG_AUTOFS_FS",
+      "CONFIG_CGROUP_PIDS"
     ],
     "config_commiteado": "mediciones/f-001/gki-android16-6.12.config",
     "lxc_checkconfig_rc": 0,
@@ -87,7 +94,9 @@
   },
   "F002_rootfs": {
     "veredicto": "ROJO",
-    "rc": 25
+    "rc": 25,
+    "via": "ninguna de las dos vias",
+    "nota": "fallo de INSTRUMENTO, no del userland"
   },
   "F003_alineacion": {
     "veredicto": "NO MEDIDO"
@@ -99,7 +108,7 @@
     "veredicto": "NO MEDIDO",
     "rama": "android16-6.12"
   },
-  "prediccion_registrada_antes_de_correr": "Predigo que S NO va a llegar a multi-user: si CONFIG_PID_NS esta apagado en el config real, systemd no puede armar namespaces de PID. Lo escribo ANTES para que el resultado pueda refutarme.",
+  "prediccion_registrada_antes_de_correr": "Predigo que S NO llega a multi-user: con PID_NS y USER_NS apagados y DEVTMPFS apagado, systemd no tiene con que. Lo escribo ANTES para que pueda refutarme.",
   "no_medido": [
     "sin rootfs: P y S quedan NO MEDIDO"
   ]
