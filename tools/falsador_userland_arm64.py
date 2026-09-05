@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FALSADOR-001 v2 - El userland ARM64 de openKylin 3.0, fuera de su ISO.
+FALSADOR-001 v3 - El userland ARM64 de openKylin 3.0, fuera de su ISO.
 
 Pregunta que puede dar ROJO:
   (A) Los binarios arm64 de openKylin 3.0 (huanghe) estan alineados a paginas
@@ -8,22 +8,24 @@ Pregunta que puede dar ROJO:
   (B) Ese userland EJECUTA en un aarch64 ajeno (chroot en un runner de GitHub),
       o solo vive adentro de su propio ISO?
 
-Por que hay un v2: el v1 dio B=ROJO y el ROJO era del INSTRUMENTO. El rootfs no
-tenia base-files (los symlinks de merged-usr) ni libtinfo, asi que el PT_INTERP
-no resolvia y el kernel contestaba ENOENT, indistinguible de "el binario no
-existe". Y el control negativo devolvia la MISMA firma, o sea que no controlaba
-nada. Los tres arreglos estan abajo, marcados v2.
+Historial de los dos defectos MIOS que este archivo ya se cobro:
+  v1 -> dio B=ROJO con ENOENT en las cuatro pruebas. El ENOENT era del
+        INTERPRETE ausente, no del binario, y mi control negativo devolvia la
+        misma firma, asi que no controlaba nada.
+  v2 -> agrego el guard de precondicion (PT_INTERP + DT_NEEDED leidos a mano) y
+        el guard CAZO el rootfs incompleto: B = NO MEDIDO, no ROJO falso.
+  v3 -> ensambla el loader como lo hace dpkg. Causa medida en v2: al extraer
+        varios .deb con tarfile, un paquete crea /lib como DIRECTORIO REAL y
+        entonces el symlink lib -> usr/lib de base-files no se materializa.
 
 Controles:
-  - POSITIVO de (B): el bash del propio runner en chroot. Si falla, el
-    instrumento esta roto y (B) es NO MEDIDO, no ROJO.
-  - NEGATIVO de (B), v2: DOS firmas, ELF corrupto y ruta inexistente. Si
-    coinciden, el control NO DISCRIMINA y (B) es NO MEDIDO.
-  - GUARD DE PRECONDICION, v2: PT_INTERP y DT_NEEDED resueltos dentro del
-    rootfs ANTES de ejecutar. Un rootfs incompleto no puede disfrazarse de
-    ROJO de openKylin.
-  - de (A): se imprime el p_align crudo de cada PT_LOAD. Un instrumento que
-    solo dijera OK/FALLA no seria auditable.
+  - POSITIVO de (B): el bash del propio runner en chroot. Si falla, (B) es NO
+    MEDIDO, no ROJO: el roto seria el instrumento.
+  - NEGATIVO de (B): DOS firmas, ELF corrupto y ruta inexistente. Si coinciden,
+    el control NO DISCRIMINA y un fallo no se puede atribuir a openKylin.
+  - GUARD DE PRECONDICION: interprete y librerias resueltos ANTES de ejecutar.
+  - de (A): se imprime el p_align crudo de cada PT_LOAD, y el job x64 corre el
+    MISMO script para probar que el lector no depende de la arquitectura.
 
 Salida: JSON + markdown + salida cruda verbatim en mediciones/.
 """
@@ -32,11 +34,7 @@ import json, os, platform, re, shutil, struct, subprocess, sys, tarfile, time, u
 MIRROR = "https://mirrors.dotsrc.org/mirrors/pub/openkylin"
 SUITE = "huanghe"          # openKylin 3.0
 ARCH = "arm64"
-# 16384 = 16 KB (Android 15+), 65536 = 64 KB (default de Debian/arm64 moderno),
-# 4096 = 4 KB (lo que NO sirve en dispositivos de paginas grandes)
-PAGE_16K = 16384
-# v2: sin base-files no hay /lib -> usr/lib y el interprete no resuelve; sin
-# libtinfo6 bash no arranca. Los demas son los DT_NEEDED de coreutils.
+PAGE_16K = 16384           # 65536 = 64 KB, 4096 = 4 KB (lo que NO sirve)
 WANTED = ["base-files", "libc6", "libgcc-s1", "bash", "dash", "coreutils",
           "libtinfo6", "libselinux1", "libpcre2-8-0", "libacl1", "libattr1",
           "libgmp10"]
@@ -50,11 +48,10 @@ def say(*a):
     print(line, flush=True)
 
 def get(url, timeout=180):
-    req = urllib.request.Request(url, headers={"User-Agent": "siao-falsador/2"})
+    req = urllib.request.Request(url, headers={"User-Agent": "siao-falsador/3"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, r.read()
 
-# ---------------------------------------------------------------- ar (.deb)
 def ar_members(blob):
     """Parser del formato ar en Python puro: no depende del binario 'ar'."""
     if blob[:8] != b"!<arch>\n":
@@ -83,11 +80,8 @@ def decompress(name, data):
         return data, "raw"
     raise RuntimeError("compresion desconocida: %s" % name)
 
-# ---------------------------------------------------------------- ELF
 def elf_loads(path):
-    """(arch, [(p_align, p_offset, p_vaddr, p_filesz)]) de los PT_LOAD.
-    Se lee a mano: el resultado no depende de la arquitectura del lector, y eso
-    es justamente lo que el job x64 comprueba."""
+    """(arch, [(p_align, p_offset, p_vaddr, p_filesz)]) de los PT_LOAD."""
     with open(path, "rb") as f:
         h = f.read(64)
         if h[:4] != b"\x7fELF" or len(h) < 64:
@@ -116,8 +110,8 @@ def elf_loads(path):
         return arch, loads
 
 def elf_dyn(path):
-    """v2: (PT_INTERP, [DT_NEEDED]) leidos a mano. Sin ldd ni readelf, que no
-    sirven cross-arch. Es la pieza que le faltaba al v1."""
+    """(PT_INTERP, [DT_NEEDED]) leidos a mano. Sin ldd ni readelf: no sirven
+    cross-arch, y este script tiene que dar lo mismo en x64 que en arm64."""
     with open(path, "rb") as f:
         data = f.read()
     if data[:4] != b"\x7fELF" or len(data) < 64 or data[4] != 2:
@@ -165,11 +159,19 @@ def elf_dyn(path):
                         needed.append(data[soff + v:end].decode("latin1"))
     return interp, needed
 
+def indexar(rootfs):
+    """basename -> primera ruta absoluta encontrada, incluyendo symlinks."""
+    m = {}
+    for root, dirs, files in os.walk(rootfs):
+        for n in files + dirs:
+            m.setdefault(n, os.path.join(root, n))
+    return m
+
 # ---------------------------------------------------------------- main
 def main():
     t0 = time.time()
     res = {
-        "falsador": "FALSADOR-001", "version": 2,
+        "falsador": "FALSADOR-001", "version": 3,
         "fecha_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "maquina": {
             "arch": platform.machine(), "nproc": os.cpu_count(),
@@ -184,13 +186,12 @@ def main():
         "B_ejecucion": {"veredicto": "NO MEDIDO"},
         "controles": {}, "no_medido": [],
     }
-    say("== FALSADOR-001 v2 ==")
+    say("== FALSADOR-001 v3 ==")
     say("maquina:", json.dumps(res["maquina"]))
-
     os.makedirs(WORK, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
 
-    # ---- 0. indice de paquetes ------------------------------------------
+    # ---- 0. indice ------------------------------------------------------
     idx = None
     for comp in ("Packages.gz", "Packages.xz"):
         url = "%s/dists/%s/main/binary-%s/%s" % (MIRROR, SUITE, ARCH, comp)
@@ -206,7 +207,7 @@ def main():
         except Exception as ex:
             say("INDICE ERR", url, repr(ex)[:200])
     if not idx:
-        say("ABORTO: sin indice de paquetes. A y B quedan NO MEDIDO.")
+        say("ABORTO: sin indice. A y B quedan NO MEDIDO.")
         res["no_medido"].append("indice de paquetes inaccesible")
         write(res); return 2
     say("INDICE lineas", idx.count("\n"))
@@ -236,11 +237,13 @@ def main():
         res["no_medido"].append("paquetes ausentes del indice: %s" % faltan)
     res["fuente"]["paquetes_ausentes"] = faltan
 
-    # ---- 2. bajar, extraer, medir alineacion ---------------------------
+    # ---- 2. bajar y extraer. base-files PRIMERO, para que sus symlinks de
+    #         merged-usr existan antes de que otro paquete cree /lib real.
     rootfs = os.path.join(WORK, "rootfs")
     os.makedirs(rootfs, exist_ok=True)
-    aligns_all, vistos = [], set()
-    for name in [w for w in WANTED if w in debs]:
+    orden = (["base-files"] if "base-files" in debs else []) + \
+            [w for w in WANTED if w in debs and w != "base-files"]
+    for name in orden:
         meta = debs[name]
         url = "%s/%s" % (MIRROR, meta["filename"])
         try:
@@ -266,13 +269,17 @@ def main():
             res["no_medido"].append("%s: %s" % (name, repr(ex)[:120])); continue
         import io
         with tarfile.open(fileobj=io.BytesIO(raw)) as tf:
+            if name == "base-files":
+                for mm in tf.getmembers():
+                    if mm.issym():
+                        say("  base-files symlink:", mm.name, "->", mm.linkname)
             tf.extractall(rootfs, filter="tar")
         say("  extraido", dataname[0], "(%s)" % howto, len(raw), "B")
         res["A_alineacion"]["paquetes"][name] = {"version": meta["version"],
                                                  "compresion": howto}
 
-    # medir TODOS los ELF del rootfs, una sola vez
-    elfs = []
+    # ---- 3. medir alineacion de TODOS los ELF ---------------------------
+    elfs, aligns_all, vistos = [], [], set()
     for root, _d, files in os.walk(rootfs):
         for fn in files:
             p = os.path.join(root, fn)
@@ -294,14 +301,14 @@ def main():
                                    for a, o, v, s in loads]})
             aligns_all.extend(al)
     res["A_alineacion"]["elfs"] = elfs[:60]
-
-    # ---- 3. veredicto A ------------------------------------------------
     if aligns_all:
         uniq = sorted(set(aligns_all))
         peor = min(uniq)
         arches = sorted(set(e["arch"] for e in elfs))
         say("ELF medidos:", len(elfs), "| arquitecturas:", arches)
         say("ALINEACIONES CRUDAS observadas (p_align de PT_LOAD):", uniq)
+        peores = [e["path"] for e in elfs if min(e["p_align"]) == peor][:5]
+        say("  ejemplos con el minimo:", peores)
         res["A_alineacion"].update({"p_align_observados": uniq, "minimo": peor,
                                     "elfs_medidos": len(elfs), "arquitecturas": arches})
         if peor >= PAGE_16K:
@@ -325,58 +332,67 @@ def main():
         res["segundos"] = round(time.time() - t0, 1); write(res)
         say("FIN en", res["segundos"], "s"); return 0
 
-    # v2: symlinks de merged-usr. base-files deberia traerlos; si no, se crean
-    # A MANO y se DICE, porque un rootfs arreglado en silencio es un verde falso.
-    creados = []
+    # ensamblado del rootfs. Instalar no es untar: dpkg hace esto y mi
+    # extractor no. Todo lo que se toca se DICE.
+    ensamblado = []
     for link, target in (("lib", "usr/lib"), ("bin", "usr/bin"),
                          ("sbin", "usr/sbin"), ("lib64", "usr/lib64")):
         lp = os.path.join(rootfs, link)
         tp = os.path.join(rootfs, target)
-        if not os.path.exists(lp) and os.path.isdir(tp):
-            os.symlink(target, lp); creados.append("%s -> %s" % (link, target))
-    say("SYMLINKS merged-usr que base-files NO trajo y cree a mano:", creados or "ninguno")
-    res["controles"]["symlinks_creados_a_mano"] = creados
+        if os.path.isdir(lp) and not os.path.islink(lp):
+            say("OJO: /%s existe como DIRECTORIO REAL, no como symlink de merged-usr" % link)
+        elif not os.path.exists(lp) and os.path.isdir(tp):
+            os.symlink(target, lp); ensamblado.append("symlink %s -> %s" % (link, target))
 
-    # elegir un sujeto que EXISTA (v1 asumia /bin/bash y no existia)
     cand = ["/usr/bin/bash", "/bin/bash", "/usr/bin/dash", "/bin/sh"]
-    sujeto = None
-    for c in cand:
-        if os.path.isfile(os.path.join(rootfs, c.lstrip("/"))):
-            sujeto = c; break
+    sujeto = next((c for c in cand
+                   if os.path.isfile(os.path.join(rootfs, c.lstrip("/")))), None)
     say("SUJETO elegido:", sujeto, "| candidatos:", cand)
-    res["B_ejecucion"]["sujeto"] = sujeto
     if not sujeto:
         res["B_ejecucion"] = {"veredicto": "NO MEDIDO",
                               "motivo": "ningun shell presente en el rootfs"}
         res["no_medido"].append("B: sin shell en el rootfs")
         say("B: NO MEDIDO - ningun shell en el rootfs")
-        res["segundos"] = round(time.time() - t0, 1); write(res)
-        return 0
+        res["segundos"] = round(time.time() - t0, 1); write(res); return 0
+    res["B_ejecucion"]["sujeto"] = sujeto
 
-    # v2: GUARD DE PRECONDICION. Esto es lo que le faltaba al v1.
     sp = os.path.join(rootfs, sujeto.lstrip("/"))
     interp, needed = elf_dyn(sp)
     say("PT_INTERP del sujeto:", interp)
     say("DT_NEEDED del sujeto:", needed)
-    faltantes = []
+    libmap = indexar(rootfs)
+
+    # v3: si el interprete no resuelve, buscarlo por nombre y linkearlo
     if interp:
         ip = os.path.join(rootfs, interp.lstrip("/"))
         if not os.path.exists(ip):
-            faltantes.append("PT_INTERP %s" % interp)
+            base = os.path.basename(interp)
+            real = libmap.get(base)
+            say("  interprete NO resuelve en", ip)
+            say("  buscando", base, "en el rootfs ->", real)
+            if real:
+                os.makedirs(os.path.dirname(ip), exist_ok=True)
+                rel = os.path.relpath(real, os.path.dirname(ip))
+                os.symlink(rel, ip)
+                ensamblado.append("symlink %s -> %s (loader)" % (interp, rel))
+                say("  ENSAMBLADO:", interp, "->", rel)
         say("  interprete presente:", os.path.exists(ip), "->", ip)
-    libmap = {}
-    for root, _d, files in os.walk(rootfs):
-        for fn in files + _d:
-            libmap.setdefault(fn, os.path.join(root, fn))
+    say("ENSAMBLADO del rootfs (lo que dpkg haria y mi tar no):", ensamblado or "nada")
+    res["controles"]["ensamblado_del_rootfs"] = ensamblado
+
+    faltantes = []
+    if interp and not os.path.exists(os.path.join(rootfs, interp.lstrip("/"))):
+        faltantes.append("PT_INTERP %s" % interp)
     for so in needed:
-        if so not in libmap:
+        pres = so in libmap
+        say("  needed", so, "presente:", pres)
+        if not pres:
             faltantes.append("DT_NEEDED %s" % so)
-        say("  needed", so, "presente:", so in libmap)
     res["controles"]["precondicion_faltantes"] = faltantes
     if faltantes:
         res["B_ejecucion"] = {"veredicto": "NO MEDIDO", "sujeto": sujeto,
-                             "motivo": "el rootfs esta incompleto: %s. Un ENOENT aca "
-                                       "seria de MI rootfs, no de openKylin" % faltantes}
+                              "motivo": "rootfs incompleto: %s. Un ENOENT aca seria de "
+                                        "MI rootfs, no de openKylin" % faltantes}
         res["no_medido"].append("B: rootfs incompleto: %s" % faltantes)
         say("B: NO MEDIDO - rootfs incompleto:", faltantes)
         res["segundos"] = round(time.time() - t0, 1); write(res)
@@ -406,7 +422,6 @@ def main():
         say("CONTROL POSITIVO EXC", repr(ex)[:200])
     res["controles"]["positivo_chroot_del_runner"] = ok_pos
 
-    # v2: DOS controles negativos, y se comparan las FIRMAS
     def firma(cmd):
         try:
             r = subprocess.run(["chroot", pos] + cmd, capture_output=True,
@@ -418,22 +433,22 @@ def main():
     with open(bad, "wb") as f:
         f.write(b"\x7fELF" + os.urandom(400))
     os.chmod(bad, 0o755)
-    rc_corrupto, err_corrupto = firma(["/bin/roto"])
-    rc_inexistente, err_inexistente = firma(["/bin/no-existe-nunca"])
-    say("CONTROL NEGATIVO 1 (ELF corrupto)    rc=%d err=%r" % (rc_corrupto, err_corrupto))
-    say("CONTROL NEGATIVO 2 (ruta inexistente) rc=%d err=%r" % (rc_inexistente, err_inexistente))
-    firmas_iguales = (err_corrupto.replace("roto", "X") == err_inexistente.replace("no-existe-nunca", "X"))
-    discrimina = (rc_corrupto != 0 and rc_inexistente != 0 and not firmas_iguales)
+    rc_c, err_c = firma(["/bin/roto"])
+    rc_i, err_i = firma(["/bin/no-existe-nunca"])
+    say("CONTROL NEGATIVO 1 (ELF corrupto)     rc=%d err=%r" % (rc_c, err_c))
+    say("CONTROL NEGATIVO 2 (ruta inexistente) rc=%d err=%r" % (rc_i, err_i))
+    iguales = err_c.replace("roto", "X") == err_i.replace("no-existe-nunca", "X")
+    discrimina = (rc_c != 0 and rc_i != 0 and not iguales)
     say("CONTROL NEGATIVO discrimina corrupto de inexistente:", discrimina,
-        "(firmas iguales: %s)" % firmas_iguales)
-    res["controles"].update({"negativo_elf_corrupto": {"rc": rc_corrupto, "err": err_corrupto},
-                             "negativo_ruta_inexistente": {"rc": rc_inexistente,
-                                                           "err": err_inexistente},
+        "(firmas iguales: %s)" % iguales)
+    res["controles"].update({"negativo_elf_corrupto": {"rc": rc_c, "err": err_c},
+                             "negativo_ruta_inexistente": {"rc": rc_i, "err": err_i},
                              "negativo_discrimina": discrimina})
 
     if not ok_pos:
         res["B_ejecucion"].update({"veredicto": "NO MEDIDO",
-                                   "motivo": "el control positivo no paso: chroot no sirve aca"})
+                                   "motivo": "el control positivo no paso: el chroot no "
+                                             "sirve como instrumento en esta maquina"})
         say("B: NO MEDIDO - control positivo fallado")
     else:
         pruebas = []
@@ -441,26 +456,20 @@ def main():
                     [sujeto, "--version"],
                     ["/usr/bin/uname", "-m"],
                     ["/usr/bin/env", "true"],
-                    ["/usr/bin/ldd", "--version"]):
+                    [sujeto, "-c", "cat /etc/os-release 2>/dev/null | head -4"]):
             try:
                 r = subprocess.run(["chroot", rootfs] + cmd, capture_output=True,
                                    text=True, timeout=60)
                 pruebas.append({"cmd": cmd, "rc": r.returncode,
                                 "stdout": r.stdout[:500], "stderr": r.stderr[:500]})
                 say("CHROOT openKylin", cmd, "rc=%d" % r.returncode,
-                    "out=%r" % r.stdout.strip()[:200], "err=%r" % r.stderr.strip()[:200])
+                    "out=%r" % r.stdout.strip()[:220], "err=%r" % r.stderr.strip()[:200])
             except Exception as ex:
                 pruebas.append({"cmd": cmd, "rc": -1, "stderr": repr(ex)[:300]})
                 say("CHROOT openKylin", cmd, "EXC", repr(ex)[:200])
         res["B_ejecucion"]["pruebas"] = pruebas
         vivo = any(p["rc"] == 0 and "OPENKYLIN_USERLAND_VIVO" in p.get("stdout", "")
                    for p in pruebas)
-        if vivo and not discrimina:
-            # un verde con un control que no discrimina sigue siendo verde: el
-            # control negativo protege contra falsos VERDES por ejecucion de
-            # basura, y aca ejecuto y devolvio la cadena exacta esperada.
-            say("NOTA: el control negativo no discrimino, pero B dio VERDE con la"
-                " cadena exacta esperada, que la basura no puede producir")
         if vivo:
             res["B_ejecucion"]["veredicto"] = "VERDE"
         elif discrimina:
@@ -469,7 +478,7 @@ def main():
             res["B_ejecucion"]["veredicto"] = "NO MEDIDO"
             res["B_ejecucion"]["motivo"] = ("no ejecuto, pero el control negativo no "
                                             "discrimina corrupto de inexistente: no puedo "
-                                            "afirmar que el fallo sea de openKylin")
+                                            "atribuirle el fallo a openKylin")
             res["no_medido"].append("B: fallo sin control que discrimine")
         say("B:", res["B_ejecucion"]["veredicto"],
             "- el userland arm64 de openKylin", "EJECUTA" if vivo else "NO EJECUTA",
@@ -487,7 +496,7 @@ def write(res):
     with open(os.path.join(OUT, "FALSADOR-001-userland-arm64-salida-cruda.txt"), "w") as f:
         f.write("\n".join(log) + "\n")
     a = res["A_alineacion"]["veredicto"]; b = res["B_ejecucion"]["veredicto"]
-    md = ["# FALSADOR-001 v2 - el userland ARM64 de openKylin 3.0 fuera de su ISO", "",
+    md = ["# FALSADOR-001 v3 - el userland ARM64 de openKylin 3.0 fuera de su ISO", "",
           "**Fecha (UTC):** %s" % res["fecha_utc"],
           "**Maquina:** `%s`" % json.dumps(res["maquina"]), "",
           "| Pregunta | Veredicto |", "|---|---|",
