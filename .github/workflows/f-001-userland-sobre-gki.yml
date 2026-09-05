@@ -1,0 +1,82 @@
+name: F-001 userland openKylin sobre GKI
+
+# Commitea su propia salida cruda: el TEXTO de un log de Actions da 403 por API,
+# asi que un resultado que no se commitea es invisible para cualquier agente.
+on:
+  push:
+    branches:
+      - 'titan/f-001-userland-sobre-gki'
+    paths:
+      - 'tools/f001_userland_sobre_gki.py'
+      - '.github/workflows/f-001-userland-sobre-gki.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  f001:
+    name: arm64-nativo
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          getconf PAGESIZE
+          nproc
+          free -m
+          df -h /
+          ls -la /dev/kvm || echo 'sin /dev/kvm: QEMU va en TCG'
+          python3 --version
+
+      - name: md5 del instrumento
+        run: md5sum tools/f001_userland_sobre_gki.py
+
+      - name: Herramientas
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            mmdebstrap qemu-system-arm lxc-utils cpio gzip zstd e2fsprogs
+          echo '--- versiones, verbatim ---'
+          mmdebstrap --version | head -2
+          qemu-system-aarch64 --version | head -2
+          lxc-checkconfig --version 2>/dev/null || dpkg -s lxc-utils | grep -i '^Version'
+
+      - name: Kernel para el control positivo
+        run: |
+          ls -la /boot || true
+          if ! ls /boot/vmlinuz* >/dev/null 2>&1; then
+            echo 'no hay kernel en /boot: instalo linux-image-generic'
+            sudo apt-get install -y -qq --no-install-recommends linux-image-generic || true
+            ls -la /boot || true
+          fi
+
+      - name: Correr F-001
+        env:
+          F001_OUT: mediciones/f-001
+          F001_WORK: /tmp/f001
+        run: sudo -E python3 tools/f001_userland_sobre_gki.py
+
+      - name: Commitear la salida cruda
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          sudo chown -R "$(id -u):$(id -g)" mediciones || true
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(f-001): salida cruda en arm64 (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin "${{ github.ref_name }}" && \
+            git push origin HEAD:"${{ github.ref_name }}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+
+      - name: Resumen
+        if: always()
+        run: cat mediciones/f-001/F-001.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
