@@ -1,0 +1,80 @@
+
+  >>> via 1: mmdebstrap + hook que crea loader Y los symlinks de merged-usr (los postinst necesitan /bin/sh)
+$ bash -c rm -rf /tmp/f001/rootfs
+$ mmdebstrap --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --extract-hook=set -x; for d in bin sbin lib lib64; do   if [ ! -e "$1/$d" ] && [ -d "$1/usr/$d" ]; then ln -s "usr/$d" "$1/$d"; fi; done; mkdir -p "$1/lib"; [ -e "$1/lib/ld-linux-aarch64.so.1" ] || ln -s "../usr/lib/ld-linux-aarch64.so.1" "$1/lib/ld-linux-aarch64.so.1"; [ -e "$1/bin
+  rc=25
+  MM | I: automatically chosen mode: root
+  MM | I: chroot architecture arm64 is equal to the host's architecture
+  MM | E: unable to get absolute path of target directory /tmp/f001/rootfs
+  >>> fallo, sigo con la proxima
+$ id -u runner
+
+  >>> via 2: chrootless bajo el usuario 'runner' con fakeroot, que es lo que el guard de mmdebstrap pide
+$ bash -c rm -rf /tmp/f001/rootfs
+$ bash -c install -d -o runner -g runner /tmp/f001/rootfs && cd /tmp && su runner -s /bin/bash -c 'fakeroot mmdebstrap --mode=chrootless --variant=important '--architectures=arm64' '--include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd' '--aptopt=Acquire::AllowInsecureRepositories "true"' '--aptopt=APT::Get::AllowUnauthenticated "true"' huanghe /tmp/f001/rootfs "deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main"'
+  rc=25
+  MM | I: skipping emulation check in chrootless mode
+  MM | I: No SUITE specified, expecting sources.list on standard input
+  MM | I: reading sources.list from standard input...
+  MM | W: sources.list from standard input is empty
+  MM | W: empty apt sources.list
+  MM | I: automatically chosen format: tar
+  MM | I: using /tmp/mmdebstrap.ojcxOBnhjK as tempdir
+  MM | I: running apt-get update...
+  MM | W: apt-get indextargets output is empty
+  MM | W: no known apt sources.list entry
+  MM | I: Package files:
+  MM | I:  100 /tmp/mmdebstrap.ojcxOBnhjK/var/lib/dpkg/status
+  MM | I:      release a=now
+  MM | I: Pinned packages:
+  MM | E: apt-get update did not find any indices for architecture 'arm64' in the configured apt sources
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | 
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | I: removing tempdir /tmp/mmdebstrap.ojcxOBnhjK...
+  MM | E: mmdebstrap failed to run
+  >>> fallo, sigo con la proxima
+
+  >>> via 3: --variant=extract, SIN configurar paquetes: rootfs DEGRADADO declarado
+$ bash -c rm -rf /tmp/f001/rootfs
+$ mmdebstrap --variant=extract --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --extract-hook=set -x; for d in bin sbin lib lib64; do   if [ ! -e "$1/$d" ] && [ -d "$1/usr/$d" ]; then ln -s "usr/$d" "$1/$d"; fi; done; mkdir -p "$1/lib"; [ -e "$1/lib/ld-linux-aarch64.so.1" ] || ln -s "../usr/lib/ld-linux-aarch64.so.1" "$1/lib/ld-linux-aarch64.so.1"; [ -e "$1/bin/s
+  rc=25
+  MM | I: automatically chosen mode: root
+  MM | I: skipping emulation check for extract variant
+  MM | I: automatically chosen format: directory
+  MM | I: running apt-get update...
+  MM | I: downloading packages with apt...
+  MM | Reading package lists...
+  MM | Building dependency tree...
+  MM | Some packages could not be installed. This may mean that you have
+  MM | requested an impossible situation or if you are using the unstable
+  MM | distribution that some required packages have not yet been created
+  MM | or been moved out of Incoming.
+  MM | The following information may help to resolve the situation:
+  MM | 
+  MM | The following packages have unmet dependencies:
+  MM |  libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: apt download failed: E: apt-get --yes -oDebug::pkgDpkgPm=1 -oDir::Log=/dev/null -oAPT::Keep-Fds::=7 -oDPkg::Tools::options::'cat >&7'::InfoFD=7 -oDpkg::Pre-Install-Pkgs::=cat >&7 -oDebug::NoLocking=1 -oDpkg::Use-Pty=0 -oDPkg::Chroot-Directory= install systemd systemd-sysv dbus
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | 
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  >>> fallo, sigo con la proxima
+
+  >>> via 4: cierre de dependencias con el apt del HOST (status vacio) + dpkg-deb -x. Es el metodo que ya probe funcionando. Rootfs DEGRADADO declarado
+$ bash -c rm -rf /tmp/f001/rootfs
+$ apt-get -o Dir=/tmp/aptdir -o Dir::State::status=/tmp/aptdir/var/lib/dpkg/status -o Dir::Etc::sourcelist=/tmp/aptdir/etc/apt/sources.list -o Dir::Etc::sourceparts=/dev/null -o APT::Architecture=arm64 -o APT::Architectures::=arm64 -o Acquire::AllowInsecureRepositories=true -o APT::Get::AllowUnauthenticated=true -o APT::Sandbox::User=root -o Acquire::Languages=none update
+  apt update rc=0
+  APT | Get:1 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease [32.9 kB]
+  APT | Ign:1 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease
+  APT | Get:2 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 Packages [4165 kB]
+  APT | Fetched 4198 kB in 10s (421 kB/s)
+  APT | Reading package lists...
+  APT | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+$ apt-get -o Dir=/tmp/aptdir -o Dir::State::status=/tmp/aptdir/var/lib/dpkg/status -o Dir::Etc::sourcelist=/tmp/aptdir/etc/apt/sources.list -o Dir::Etc::sourceparts=/dev/null -o APT::Architecture=arm64 -o APT::Architectures::=arm64 -o Acquire::AllowInsecureRepositories=true -o APT::Get::AllowUnauthenticated=true -o APT::Sandbox::User=root -o Acquire::Languages=none install --yes --no-install-recommends --print-uris ?essential systemd systemd-sysv dbus udev iproute2 libpam-systemd
+  el patron ?essential no anduvo (rc=100), pido solo los paquetes pedidos
+$ apt-get -o Dir=/tmp/aptdir -o Dir::State::status=/tmp/aptdir/var/lib/dpkg/status -o Dir::Etc::sourcelist=/tmp/aptdir/etc/apt/sources.list -o Dir::Etc::sourceparts=/dev/null -o APT::Architecture=arm64 -o APT::Architectures::=arm64 -o Acquire::AllowInsecureRepositories=true -o APT::Get::AllowUnauthenticated=true -o APT::Sandbox::User=root -o Acquire::Languages=none install --yes --no-install-recommends --print-uris systemd systemd-sysv dbus udev iproute2 libpam-systemd
+  apt --print-uris rc=100
+  APT | E: Unable to correct problems, you have held broken packages.
+  >>> fallo, sigo con la proxima

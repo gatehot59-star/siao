@@ -1,5 +1,5 @@
 == FALSADOR F-001 v3 ==
-maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "pagesize": 4096, "kvm": false, "runner_arch": "ARM64", "run_id": "33990043567"}
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "pagesize": 4096, "kvm": false, "runner_arch": "ARM64", "run_id": "33990241528"}
 PREDICCION registrada antes de correr: Predigo que S NO llega a multi-user: con PID_NS y USER_NS apagados y DEVTMPFS apagado, systemd no tiene con que. Lo escribo ANTES para que pueda refutarme.
 
 --- BRAZO C: el .config REAL del GKI ---

@@ -1,7 +1,7 @@
 {
   "falsador": "F-001",
   "version": 3,
-  "fecha_utc": "2026-09-05T20:25:45Z",
+  "fecha_utc": "2026-09-05T20:29:55Z",
   "maquina": {
     "arch": "aarch64",
     "nproc": 2,
@@ -9,7 +9,7 @@
     "pagesize": 4096,
     "kvm": false,
     "runner_arch": "ARM64",
-    "run_id": "33990043567"
+    "run_id": "33990241528"
   },
   "C_config_real_del_gki": {
     "veredicto": "ROJO",
