@@ -1,0 +1,46 @@
+{
+  "falsador": "F-002",
+  "version": 2,
+  "fecha_utc": "2026-09-05T21:04:52Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "33991951592"
+  },
+  "me_refuto_antes_de_correr": "En el ADR-003 propuse --include=usr-is-merged como fix. ES FALSO: ese paquete es transicional, su preinst solo VERIFICA que el sistema ya este merged y FALLA si no lo esta; su data.tar trae changelog y copyright. Habria hecho fallar el build antes, no arreglarlo.",
+  "defecto_cazado_antes_de_correr": "Escribi el pin con n=huanghe-proposed. MEDIDO: los DOS Release declaran Codename: huanghe, y n= es Codename, asi que el pin no habria matcheado nunca y -proposed entraba con prioridad 500: el criterio (b) daba rojo y yo iba a culpar al repo. El campo correcto es a= (Suite).",
+  "pineados": [
+    "libdevmapper1.02.1",
+    "dmsetup",
+    "libdevmapper-event1.02.1"
+  ],
+  "preferences": "Package: *\nPin: release a=huanghe-proposed\nPin-Priority: -10\n\nPackage: libdevmapper1.02.1 dmsetup libdevmapper-event1.02.1\nPin: release a=huanghe-proposed\nPin-Priority: 990\n",
+  "controles": {
+    "N1_sin_pin": {
+      "esperado": "FALLA por libdevmapper",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "evidencia": "The following packages have unmet dependencies:\n libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed\nE: Unable to correct problems, you have held broken packages."
+    },
+    "N2_sin_hook_mergedusr": {
+      "esperado": "FALLA con ENOENT del interprete",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "enoent_encontrado": true,
+      "evidencia": "chroot: failed to run command ‘dpkg’: No such file or directory"
+    },
+    "ambos_discriminan": true
+  },
+  "sujeto": {
+    "instalo": false,
+    "rc": 25,
+    "evidencia": "/usr/bin/dpkg --status-fd 9 --no-triggers --configure dpkg:arm64 \ndpkg: regarding .../base-files_14-ok3_arm64.deb containing base-files, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../debianutils_5.23.2-ok1_arm64.deb containing debianutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../bash_5.3-ok1_arm64.deb containing bash, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../bash_5.3-ok1_arm64.deb containing bash, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../bsdutils_1%3a2.39.3-ok2build5_arm64.deb containing bsdutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../bsdutils_1%3a2.39.3-ok2build5_arm64.deb containing bsdutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:\ndpkg: warning: ignoring pre-dependency problem!\ndpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:\ndp"
+  },
+  "no_medido": [],
+  "veredicto": "ROJO",
+  "segundos": 32.5
+}

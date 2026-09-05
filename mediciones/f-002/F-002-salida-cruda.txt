@@ -1,0 +1,134 @@
+== F-002 v2 ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_arch": "ARM64", "run_id": "33991951592"}
+ME REFUTO ANTES DE CORRER: En el ADR-003 propuse --include=usr-is-merged como fix. ES FALSO: ese paquete es transicional, su preinst solo VERIFICA que el sistema ya este merged y FALLA si no lo esta; su data.tar trae changelog y copyright. Habria hecho fallar el build antes, no arreglarlo.
+DEFECTO CAZADO ANTES DE CORRER: Escribi el pin con n=huanghe-proposed. MEDIDO: los DOS Release declaran Codename: huanghe, y n= es Codename, asi que el pin no habria matcheado nunca y -proposed entraba con prioridad 500: el criterio (b) daba rojo y yo iba a culpar al repo. El campo correcto es a= (Suite).
+
+preferences.d que voy a usar:
+   | Package: *
+   | Pin: release a=huanghe-proposed
+   | Pin-Priority: -10
+   | 
+   | Package: libdevmapper1.02.1 dmsetup libdevmapper-event1.02.1
+   | Pin: release a=huanghe-proposed
+   | Pin-Priority: 990
+
+==============================================================================
+>>> N1-sin-pin  (pin=False, hook merged-usr=True)
+$ bash -c rm -rf /tmp/f002/n1 && mkdir -p /tmp/f002/n1
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64"; ls -la "$1" | head -20 huanghe /tmp/f002/n1 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+  mmdebstrap rc=25
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | The following packages have unmet dependencies:
+  MM |  libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?arc
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  N1: CORRECTO, fallo como se esperaba
+
+==============================================================================
+>>> N2-sin-hook  (pin=True, hook merged-usr=False)
+$ bash -c rm -rf /tmp/f002/n2 && mkdir -p /tmp/f002/n2
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; mkdir -p "$1/etc/apt/preferences.d"; cp /tmp/f002/prefs-N2-sin-hook "$1/etc/apt/preferences.d/siao-pins"; echo "--- PIN ESCRITO EN EL TARGET ---"; cat "$1/etc/apt/preferences.d/siao-pins" huanghe /tmp/f002/n2 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] https://mirrors.dotsrc.org/mirrors
+  mmdebstrap rc=25
+  MM | I: running --setup-hook in shell: sh -c 'set -e; mkdir -p "$1/etc/apt/preferences.d"; cp /tmp/f002/prefs-N2-sin-hook "$1/etc/apt/preferences.d/siao-pins"; echo "--- PIN ESCRITO EN EL TARGET ---"; cat "$1/etc/apt/preferences.d/siao-pins"' exec /tmp/f002/n2
+  MM | --- PIN ESCRITO EN EL TARGET ---
+  MM | /usr/bin/dpkg --status-fd 9 --no-triggers --configure dpkg:arm64 
+  MM | chroot: failed to run command ‘dpkg’: No such file or directory
+  MM | E: setup failed: E: env --unset=APT_CONFIG --unset=TMPDIR chroot /tmp/f002/n2 dpkg --install --force-depends --status-fd=<$fd> /var/cache/apt/archives/gcc-15-base_15.2.0-16ok8_arm64.deb /var/cache/apt/archives/libc-gconv-modules-extra_2.43-ok2_arm64.deb /var/cache/apt/archives/li
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  N2: CORRECTO, fallo
+  N2 ENOENT verbatim: chroot: failed to run command ‘dpkg’: No such file or directory
+
+==============================================================================
+>>> SUJETO-pin-y-hook  (pin=True, hook merged-usr=True)
+$ bash -c rm -rf /tmp/f002/rootfs && mkdir -p /tmp/f002/rootfs
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64"; ls -la "$1" | head -20 --setup-hook=set -e; mkdir -p "$1/etc/apt/preferences.d"; cp /tmp/f002/prefs-SUJETO-pin-y-hook "$1/etc/apt/preferences.d/siao-pins"; echo "--- PIN ESCRITO EN EL TARGET ---"; cat "$1
+  mmdebstrap rc=25
+  MM | dpkg: regarding .../ncurses-bin_6.4+20240113-1ok1_arm64.deb containing ncurses-bin, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+  MM | dpkg: warning: ignoring pre-dependency problem!
+  MM | E: Package 'login.defs' has no installation candidate
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?arc
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+
+VEREDICTO F-002: ROJO
