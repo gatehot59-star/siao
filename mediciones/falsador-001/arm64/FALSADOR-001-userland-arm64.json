@@ -1,0 +1,1816 @@
+{
+  "falsador": "FALSADOR-001",
+  "fecha_utc": "2026-09-05T19:44:31Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_os": "Linux",
+    "runner_arch": "ARM64",
+    "github_run_id": "33988009462"
+  },
+  "fuente": {
+    "mirror": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+    "suite": "huanghe",
+    "arch": "arm64",
+    "indice": "https://mirrors.dotsrc.org/mirrors/pub/openkylin/dists/huanghe/main/binary-arm64/Packages.gz"
+  },
+  "A_alineacion": {
+    "veredicto": "VERDE",
+    "paquetes": {
+      "bash": {
+        "version": "5.3-ok1",
+        "compresion": "xz",
+        "elfs": [
+          {
+            "path": "usr/bin/clear_console",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 6676
+              },
+              {
+                "align": 65536,
+                "off": 64984,
+                "vaddr": 4324824,
+                "filesz": 744
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/bash",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 1600128
+              },
+              {
+                "align": 65536,
+                "off": 1637848,
+                "vaddr": 5897688,
+                "filesz": 38820
+              }
+            ]
+          }
+        ]
+      },
+      "coreutils": {
+        "version": "9.4-ok4",
+        "compresion": "xz",
+        "elfs": [
+          {
+            "path": "usr/bin/md5sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 30872
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1072
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/pinky",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 26856
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1170
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/stat",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 74712
+              },
+              {
+                "align": 65536,
+                "off": 130496,
+                "vaddr": 4390336,
+                "filesz": 1440
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/nice",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 20856
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1048
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/whoami",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 18224
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1032
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/tty",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 18192
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1032
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/env",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 31120
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1616
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/nproc",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 20528
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1064
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/sha224sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 36256
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1072
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/sha512sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 39640
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1080
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/test",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 33704
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1048
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/printf",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 39816
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1112
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/who",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 42344
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1272
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/[",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 40848
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1080
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/basenc",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 34392
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1152
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/fmt",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 27104
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1080
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/realpath",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 27720
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1025
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 22184
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1032
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/yes",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 17592
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 900
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/factor",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 49112
+              },
+              {
+                "align": 65536,
+                "off": 64944,
+                "vaddr": 4324784,
+                "filesz": 1336
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/tee",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 25552
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1152
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/csplit",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 34984
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1220
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/unlink",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 18152
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1016
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/split",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 42520
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1788
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/expand",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 23056
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1104
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/shred",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 37664
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1280
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/ptx",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 38680
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1248
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/printenv",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 17832
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 892
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/pathchk",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 20864
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1048
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/comm",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 25712
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1112
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/od",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 57648
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1192
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/cut",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 28696
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1144
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/unexpand",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 27472
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1112
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/join",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 35008
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1192
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/timeout",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 27064
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1648
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/pr",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 55352
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1312
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/head",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 29712
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1121
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/uniq",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 29568
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1136
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/runcon",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 22280
+              },
+              {
+                "align": 65536,
+                "off": 64960,
+                "vaddr": 4324800,
+                "filesz": 1160
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/mkfifo",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 28240
+              },
+              {
+                "align": 65536,
+                "off": 64960,
+                "vaddr": 4324800,
+                "filesz": 1216
+              }
+            ]
+          }
+        ]
+      },
+      "libc6": {
+        "version": "2.43-ok2",
+        "compresion": "zst",
+        "elfs": [
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libBrokenLocale.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 2128
+              },
+              {
+                "align": 65536,
+                "off": 64856,
+                "vaddr": 130392,
+                "filesz": 688
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libdl.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1928
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libnss_hesiod.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 15104
+              },
+              {
+                "align": 65536,
+                "off": 64624,
+                "vaddr": 130160,
+                "filesz": 920
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libnss_files.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1792
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libmvec.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 225208
+              },
+              {
+                "align": 65536,
+                "off": 261136,
+                "vaddr": 326672,
+                "filesz": 1016
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libmemusage.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 13276
+              },
+              {
+                "align": 65536,
+                "off": 64664,
+                "vaddr": 130200,
+                "filesz": 884
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libresolv.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 48404
+              },
+              {
+                "align": 65536,
+                "off": 62504,
+                "vaddr": 128040,
+                "filesz": 3176
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/librt.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 2876
+              },
+              {
+                "align": 65536,
+                "off": 64824,
+                "vaddr": 130360,
+                "filesz": 720
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libthread_db.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 36656
+              },
+              {
+                "align": 65536,
+                "off": 64776,
+                "vaddr": 130312,
+                "filesz": 1360
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libnsl.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 84524
+              },
+              {
+                "align": 65536,
+                "off": 129496,
+                "vaddr": 195032,
+                "filesz": 1584
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libutil.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1928
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libm.so.6",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 711248
+              },
+              {
+                "align": 65536,
+                "off": 720112,
+                "vaddr": 785648,
+                "filesz": 796
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libanl.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1928
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libpthread.so.0",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 2408
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libc_malloc_debug.so.0",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 42020
+              },
+              {
+                "align": 65536,
+                "off": 64376,
+                "vaddr": 129912,
+                "filesz": 3424
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libnss_compat.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 30396
+              },
+              {
+                "align": 65536,
+                "off": 64584,
+                "vaddr": 130120,
+                "filesz": 1352
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libpcprofile.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 2712
+              },
+              {
+                "align": 65536,
+                "off": 64840,
+                "vaddr": 130376,
+                "filesz": 704
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libnss_dns.so.2",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1792
+              },
+              {
+                "align": 65536,
+                "off": 64864,
+                "vaddr": 130400,
+                "filesz": 680
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/libc.so.6",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 1674128
+              },
+              {
+                "align": 65536,
+                "off": 1691792,
+                "vaddr": 1757328,
+                "filesz": 17480
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/ld-linux-aarch64.so.1",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 169080
+              },
+              {
+                "align": 65536,
+                "off": 191784,
+                "vaddr": 257320,
+                "filesz": 7100
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/UTF-32.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 7708
+              },
+              {
+                "align": 65536,
+                "off": 64832,
+                "vaddr": 130368,
+                "filesz": 712
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/CP1252.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 7912
+              },
+              {
+                "align": 65536,
+                "off": 64856,
+                "vaddr": 130392,
+                "filesz": 688
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/UTF-7.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 15620
+              },
+              {
+                "align": 65536,
+                "off": 64816,
+                "vaddr": 130352,
+                "filesz": 728
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/ISO8859-1.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 6148
+              },
+              {
+                "align": 65536,
+                "off": 64856,
+                "vaddr": 130392,
+                "filesz": 688
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/ISO8859-15.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 7860
+              },
+              {
+                "align": 65536,
+                "off": 64856,
+                "vaddr": 130392,
+                "filesz": 688
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/UTF-16.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 8600
+              },
+              {
+                "align": 65536,
+                "off": 64832,
+                "vaddr": 130368,
+                "filesz": 712
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/ANSI_X3.110.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 16388
+              },
+              {
+                "align": 65536,
+                "off": 64856,
+                "vaddr": 130392,
+                "filesz": 688
+              }
+            ]
+          },
+          {
+            "path": "usr/lib/aarch64-linux-gnu/gconv/UNICODE.so",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 0,
+                "filesz": 7488
+              },
+              {
+                "align": 65536,
+                "off": 64840,
+                "vaddr": 130376,
+                "filesz": 704
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/md5sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 30872
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1072
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/pinky",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 26856
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1170
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/stat",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 74712
+              },
+              {
+                "align": 65536,
+                "off": 130496,
+                "vaddr": 4390336,
+                "filesz": 1440
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/nice",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 20856
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1048
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/whoami",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 18224
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1032
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/tty",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 18192
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1032
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/env",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 31120
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1616
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/nproc",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 20528
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1064
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/sha224sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 36256
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1072
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/sha512sum",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 39640
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1080
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/test",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 33704
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1048
+              }
+            ]
+          },
+          {
+            "path": "usr/bin/printf",
+            "arch": "aarch64",
+            "p_align": [
+              65536
+            ],
+            "loads": [
+              {
+                "align": 65536,
+                "off": 0,
+                "vaddr": 4194304,
+                "filesz": 39816
+              },
+              {
+                "align": 65536,
+                "off": 64976,
+                "vaddr": 4324816,
+                "filesz": 1112
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "p_align_observados": [
+      65536
+    ],
+    "minimo": 65536,
+    "elfs_medidos": 246
+  },
+  "B_ejecucion": {
+    "veredicto": "ROJO",
+    "pruebas": [
+      {
+        "cmd": [
+          "/bin/bash",
+          "-c",
+          "echo OPENKYLIN_USERLAND_VIVO"
+        ],
+        "rc": 127,
+        "stdout": "",
+        "stderr": "chroot: failed to run command ‘/bin/bash’: No such file or directory\n"
+      },
+      {
+        "cmd": [
+          "/bin/bash",
+          "--version"
+        ],
+        "rc": 127,
+        "stdout": "",
+        "stderr": "chroot: failed to run command ‘/bin/bash’: No such file or directory\n"
+      },
+      {
+        "cmd": [
+          "/usr/bin/uname",
+          "-m"
+        ],
+        "rc": 127,
+        "stdout": "",
+        "stderr": "chroot: failed to run command ‘/usr/bin/uname’: No such file or directory\n"
+      },
+      {
+        "cmd": [
+          "/usr/bin/env",
+          "true"
+        ],
+        "rc": 127,
+        "stdout": "",
+        "stderr": "chroot: failed to run command ‘/usr/bin/env’: No such file or directory\n"
+      }
+    ]
+  },
+  "controles": {
+    "positivo_chroot_del_runner": true,
+    "negativo_elf_corrupto_no_ejecuta": true
+  },
+  "no_medido": [],
+  "segundos": 17.3
+}
