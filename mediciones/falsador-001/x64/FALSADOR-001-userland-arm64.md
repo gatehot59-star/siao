@@ -1,0 +1,35 @@
+# FALSADOR-001 - el userland ARM64 de openKylin 3.0 fuera de su ISO
+
+**Fecha (UTC):** 2026-09-05T19:44:25Z
+**Maquina:** {"arch": "x86_64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_os": "Linux", "runner_arch": "X64", "github_run_id": "33988009462"}
+
+| Pregunta | Veredicto |
+|---|---|
+| A - paginas de 16 KB (`p_align` >= 16384) | **VERDE** |
+| B - ejecuta en un aarch64 ajeno (chroot) | **NO MEDIDO** |
+
+Controles del instrumento: `{}`
+
+NO MEDIDO: ['B: host x86_64, no aarch64']
+
+## Salida cruda, verbatim
+
+```plain
+== FALSADOR-001 ==
+maquina: {"arch": "x86_64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_os": "Linux", "runner_arch": "X64", "github_run_id": "33988009462"}
+INDICE ERR https://mirrors.dotsrc.org/mirrors/pub/openkylin/dists/huanghe/main/binary-arm64/Packages.xz <HTTPError 404: 'Not Found'>
+INDICE 200 4165259 bytes https://mirrors.dotsrc.org/mirrors/pub/openkylin/dists/huanghe/main/binary-arm64/Packages.gz
+INDICE lineas 392521
+PAQUETE bash 5.3-ok1 1243548 B
+PAQUETE coreutils 9.4-ok4 2755136 B
+PAQUETE libc6 2.43-ok2 1616760 B
+DEB 200 1243548 B bash sha256_ok=True
+  extraido data.tar.xz (xz) 7485440 B
+DEB 200 2755136 B coreutils sha256_ok=True
+  extraido data.tar.xz (xz) 20060160 B
+DEB 200 1616760 B libc6 sha256_ok=True
+  extraido data.tar.zst (zst) 4915200 B
+ALINEACIONES CRUDAS observadas (p_align de PT_LOAD): [65536]
+A: VERDE - todo LOAD alinea a >= 16384 (min 65536)
+B: NO MEDIDO - el host es x86_64, no aarch64: un ELF arm64 no puede ejecutar aca sin emulador
+```
