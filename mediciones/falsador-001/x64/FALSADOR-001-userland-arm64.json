@@ -1,7 +1,7 @@
 {
   "falsador": "FALSADOR-001",
-  "version": 2,
-  "fecha_utc": "2026-09-05T19:48:28Z",
+  "version": 3,
+  "fecha_utc": "2026-09-05T19:52:05Z",
   "maquina": {
     "arch": "x86_64",
     "nproc": 2,
@@ -9,7 +9,7 @@
     "pagesize": 4096,
     "runner_os": "Linux",
     "runner_arch": "X64",
-    "github_run_id": "33988212256"
+    "github_run_id": "33988392695"
   },
   "fuente": {
     "mirror": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
@@ -1349,5 +1349,5 @@
   "no_medido": [
     "B: host x86_64, no aarch64"
   ],
-  "segundos": 15.5
+  "segundos": 10.7
 }
