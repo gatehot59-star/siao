@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 """
-FALSADOR F-001 - Arranca el userland openKylin sobre un kernel GKI REAL?
+FALSADOR F-001 v3 - Arranca el userland openKylin sobre un kernel GKI REAL?
 
-Cuatro brazos, y son sujetos DISTINTOS a proposito:
+Cuatro brazos, sujetos DISTINTOS a proposito:
 
-  C) EL .config REAL DEL GKI. Se baja el gki-certified-boot de Google, se saca el
-     Image del boot.img y se extrae el .config EMBEBIDO (IKCFG_ST). Esto cierra
-     el caveat que declare en el ADR-002: un defconfig NO es un .config.
-     Ademas se corre lxc-checkconfig contra ese config real.
-
+  C) EL .config REAL DEL GKI, extraido del IKCFG_ST del Image que viene en el
+     gki-certified-boot de Google, mas lxc-checkconfig contra ese config. Cierra
+     el caveat del ADR-002: un defconfig NO es un .config.
   F002) EL ROOTFS con mmdebstrap contra los repos apt de openKylin (H3 del
-     auditor: ningun ISO es el punto de partida). Se mide su tamano real.
-
-  F003) p_align sobre ESE rootfs, a escala, no sobre 12 paquetes.
-
+     auditor: ningun ISO es el punto de partida).
+  F003) p_align sobre ESE rootfs, a escala.
   P) CONTROL POSITIVO: el rootfs arranca en QEMU con el kernel del PROPIO runner.
-  S) EL SUJETO: el mismo rootfs, el mismo arnes, con el Image del GKI.
+  S) EL SUJETO: mismo rootfs, mismo arnes, Image del GKI.
 
-POR QUE INITRAMFS Y NO DISCO: el brazo C mide que en GKI CONFIG_VIRTIO_BLK y
-CONFIG_VIRTIO_PCI son MODULOS, y los modulos viven en system_dlkm, fuera del
-boot.img. Con disco virtio el GKI no podria montar la raiz NUNCA, y eso seria un
-limite del ARNES disfrazado de ROJO del userland. Con initramfs no hace falta
-ningun driver de bloque, y P y S usan EXACTAMENTE el mismo metodo: la unica
-variable es el kernel. Eso es lo que hace valida la comparacion.
+POR QUE INITRAMFS Y NO DISCO: el brazo C mide que VIRTIO_BLK y VIRTIO_PCI son
+MODULOS en GKI, y los modulos viven en system_dlkm, fuera del boot.img. Con disco
+virtio el GKI no podria montar la raiz NUNCA y eso seria un limite del ARNES
+disfrazado de ROJO del userland. Con initramfs no hace falta driver de bloque, y
+P y S usan el MISMO metodo: la unica variable es el kernel.
+
+HISTORIAL DE DEFECTOS PROPIOS DE ESTE ARCHIVO:
+  v1 -> no existio; nacio de la auditoria.
+  v2 -> mmdebstrap murio con "chroot: failed to run command 'dpkg': No such file
+        or directory". NO faltaba dpkg: faltaba el PT_INTERP, porque en un arbol
+        recien extraido /lib todavia no es el symlink de merged-usr. TERCERA vez
+        que este mismo ENOENT se me disfraza de otra cosa.
+  v3 -> extract-hook que crea el loader, segunda via con --mode=chrootless, guard
+        de precondicion antes del initramfs, y exit 3 si el instrumento falla.
 """
 import gzip, json, os, platform, re, struct, subprocess, sys, time, urllib.request, zipfile, zlib
 
@@ -33,6 +37,7 @@ GKI_URLS = [
 MIRROR = "https://mirrors.dotsrc.org/mirrors/pub/openkylin"
 SUITE = "huanghe"
 PKGS = ["systemd", "systemd-sysv", "dbus", "udev", "iproute2", "libpam-systemd"]
+LOADER = "ld-linux-aarch64.so.1"
 OUT = os.environ.get("F001_OUT", "mediciones/f-001")
 WORK = os.environ.get("F001_WORK", "/tmp/f001")
 
@@ -53,9 +58,12 @@ NEED = ["CONFIG_NAMESPACES", "CONFIG_PID_NS", "CONFIG_USER_NS", "CONFIG_IPC_NS",
         "CONFIG_IKCONFIG", "CONFIG_MODULES", "CONFIG_ARM64_16K_PAGES",
         "CONFIG_ARM64_4K_PAGES", "CONFIG_ARM64_64K_PAGES"]
 
-# Lo que LXC necesita para EXISTIR. Sin esto no hay contenedor de apps.
+# Dos sujetos distintos, dos veredictos distintos (E-01).
 CRITICOS_LXC = ["CONFIG_PID_NS", "CONFIG_USER_NS", "CONFIG_NET_NS", "CONFIG_IPC_NS",
                 "CONFIG_UTS_NS", "CONFIG_CGROUPS"]
+CRITICOS_SYSTEMD = ["CONFIG_DEVTMPFS", "CONFIG_TMPFS_XATTR", "CONFIG_FANOTIFY",
+                    "CONFIG_AUTOFS_FS", "CONFIG_CGROUP_PIDS", "CONFIG_SECCOMP_FILTER",
+                    "CONFIG_INOTIFY_USER"]
 
 log = []
 def say(*a):
@@ -64,7 +72,7 @@ def say(*a):
 
 def sh(cmd, timeout=1800, env=None):
     pretty = cmd if isinstance(cmd, str) else " ".join(cmd)
-    say("$", pretty[:400])
+    say("$", pretty[:500])
     try:
         r = subprocess.run(cmd, shell=isinstance(cmd, str), capture_output=True,
                            text=True, timeout=timeout, env=env)
@@ -79,7 +87,7 @@ def sh(cmd, timeout=1800, env=None):
         return -1, "", repr(e)[:300]
 
 def get(url, timeout=420):
-    req = urllib.request.Request(url, headers={"User-Agent": "siao-f001/2"})
+    req = urllib.request.Request(url, headers={"User-Agent": "siao-f001/3"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, r.read()
 
@@ -135,6 +143,53 @@ def leer_config(txt):
             got[m2.group(1)] = "n"
     return got
 
+def elf_dyn(path):
+    """(PT_INTERP, [DT_NEEDED]) leidos a mano. Sin ldd: no sirve cross-arch."""
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:4] != b"\x7fELF" or len(data) < 64 or data[4] != 2:
+        return None, []
+    e = "<" if data[5] == 1 else ">"
+    phoff = struct.unpack_from(e + "Q", data, 32)[0]
+    phes = struct.unpack_from(e + "H", data, 54)[0]
+    phn = struct.unpack_from(e + "H", data, 56)[0]
+    interp, dyn, loads = None, None, []
+    for i in range(phn):
+        o = phoff + i * phes
+        if o + 56 > len(data):
+            break
+        t = struct.unpack_from(e + "I", data, o)[0]
+        off = struct.unpack_from(e + "Q", data, o + 8)[0]
+        va = struct.unpack_from(e + "Q", data, o + 16)[0]
+        fs = struct.unpack_from(e + "Q", data, o + 32)[0]
+        if t == 3:
+            interp = data[off:off + fs].split(b"\x00")[0].decode("latin1")
+        elif t == 2:
+            dyn = (off, fs)
+        elif t == 1:
+            loads.append((va, off, fs))
+    needed = []
+    if dyn:
+        off, size = dyn
+        ents, i = [], off
+        while i + 16 <= off + size and i + 16 <= len(data):
+            tag, val = struct.unpack_from(e + "QQ", data, i)
+            if tag == 0:
+                break
+            ents.append((tag, val)); i += 16
+        strt = [v for t, v in ents if t == 5]
+        if strt:
+            soff = None
+            for va, po, fs in loads:
+                if va <= strt[0] < va + fs:
+                    soff = po + (strt[0] - va); break
+            if soff is not None:
+                for t, v in ents:
+                    if t == 1:
+                        end = data.find(b"\x00", soff + v)
+                        needed.append(data[soff + v:end].decode("latin1"))
+    return interp, needed
+
 def hitos_de(texto):
     return {
         "kernel arranco": bool(re.search(r"Booting Linux on physical CPU|Linux version", texto)),
@@ -146,9 +201,39 @@ def hitos_de(texto):
         "sin init": bool(re.search(r"No working init|Failed to execute .*init|Requested init", texto)),
     }
 
+def construir_rootfs(rootfs):
+    """Dos vias. La primera con el loader creado a mano; si falla, chrootless."""
+    hook = ('mkdir -p "$1/lib"; if [ ! -e "$1/lib/%s" ]; then '
+            'ln -s "../usr/lib/%s" "$1/lib/%s" && echo "HOOK: cree el loader"; '
+            'else echo "HOOK: el loader ya estaba"; fi; ls -la "$1/lib/%s" || true'
+            % (LOADER, LOADER, LOADER, LOADER))
+    base = ["--architectures=arm64", "--variant=important",
+            "--include=" + ",".join(PKGS),
+            '--aptopt=Acquire::AllowInsecureRepositories "true"',
+            '--aptopt=APT::Get::AllowUnauthenticated "true"']
+    fuente = "deb [trusted=yes] %s %s main" % (MIRROR, SUITE)
+    intentos = [
+        ("via 1: extract-hook que crea el loader (lo que hace dpkg y mi extraccion no)",
+         ["mmdebstrap"] + base + ["--extract-hook=" + hook, SUITE, rootfs, fuente]),
+        ("via 2: --mode=chrootless, usa el dpkg del HOST y no ejecuta nada del target",
+         ["mmdebstrap", "--mode=chrootless"] + base + [SUITE, rootfs, fuente]),
+    ]
+    for nombre, cmd in intentos:
+        say(""); say("  >>>", nombre)
+        sh(["bash", "-c", "rm -rf %s" % rootfs])
+        rc, o, e = sh(cmd, timeout=2700)
+        say("  mmdebstrap rc=%d" % rc)
+        for line in (o.splitlines()[-15:] + e.splitlines()[-40:]):
+            say("  MM |", line[:280])
+        if rc == 0 and os.path.isdir(os.path.join(rootfs, "usr")):
+            say("  >>> ESTA VIA FUNCIONO:", nombre)
+            return True, nombre, rc
+        say("  >>> esta via fallo, sigo con la proxima")
+    return False, "ninguna de las dos vias", rc
+
 def main():
     t0 = time.time()
-    res = {"falsador": "F-001", "version": 2,
+    res = {"falsador": "F-001", "version": 3,
            "fecha_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "maquina": {"arch": platform.machine(), "nproc": os.cpu_count(),
                        "kernel": platform.release(), "pagesize": os.sysconf("SC_PAGESIZE"),
@@ -161,22 +246,21 @@ def main():
            "P_control_positivo": {"veredicto": "NO MEDIDO"},
            "S_sujeto_gki": {"veredicto": "NO MEDIDO"},
            "prediccion_registrada_antes_de_correr": (
-               "Predigo que S NO va a llegar a multi-user: si CONFIG_PID_NS esta apagado en "
-               "el config real, systemd no puede armar namespaces de PID. Lo escribo ANTES "
-               "para que el resultado pueda refutarme."),
+               "Predigo que S NO llega a multi-user: con PID_NS y USER_NS apagados y DEVTMPFS "
+               "apagado, systemd no tiene con que. Lo escribo ANTES para que pueda refutarme."),
            "no_medido": []}
-    say("== FALSADOR F-001 v2 ==")
+    say("== FALSADOR F-001 v3 ==")
     say("maquina:", json.dumps(res["maquina"]))
     say("PREDICCION registrada antes de correr:", res["prediccion_registrada_antes_de_correr"])
     os.makedirs(WORK, exist_ok=True); os.makedirs(OUT, exist_ok=True)
 
     if res["maquina"]["arch"] not in ("aarch64", "arm64"):
         res["no_medido"].append("host %s, no aarch64" % res["maquina"]["arch"])
-        say("ABORTO: F-001 exige aarch64 nativo"); write(res); return 0
+        say("ABORTO: F-001 exige aarch64 nativo"); write(res); return 3
 
     # ---------------- BRAZO C ------------------------------------------
     say(""); say("--- BRAZO C: el .config REAL del GKI ---")
-    gki_image, gki_cfg = None, {}
+    gki_image = None
     for rama, url in GKI_URLS:
         try:
             st, blob = get(url)
@@ -216,62 +300,61 @@ def main():
             elif v == "n":
                 off.append(kk); est = "APAGADO (# is not set)"
             elif v == "m":
-                mods.append(kk); est = "=m MODULO (vive en system_dlkm, NO en el boot.img)"
+                mods.append(kk); est = "=m MODULO (system_dlkm, NO en el boot.img)"
             else:
                 si.append(kk); est = "=" + v
             say("    %-42s %s" % (kk, est))
-        criticos_off = [k_ for k_ in CRITICOS_LXC if got.get(k_) in (None, "n")]
+        crit_lxc = [k_ for k_ in CRITICOS_LXC if got.get(k_) in (None, "n")]
+        crit_sd = [k_ for k_ in CRITICOS_SYSTEMD if got.get(k_) in (None, "n")]
         say("  --> APAGADOS:", off)
         say("  --> MODULOS:", mods)
         say("  --> AUSENTES:", aus)
-        say("  --> CRITICOS PARA UN CONTENEDOR, apagados o ausentes:", criticos_off)
+        say("  --> CRITICOS PARA LXC (el contenedor de apps):", crit_lxc)
+        say("  --> CRITICOS PARA SYSTEMD (el userland):", crit_sd)
         rc, o, e = sh(["bash", "-c", "CONFIG=%s lxc-checkconfig" % cp], timeout=180)
         limpio = re.sub(r"\x1b\[[0-9;]*m", "", o + e)
         say("  lxc-checkconfig rc=%d" % rc)
         for line in limpio.splitlines():
             say("    LXC |", line)
-        veredicto_c = "ROJO" if criticos_off else "VERDE"
         res["C_config_real_del_gki"] = {
-            "veredicto": veredicto_c, "rama": rama, "url": url, "kernel": ver,
+            "veredicto": "ROJO" if (crit_lxc or crit_sd) else "VERDE",
+            "rama": rama, "url": url, "kernel": ver,
             "sha256_zip": hashlib.sha256(blob).hexdigest(), "simbolos": len(got),
             "en_y": si, "modulos": mods, "apagados": off, "ausentes": aus,
-            "criticos_lxc_apagados": criticos_off, "config_commiteado": cp,
-            "lxc_checkconfig_rc": rc, "lxc_checkconfig": limpio[:8000]}
-        gki_cfg = got
+            "criticos_lxc": crit_lxc, "criticos_systemd": crit_sd,
+            "config_commiteado": cp, "lxc_checkconfig_rc": rc,
+            "lxc_checkconfig": limpio[:8000]}
         gki_image = os.path.join(WORK, "Image-%s" % rama)
         open(gki_image, "wb").write(k2)
         res["S_sujeto_gki"]["rama"] = rama
-        say("C:", veredicto_c, "- criticos apagados:", criticos_off or "ninguno")
+        say("C:", res["C_config_real_del_gki"]["veredicto"])
         break
 
-    # ---------------- F-002: rootfs -------------------------------------
-    say(""); say("--- F-002: rootfs openKylin arm64 con mmdebstrap ---")
+    # ---------------- F-002: rootfs, dos vias ----------------------------
+    say(""); say("--- F-002: rootfs openKylin arm64, y NO cierro en el primer obstaculo ---")
     rootfs = os.path.join(WORK, "rootfs")
-    rc, o, e = sh(["mmdebstrap", "--architectures=arm64", "--variant=important",
-                   "--include=" + ",".join(PKGS),
-                   '--aptopt=Acquire::AllowInsecureRepositories "true"',
-                   '--aptopt=APT::Get::AllowUnauthenticated "true"',
-                   SUITE, rootfs,
-                   "deb [trusted=yes] %s %s main" % (MIRROR, SUITE)], timeout=2700)
-    say("mmdebstrap rc=%d" % rc)
-    for line in (o.splitlines()[-20:] + e.splitlines()[-45:]):
-        say("  MM |", line[:280])
-    if rc != 0 or not os.path.isdir(os.path.join(rootfs, "usr")):
-        res["F002_rootfs"] = {"veredicto": "ROJO", "rc": rc}
+    ok, via, rc = construir_rootfs(rootfs)
+    if not ok:
+        res["F002_rootfs"] = {"veredicto": "ROJO", "rc": rc, "via": via,
+                              "nota": "fallo de INSTRUMENTO, no del userland"}
         res["no_medido"].append("sin rootfs: P y S quedan NO MEDIDO")
-        say("F-002: ROJO. Sin rootfs no hay nada que arrancar."); write(res); return 0
+        say("F-002: ROJO por instrumento. Salgo con 3 para que el job NO quede verde.")
+        write(res); return 3
     rc2, o2, _ = sh(["bash", "-c", "du -sb %s | cut -f1" % rootfs])
     size = int((o2.strip() or "0").split()[0])
-    rc3, o3, e3 = sh(["bash", "-c", "cat %s/etc/os-release 2>/dev/null | head -5" % rootfs])
-    rc4, o4, _ = sh(["bash", "-c", "ls %s/lib/systemd/systemd %s/usr/lib/systemd/systemd 2>&1" % (rootfs, rootfs)])
-    say("rootfs: %d B (%.3f GiB)" % (size, size / 1073741824.0))
-    say("os-release del rootfs:"); [say("  |", l) for l in o3.splitlines()]
-    say("systemd presente:", o4.strip()[:200])
+    rc3, o3, _ = sh(["bash", "-c", "cat %s/etc/os-release 2>/dev/null | head -5" % rootfs])
+    rc4, o4, _ = sh(["bash", "-c", "ls -la %s/lib/systemd/systemd %s/usr/lib/systemd/systemd 2>&1" % (rootfs, rootfs)])
+    rc5, o5, _ = sh(["bash", "-c", "ls -la %s/lib/%s 2>&1" % (rootfs, LOADER)])
+    say("rootfs: %d B (%.3f GiB) | via: %s" % (size, size / 1073741824.0, via))
+    say("os-release:"); [say("  |", l) for l in o3.splitlines()]
+    say("systemd:", o4.strip()[:300])
+    say("loader:", o5.strip()[:200])
     res["F002_rootfs"] = {"veredicto": "VERDE", "bytes": size,
                           "gib": round(size / 1073741824.0, 3), "paquetes": PKGS,
-                          "os_release": o3.strip(), "systemd": o4.strip()[:200]}
+                          "via": via, "os_release": o3.strip(),
+                          "systemd": o4.strip()[:300], "loader": o5.strip()[:200]}
 
-    # ---------------- F-003: alineacion a escala ------------------------
+    # ---------------- F-003 ---------------------------------------------
     aligns, nelf = {}, 0
     for root, _d, files in os.walk(rootfs):
         for fn in files:
@@ -306,8 +389,47 @@ def main():
                                             else ("ROJO" if aligns else "NO MEDIDO"))}
     say("F-003:", res["F003_alineacion"]["veredicto"])
 
-    # ---------------- initramfs comun a P y S ---------------------------
-    say(""); say("--- el arnes: initramfs, porque virtio_blk es MODULO en GKI ---")
+    # ---------------- GUARD DE PRECONDICION -----------------------------
+    say(""); say("--- guard de precondicion: el init que voy a pedirle al kernel EXISTE y resuelve? ---")
+    initcand = ["/lib/systemd/systemd", "/usr/lib/systemd/systemd"]
+    init = None
+    for c in initcand:
+        if os.path.isfile(os.path.join(rootfs, c.lstrip("/"))):
+            init = c; break
+    say("init elegido:", init, "| candidatos:", initcand)
+    faltantes = []
+    if not init:
+        faltantes.append("no hay systemd en el rootfs")
+    else:
+        interp, needed = elf_dyn(os.path.join(rootfs, init.lstrip("/")))
+        say("PT_INTERP:", interp)
+        say("DT_NEEDED:", needed)
+        libmap = {}
+        for root, dirs, files in os.walk(rootfs):
+            for n in files + dirs:
+                libmap.setdefault(n, os.path.join(root, n))
+        if interp and not os.path.exists(os.path.join(rootfs, interp.lstrip("/"))):
+            real = libmap.get(os.path.basename(interp))
+            say("  interprete NO resuelve, lo busco:", real)
+            if real:
+                ip = os.path.join(rootfs, interp.lstrip("/"))
+                os.makedirs(os.path.dirname(ip), exist_ok=True)
+                os.symlink(os.path.relpath(real, os.path.dirname(ip)), ip)
+                say("  ENSAMBLADO:", interp)
+            else:
+                faltantes.append("PT_INTERP %s" % interp)
+        for so in needed:
+            if so not in libmap:
+                faltantes.append("DT_NEEDED %s" % so)
+        say("  faltantes:", faltantes or "ninguno")
+    if faltantes:
+        res["no_medido"].append("precondicion del init: %s" % faltantes)
+        res["P_control_positivo"] = {"veredicto": "NO MEDIDO", "motivo": str(faltantes)}
+        say("P y S: NO MEDIDO - el init no resuelve, y eso seria MI rootfs")
+        write(res); return 3
+
+    # ---------------- initramfs -----------------------------------------
+    say(""); say("--- el arnes: initramfs (virtio_blk es MODULO en GKI) ---")
     cpio = os.path.join(WORK, "rootfs.cpio.gz")
     rc, o, e = sh(["bash", "-c",
                    "cd %s && find . -print0 | cpio --null -o -H newc 2>/dev/null | gzip -1 > %s"
@@ -315,14 +437,14 @@ def main():
     tam = os.path.getsize(cpio) if os.path.exists(cpio) else 0
     say("cpio.gz rc=%d | %d B (%.0f MiB)" % (rc, tam, tam / 1048576.0))
     if tam < 1000000:
-        res["no_medido"].append("initramfs no se armo: P y S NO MEDIDO")
-        say("sin initramfs: P y S quedan NO MEDIDO"); write(res); return 0
+        res["no_medido"].append("initramfs no se armo")
+        say("sin initramfs: P y S NO MEDIDO"); write(res); return 3
 
     def arrancar(nombre, kernel, seg=600):
         cons = os.path.join(WORK, "consola-%s.log" % nombre)
-        append = ("rdinit=/lib/systemd/systemd console=ttyAMA0 systemd.log_level=info "
+        append = ("rdinit=%s console=ttyAMA0 systemd.log_level=info "
                   "systemd.show_status=true systemd.log_target=console "
-                  "systemd.unit=multi-user.target panic=5")
+                  "systemd.unit=multi-user.target panic=5" % init)
         cmd = ["qemu-system-aarch64", "-M", "virt", "-cpu", "max", "-smp", "2", "-m", "4096",
                "-kernel", kernel, "-initrd", cpio, "-append", append,
                "-display", "none", "-no-reboot", "-serial", "file:%s" % cons]
@@ -337,13 +459,13 @@ def main():
         open(dst, "w").write(txt)
         return rc, txt, dst
 
-    # ---------------- P: control positivo -------------------------------
+    # ---------------- P --------------------------------------------------
     say(""); say("--- P: CONTROL POSITIVO (kernel del propio runner) ---")
     kus = sorted([os.path.join("/boot", f) for f in os.listdir("/boot")
                   if f.startswith("vmlinuz")], reverse=True) if os.path.isdir("/boot") else []
     say("kernels del runner:", kus)
     if not kus:
-        res["no_medido"].append("sin kernel del runner: no hay control positivo, S es NO MEDIDO")
+        res["no_medido"].append("sin kernel del runner: S queda NO MEDIDO")
         say("P: NO MEDIDO - no hay /boot/vmlinuz")
     else:
         rc, txt, dst = arrancar("control-positivo", kus[0])
@@ -352,24 +474,20 @@ def main():
             say("  [P] %-22s %s" % (k_, v_))
         for line in txt.splitlines()[-50:]:
             say("  P |", line[:200])
-        ok = h["systemd arranco"]
-        res["P_control_positivo"] = {"veredicto": "VERDE" if ok else "ROJO", "hitos": h,
-                                     "kernel": kus[0], "consola": dst, "qemu_rc": rc,
-                                     "llego_a_multiuser": h["llego a multi-user"]}
+        res["P_control_positivo"] = {"veredicto": "VERDE" if h["systemd arranco"] else "ROJO",
+                                     "hitos": h, "kernel": kus[0], "consola": dst,
+                                     "qemu_rc": rc, "llego_a_multiuser": h["llego a multi-user"]}
         say("P:", res["P_control_positivo"]["veredicto"],
-            "(systemd corrio: %s | multi-user: %s)" % (h["systemd arranco"], h["llego a multi-user"]))
+            "(systemd: %s | multi-user: %s)" % (h["systemd arranco"], h["llego a multi-user"]))
 
-    # ---------------- S: el sujeto --------------------------------------
+    # ---------------- S --------------------------------------------------
     say(""); say("--- S: EL SUJETO (Image del GKI, MISMO arnes) ---")
     if not gki_image:
-        res["S_sujeto_gki"]["veredicto"] = "NO MEDIDO"
-        res["S_sujeto_gki"]["motivo"] = "no consegui el Image del GKI"
+        res["S_sujeto_gki"].update({"veredicto": "NO MEDIDO", "motivo": "sin Image del GKI"})
         say("S: NO MEDIDO - sin Image")
     elif res["P_control_positivo"].get("veredicto") != "VERDE":
-        res["S_sujeto_gki"]["veredicto"] = "NO MEDIDO"
-        res["S_sujeto_gki"]["motivo"] = ("el control positivo no dio VERDE: el arnes no sirve "
-                                         "de instrumento, asi que un fallo del GKI no seria "
-                                         "atribuible al GKI")
+        res["S_sujeto_gki"].update({"veredicto": "NO MEDIDO",
+            "motivo": "el control positivo no dio VERDE: el arnes no sirve de instrumento"})
         say("S: NO MEDIDO - control positivo fallado")
     else:
         rc, txt, dst = arrancar("sujeto-gki", gki_image)
@@ -388,9 +506,9 @@ def main():
             v = "NO MEDIDO"
         res["S_sujeto_gki"].update({"veredicto": v, "hitos": h, "consola": dst, "qemu_rc": rc})
         say("S:", v)
-        pred_ok = not h["llego a multi-user"]
-        res["prediccion_acerto"] = pred_ok
-        say("La prediccion que registre antes de correr", "ACERTO" if pred_ok else "SE REFUTO")
+        res["prediccion_acerto"] = not h["llego a multi-user"]
+        say("La prediccion registrada antes de correr",
+            "ACERTO" if res["prediccion_acerto"] else "SE REFUTO")
 
     res["segundos"] = round(time.time() - t0, 1)
     write(res); say("FIN en", res["segundos"], "s")
@@ -402,7 +520,7 @@ def write(res):
         json.dump(res, f, indent=2, ensure_ascii=False)
     with open(os.path.join(OUT, "F-001-salida-cruda.txt"), "w") as f:
         f.write("\n".join(log) + "\n")
-    md = ["# FALSADOR F-001 v2 - userland openKylin sobre kernel GKI real", "",
+    md = ["# FALSADOR F-001 v3 - userland openKylin sobre kernel GKI real", "",
           "**Fecha (UTC):** %s" % res["fecha_utc"],
           "**Maquina:** `%s`" % json.dumps(res["maquina"]), "",
           "| Brazo | Veredicto |", "|---|---|",
