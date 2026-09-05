@@ -1,0 +1,136 @@
+== FALSADOR F-001 v2 ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "pagesize": 4096, "kvm": false, "runner_arch": "ARM64", "run_id": "33989825239"}
+PREDICCION registrada antes de correr: Predigo que S NO va a llegar a multi-user: si CONFIG_PID_NS esta apagado en el config real, systemd no puede armar namespaces de PID. Lo escribo ANTES para que el resultado pueda refutarme.
+
+--- BRAZO C: el .config REAL del GKI ---
+GKI 200 17317996 B android16-6.12 sha256 5469126621456bf79c4a8c8114e13e0a8e5173e61b21754cd056ec188953cd5a
+  zip contiene: [('boot-6.12.img', 67108864)]
+  img: boot-6.12.img 67108864 B
+  boot.img: hdr_v4 kernel_size=42441216 page=4096
+  kernel: 42441216 -> 42441216 B (crudo)
+  ikconfig: ok (48336 B gz)
+  .config REAL de Linux/arm64 6.12.81: 6522 simbolos, 8187 lineas
+  commiteado en: mediciones/f-001/gki-android16-6.12.config
+    CONFIG_NAMESPACES                          =y
+    CONFIG_PID_NS                              APAGADO (# is not set)
+    CONFIG_USER_NS                             APAGADO (# is not set)
+    CONFIG_IPC_NS                              AUSENTE del .config
+    CONFIG_NET_NS                              =y
+    CONFIG_UTS_NS                              =y
+    CONFIG_CGROUPS                             =y
+    CONFIG_MEMCG                               =y
+    CONFIG_CGROUP_BPF                          =y
+    CONFIG_CGROUP_SCHED                        =y
+    CONFIG_CGROUP_FREEZER                      =y
+    CONFIG_CGROUP_DEVICE                       APAGADO (# is not set)
+    CONFIG_CGROUP_PIDS                         APAGADO (# is not set)
+    CONFIG_SECCOMP                             =y
+    CONFIG_SECCOMP_FILTER                      =y
+    CONFIG_FANOTIFY                            APAGADO (# is not set)
+    CONFIG_INOTIFY_USER                        =y
+    CONFIG_TMPFS                               =y
+    CONFIG_TMPFS_POSIX_ACL                     APAGADO (# is not set)
+    CONFIG_TMPFS_XATTR                         APAGADO (# is not set)
+    CONFIG_DEVTMPFS                            APAGADO (# is not set)
+    CONFIG_PROC_FS                             =y
+    CONFIG_SYSFS                               =y
+    CONFIG_AUTOFS_FS                           APAGADO (# is not set)
+    CONFIG_OVERLAY_FS                          =y
+    CONFIG_SQUASHFS                            APAGADO (# is not set)
+    CONFIG_EXT4_FS                             =y
+    CONFIG_VETH                                =y
+    CONFIG_BRIDGE                              =y
+    CONFIG_MACVLAN                             APAGADO (# is not set)
+    CONFIG_VIRTIO                              =y
+    CONFIG_VIRTIO_PCI                          =m MODULO (vive en system_dlkm, NO en el boot.img)
+    CONFIG_VIRTIO_BLK                          =m MODULO (vive en system_dlkm, NO en el boot.img)
+    CONFIG_VIRTIO_NET                          APAGADO (# is not set)
+    CONFIG_VIRTIO_CONSOLE                      =m MODULO (vive en system_dlkm, NO en el boot.img)
+    CONFIG_VIRTIO_MMIO                         APAGADO (# is not set)
+    CONFIG_SERIAL_AMBA_PL011                   =y
+    CONFIG_SERIAL_AMBA_PL011_CONSOLE           =y
+    CONFIG_BLK_DEV_INITRD                      =y
+    CONFIG_RD_GZIP                             =y
+    CONFIG_ANDROID_BINDERFS                    =y
+    CONFIG_ANDROID_BINDER_IPC                  =y
+    CONFIG_KEYS                                =y
+    CONFIG_BLK_DEV_LOOP                        =y
+    CONFIG_CHECKPOINT_RESTORE                  APAGADO (# is not set)
+    CONFIG_IKCONFIG                            =y
+    CONFIG_MODULES                             =y
+    CONFIG_ARM64_16K_PAGES                     APAGADO (# is not set)
+    CONFIG_ARM64_4K_PAGES                      =y
+    CONFIG_ARM64_64K_PAGES                     APAGADO (# is not set)
+  --> APAGADOS: ['CONFIG_PID_NS', 'CONFIG_USER_NS', 'CONFIG_CGROUP_DEVICE', 'CONFIG_CGROUP_PIDS', 'CONFIG_FANOTIFY', 'CONFIG_TMPFS_POSIX_ACL', 'CONFIG_TMPFS_XATTR', 'CONFIG_DEVTMPFS', 'CONFIG_AUTOFS_FS', 'CONFIG_SQUASHFS', 'CONFIG_MACVLAN', 'CONFIG_VIRTIO_NET', 'CONFIG_VIRTIO_MMIO', 'CONFIG_CHECKPOINT_RESTORE', 'CONFIG_ARM64_16K_PAGES', 'CONFIG_ARM64_64K_PAGES']
+  --> MODULOS: ['CONFIG_VIRTIO_PCI', 'CONFIG_VIRTIO_BLK', 'CONFIG_VIRTIO_CONSOLE']
+  --> AUSENTES: ['CONFIG_IPC_NS']
+  --> CRITICOS PARA UN CONTENEDOR, apagados o ausentes: ['CONFIG_PID_NS', 'CONFIG_USER_NS', 'CONFIG_IPC_NS']
+$ bash -c CONFIG=mediciones/f-001/gki-android16-6.12.config lxc-checkconfig
+  lxc-checkconfig rc=0
+    LXC | LXC version 5.0.3
+    LXC | 
+    LXC | --- Namespaces ---
+    LXC | Namespaces: enabled
+    LXC | Utsname namespace: enabled
+    LXC | Ipc namespace: required
+    LXC | Pid namespace: required
+    LXC | User namespace: missing
+    LXC | Network namespace: enabled
+    LXC | 
+    LXC | --- Control groups ---
+    LXC | Cgroups: enabled
+    LXC | Cgroup namespace: enabled
+    LXC | Cgroup v1 mount points: 
+    LXC | Cgroup v2 mount points: 
+    LXC |  - /sys/fs/cgroup
+    LXC | Cgroup device: missing
+    LXC | Cgroup sched: enabled
+    LXC | Cgroup cpu account: enabled
+    LXC | Cgroup memory controller: enabled
+    LXC | Cgroup cpuset: enabled
+    LXC | 
+    LXC | --- Misc ---
+    LXC | Veth pair device: enabled, not loaded
+    LXC | Macvlan: missing
+    LXC | Vlan: enabled, loaded
+    LXC | Bridges: enabled, loaded
+    LXC | Advanced netfilter: enabled, loaded
+    LXC | CONFIG_IP_NF_TARGET_MASQUERADE: enabled, not loaded
+    LXC | CONFIG_IP6_NF_TARGET_MASQUERADE: missing
+    LXC | CONFIG_NETFILTER_XT_TARGET_CHECKSUM: missing
+    LXC | CONFIG_NETFILTER_XT_MATCH_COMMENT: enabled, not loaded
+    LXC | FUSE (for use with lxcfs): enabled, not loaded
+    LXC | 
+    LXC | --- Checkpoint/Restore ---
+    LXC | checkpoint restore: missing
+    LXC | CONFIG_FHANDLE: missing
+    LXC | CONFIG_EVENTFD: enabled
+    LXC | CONFIG_EPOLL: enabled
+    LXC | CONFIG_UNIX_DIAG: missing
+    LXC | CONFIG_INET_DIAG: enabled
+    LXC | CONFIG_PACKET_DIAG: missing
+    LXC | CONFIG_NETLINK_DIAG: missing
+    LXC | File capabilities: enabled
+    LXC | 
+    LXC | Note : Before booting a new kernel, you can check its configuration
+    LXC | usage : CONFIG=/path/to/config /usr/bin/lxc-checkconfig
+    LXC | 
+C: ROJO - criticos apagados: ['CONFIG_PID_NS', 'CONFIG_USER_NS', 'CONFIG_IPC_NS']
+
+--- F-002: rootfs openKylin arm64 con mmdebstrap ---
+$ mmdebstrap --architectures=arm64 --variant=important --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" huanghe /tmp/f001/rootfs deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+mmdebstrap rc=25
+  MM | I: automatically chosen mode: root
+  MM | I: chroot architecture arm64 is equal to the host's architecture
+  MM | I: automatically chosen format: directory
+  MM | I: running apt-get update...
+  MM | I: downloading packages with apt...
+  MM | I: extracting archives...
+  MM | I: installing essential packages...
+  MM | chroot: failed to run command ‘dpkg’: No such file or directory
+  MM | E: setup failed: E: env --unset=APT_CONFIG --unset=TMPDIR chroot /tmp/f001/rootfs dpkg --install --force-depends --status-fd=<$fd> /var/cache/apt/archives/gcc-15-base_15.2.0-16ok8_arm64.deb /var/cache/apt/archives/libc-gconv-modules-extra_2.43-ok2_arm64.deb /var/cache/apt/archive
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | 
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+F-002: ROJO. Sin rootfs no hay nada que arrancar.
