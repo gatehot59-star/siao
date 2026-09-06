@@ -1,0 +1,11 @@
+### comando
+bash -c debootstrap --arch=arm64 --variant=minbase --no-check-gpg --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd huanghe /tmp/f002v7/b2 https://mirrors.dotsrc.org/mirrors/pub/openkylin 2>&1
+
+### rc=1
+
+### stdout
+E: No such script: /usr/share/debootstrap/scripts/huanghe
+
+
+### stderr
+

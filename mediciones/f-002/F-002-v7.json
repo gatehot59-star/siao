@@ -1,0 +1,57 @@
+{
+  "falsador": "F-002",
+  "version": 7,
+  "pregunta": "cual es la causa real, y hay un constructor que si funcione",
+  "fecha_utc": "2026-09-06T02:06:29Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "34005592171"
+  },
+  "defecto_que_corrige": "el v6 dejo la causa en NO MEDIDO porque mi filtro se comio la linea del unmet. Cuarta vez que recorto la evidencia antes de leerla. Este v7 guarda stdout+stderr COMPLETOS en archivos commiteados y los lee despues.",
+  "declarado_antes_de_correr": "Si B1 anda -> la causa es el ?narrow excluyendo al overlay del conjunto esencial, MEDIDO por diferencia con B0. Si B1 falla y B2 anda -> el problema es mmdebstrap. Si los tres fallan -> la causa no esta en el constructor y hay que volver al resolvedor.",
+  "brazos": {
+    "B0_mmdebstrap_v6": {
+      "instalo": false,
+      "rc": 25
+    },
+    "B1_minimal_mas_apt_adentro": {
+      "instalo": false,
+      "rc": 25
+    },
+    "B2_debootstrap": {
+      "instalo": false,
+      "rc": 1
+    }
+  },
+  "no_medido": [],
+  "manifiesto": [
+    {
+      "paquete": "libdevmapper1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927",
+      "bytes": 127826
+    },
+    {
+      "paquete": "dmsetup",
+      "version": "2:1.02.205-ok1",
+      "sha256": "92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19",
+      "bytes": 73304
+    },
+    {
+      "paquete": "libdevmapper-event1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3",
+      "bytes": 11934
+    }
+  ],
+  "causa": "NO MEDIDA: los tres brazos fallan. La causa no esta en el constructor, y eso contradice el rc=0 de apt-get -s: hay que volver al resolvedor con la salida completa en la mano.",
+  "veredicto": {
+    "a": "ROJO",
+    "b": "NO MEDIDO",
+    "c": "NO MEDIDO"
+  },
+  "segundos": 19.8
+}

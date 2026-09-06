@@ -1,0 +1,839 @@
+### comando
+mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose huanghe /tmp/f002v7/b0 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f002v7/overlay huanghe main
+
+### rc=25
+
+### stdout
+
+
+### stderr
+I: chroot architecture arm64 is equal to the host's architecture
+I: automatically chosen format: directory
+I: running --setup-hook in shell: sh -c 'set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64"' exec /tmp/f002v7/b0
+I: running apt-get update...
+Get:1 file:/tmp/f002v7/overlay huanghe InRelease
+Ign:1 file:/tmp/f002v7/overlay huanghe InRelease
+Get:2 file:/tmp/f002v7/overlay huanghe Release [360 B]
+Get:2 file:/tmp/f002v7/overlay huanghe Release [360 B]
+Get:3 file:/tmp/f002v7/overlay huanghe Release.gpg
+Ign:3 file:/tmp/f002v7/overlay huanghe Release.gpg
+Get:4 file:/tmp/f002v7/overlay huanghe/main arm64 Packages [1018 B]
+Get:5 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease [32.9 kB]
+Ign:5 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease
+Get:6 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 Packages [4165 kB]
+Fetched 4198 kB in 3s (1363 kB/s)
+Reading package lists...
+W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+I: downloading packages with apt...
+Reading package lists...
+Building dependency tree...
+The following additional packages will be installed:
+  debconf gcc-15-base libacl1 libattr1 libaudit-common libaudit1 libblkid1
+  libbsd0 libbz2-1.0 libc-gconv-modules-extra libc6 libcap-ng0 libcap2
+  libcrypt1 libdebconfclient0 libgcc-s1 libgcrypt20 libgmp10 libgpg-error0
+  liblz4-1 liblzma5 libmd0 libmount1 libpam-modules libpam-modules-bin
+  libpam-runtime libpam0g libpcre2-8-0 libselinux1 libsmartcols1 libsystemd0
+  libtinfo6 libudev1 libuuid1 libzstd1 mawk zlib1g
+Suggested packages:
+  bash-doc debconf-doc debconf-kde-helper debconf-utils libgtk3-perl
+  libnet-ldap-perl libterm-readline-gnu-perl perl whiptail | dialog
+  diffutils-doc wdiff gnulib-l10n apt debsig-verify less manpages glibc-doc
+  locales libnss-nis libnss-nisplus rng-tools cryptsetup-bin libpam-doc
+  sensible-utils bzip2 ncompress xz-utils tar-scripts tar-doc dosfstools kbd
+  util-linux-extra util-linux-locales
+Recommended packages:
+  bash-completion bsdextrautils apt-utils debconf-i18n libidn2-0
+  libgpg-error-l10n uuid-runtime sensible-utils
+The following NEW packages will be installed:
+  base-files base-passwd bash bsdutils coreutils dash debconf debianutils
+  diffutils dpkg findutils gcc-15-base grep gzip hostname init-system-helpers
+  libacl1 libattr1 libaudit-common libaudit1 libblkid1 libbsd0 libbz2-1.0
+  libc-bin libc-gconv-modules-extra libc6 libcap-ng0 libcap2 libcrypt1
+  libdebconfclient0 libgcc-s1 libgcrypt20 libgmp10 libgpg-error0 liblz4-1
+  liblzma5 libmd0 libmount1 libpam-modules libpam-modules-bin libpam-runtime
+  libpam0g libpcre2-8-0 libselinux1 libsmartcols1 libsystemd0 libtinfo6
+  libudev1 libuuid1 libzstd1 login mawk ncurses-base ncurses-bin perl-base sed
+  sysvinit-utils tar util-linux zlib1g
+0 upgraded, 60 newly installed, 0 to remove and 0 not upgraded.
+Need to get 17.8 MB of archives.
+After this operation, 106 MB of additional disk space will be used.
+Get:1 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 gcc-15-base arm64 15.2.0-16ok8 [19.9 kB]
+Get:2 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libc-gconv-modules-extra arm64 2.43-ok2 [1379 kB]
+Get:3 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libc6 arm64 2.43-ok2 [1617 kB]
+Get:4 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libgcc-s1 arm64 15.2.0-16ok8 [60.9 kB]
+Get:5 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 mawk arm64 1.3.4.20240123-ok1 [111 kB]
+Get:6 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libcrypt1 arm64 1:4.4.36-ok2 [90.4 kB]
+Get:7 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 base-files arm64 14-ok3 [60.0 kB]
+Get:8 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libtinfo6 arm64 6.4+20240113-1ok1 [97.6 kB]
+Get:9 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 debianutils arm64 5.23.2-ok1 [87.6 kB]
+Get:10 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 bash arm64 5.3-ok1 [1244 kB]
+Get:11 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libcap2 arm64 1:2.69-1ok3 [23.8 kB]
+Get:12 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libgpg-error0 arm64 1.47-ok1 [60.1 kB]
+Get:13 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libgcrypt20 arm64 1.10.3-ok2 [410 kB]
+Get:14 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 liblz4-1 arm64 1.9.4-1ok1 [63.0 kB]
+Get:15 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 liblzma5 arm64 5.4.5-ok3 [114 kB]
+Get:16 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libzstd1 arm64 1.5.5-ok3 [229 kB]
+Get:17 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libsystemd0 arm64 255.2-ok2.8 [297 kB]
+Get:18 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 bsdutils arm64 1:2.39.3-ok2build5 [88.9 kB]
+Get:19 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libacl1 arm64 2.3.2-ok1 [15.2 kB]
+Get:20 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libattr1 arm64 1:2.5.2-ok1 [10.7 kB]
+Get:21 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libgmp10 arm64 2:6.3.0+dfsg-ok5 [238 kB]
+Get:22 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libpcre2-8-0 arm64 10.42-4ok2 [181 kB]
+Get:23 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libselinux1 arm64 3.5-ok2 [68.6 kB]
+Get:24 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 coreutils arm64 9.4-ok4 [2755 kB]
+Get:25 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libbz2-1.0 arm64 1:1.0.8-ok4 [26.7 kB]
+Get:26 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libmd0 arm64 1.1.0-ok1 [21.5 kB]
+Get:27 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 zlib1g arm64 1:1.3.dfsg-ok3 [51.9 kB]
+Get:28 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 tar arm64 1.35+dfsg-ok1 [553 kB]
+Get:29 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 dpkg arm64 1.23.7-ok3 [1250 kB]
+Get:30 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 dash arm64 0.5.12-ok1 [77.4 kB]
+Get:31 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 diffutils arm64 1:3.12-ok2 [321 kB]
+Get:32 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 findutils arm64 4.10.0-ok3.0 [529 kB]
+Get:33 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 grep arm64 3.12-ok5 [276 kB]
+Get:34 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 gzip arm64 1.12-1ok4 [93.2 kB]
+Get:35 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 hostname arm64 3.25-ok5 [11.0 kB]
+Get:36 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libaudit-common all 1:4.1.2-ok1 [2766 B]
+Get:37 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libcap-ng0 arm64 0.8.4-ok4 [11.9 kB]
+Get:38 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libaudit1 arm64 1:4.1.2-ok1 [47.4 kB]
+Get:39 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libbsd0 arm64 0.11.7-4ok1 [40.4 kB]
+Get:40 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 debconf all 1.5.86-ok1 [119 kB]
+Get:41 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libpam0g arm64 1.5.3-ok8 [53.0 kB]
+Get:42 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libpam-modules-bin arm64 1.5.3-ok8 [46.0 kB]
+Get:43 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libpam-modules arm64 1.5.3-ok8 [259 kB]
+Get:44 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libpam-runtime all 1.5.3-ok8 [126 kB]
+Get:45 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 login arm64 1:4.14.3-ok3.5 [453 kB]
+Get:46 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 ncurses-bin arm64 6.4+20240113-1ok1 [186 kB]
+Get:47 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 perl-base arm64 5.36.0-ok8.2 [1458 kB]
+Get:48 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 sed arm64 4.9-2ok1 [290 kB]
+Get:49 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libblkid1 arm64 2.39.3-ok2build5 [110 kB]
+Get:50 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libmount1 arm64 2.39.3-ok2build5 [114 kB]
+Get:51 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libsmartcols1 arm64 2.39.3-ok2build5 [58.2 kB]
+Get:52 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libudev1 arm64 255.2-ok2.8 [80.1 kB]
+Get:53 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libuuid1 arm64 2.39.3-ok2build5 [33.3 kB]
+Get:54 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 util-linux arm64 2.39.3-ok2build5 [1033 kB]
+Get:55 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libdebconfclient0 arm64 0.271-ok1 [6268 B]
+Get:56 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 base-passwd arm64 3.6.8-ok1 [51.1 kB]
+Get:57 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 init-system-helpers all 1.66-ok1 [36.0 kB]
+Get:58 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 libc-bin arm64 2.43-ok2 [586 kB]
+Get:59 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 ncurses-base all 6.4+20240113-1ok1 [19.0 kB]
+Get:60 https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe/main arm64 sysvinit-utils arm64 3.08-ok1 [23.8 kB]
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/gcc-15-base_15.2.0-16ok8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure gcc-15-base:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libc-gconv-modules-extra_2.43-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libc-gconv-modules-extra:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libc6_2.43-ok2_arm64.deb /tmp/f002v7/b0/var/cache/apt/archives/libgcc-s1_15.2.0-16ok8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libgcc-s1:arm64 libc6:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/mawk_1.3.4.20240123-ok1_arm64.deb /tmp/f002v7/b0/var/cache/apt/archives/libcrypt1_1%3a4.4.36-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libcrypt1:arm64 mawk:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/base-files_14-ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure base-files:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libtinfo6_6.4+20240113-1ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libtinfo6:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/debianutils_5.23.2-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure debianutils:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/bash_5.3-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure bash:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libcap2_1%3a2.69-1ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libcap2:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libgpg-error0_1.47-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libgpg-error0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libgcrypt20_1.10.3-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libgcrypt20:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/liblz4-1_1.9.4-1ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure liblz4-1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/liblzma5_5.4.5-ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure liblzma5:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libzstd1_1.5.5-ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libzstd1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libsystemd0_255.2-ok2.8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libsystemd0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/bsdutils_1%3a2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure bsdutils:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libacl1_2.3.2-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libacl1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libattr1_1%3a2.5.2-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libattr1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libgmp10_2%3a6.3.0+dfsg-ok5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libgmp10:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libpcre2-8-0_10.42-4ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libpcre2-8-0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libselinux1_3.5-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libselinux1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/coreutils_9.4-ok4_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure coreutils:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libbz2-1.0_1%3a1.0.8-ok4_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libbz2-1.0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libmd0_1.1.0-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libmd0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/zlib1g_1%3a1.3.dfsg-ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure zlib1g:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/tar_1.35+dfsg-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure tar:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/dpkg_1.23.7-ok3_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure dpkg:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/dash_0.5.12-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure dash:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/diffutils_1%3a3.12-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure diffutils:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/findutils_4.10.0-ok3.0_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure findutils:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/grep_3.12-ok5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure grep:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/gzip_1.12-1ok4_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure gzip:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/hostname_3.25-ok5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure hostname:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libaudit-common_1%3a4.1.2-ok1_all.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libaudit-common:all 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libcap-ng0_0.8.4-ok4_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libcap-ng0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libaudit1_1%3a4.1.2-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libaudit1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libbsd0_0.11.7-4ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libbsd0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/debconf_1.5.86-ok1_all.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure debconf:all 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libpam0g_1.5.3-ok8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libpam0g:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libpam-modules-bin_1.5.3-ok8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libpam-modules-bin:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libpam-modules_1.5.3-ok8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libpam-modules:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libpam-runtime_1.5.3-ok8_all.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libpam-runtime:all 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/login_1%3a4.14.3-ok3.5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure login:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/ncurses-bin_6.4+20240113-1ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure ncurses-bin:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/perl-base_5.36.0-ok8.2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure perl-base:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/sed_4.9-2ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure sed:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libblkid1_2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libblkid1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libmount1_2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libmount1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libsmartcols1_2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libsmartcols1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libudev1_255.2-ok2.8_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libudev1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libuuid1_2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libuuid1:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/util-linux_2.39.3-ok2build5_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure util-linux:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libdebconfclient0_0.271-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libdebconfclient0:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/base-passwd_3.6.8-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure base-passwd:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/init-system-helpers_1.66-ok1_all.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure init-system-helpers:all 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/libc-bin_2.43-ok2_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure libc-bin:arm64 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/ncurses-base_6.4+20240113-1ok1_all.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure ncurses-base:all 
+/usr/bin/dpkg --status-fd 9 --no-triggers --unpack --auto-deconfigure /tmp/f002v7/b0/var/cache/apt/archives/sysvinit-utils_3.08-ok1_arm64.deb 
+/usr/bin/dpkg --status-fd 9 --no-triggers --configure sysvinit-utils:arm64 
+/usr/bin/dpkg --status-fd 9 --configure --pending 
+Fetched 17.8 MB in 5s (3604 kB/s)
+I: extracting archives...
+I: installing essential packages...
+Selecting previously unselected package gcc-15-base:arm64.
+(Reading database ... 0 files and directories currently installed.)
+Preparing to unpack .../gcc-15-base_15.2.0-16ok8_arm64.deb ...
+Unpacking gcc-15-base:arm64 (15.2.0-16ok8) ...
+Selecting previously unselected package libc-gconv-modules-extra:arm64.
+Preparing to unpack .../libc-gconv-modules-extra_2.43-ok2_arm64.deb ...
+Unpacking libc-gconv-modules-extra:arm64 (2.43-ok2) ...
+Selecting previously unselected package libc6:arm64.
+Preparing to unpack .../libc6_2.43-ok2_arm64.deb ...
+Use of uninitialized value in concatenation (.) or string at /usr/share/perl5/Debconf/Config.pm line 23.
+Unpacking libc6:arm64 (2.43-ok2) ...
+Selecting previously unselected package libgcc-s1:arm64.
+Preparing to unpack .../libgcc-s1_15.2.0-16ok8_arm64.deb ...
+Unpacking libgcc-s1:arm64 (15.2.0-16ok8) ...
+Selecting previously unselected package mawk.
+Preparing to unpack .../mawk_1.3.4.20240123-ok1_arm64.deb ...
+Unpacking mawk (1.3.4.20240123-ok1) ...
+Selecting previously unselected package libcrypt1:arm64.
+Preparing to unpack .../libcrypt1_1%3a4.4.36-ok2_arm64.deb ...
+Unpacking libcrypt1:arm64 (1:4.4.36-ok2) ...
+Selecting previously unselected package base-files.
+dpkg: regarding .../base-files_14-ok3_arm64.deb containing base-files, pre-dependency problem:
+ base-files pre-depends on awk
+  mawk provides awk but is unpacked but not configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../base-files_14-ok3_arm64.deb ...
+Unpacking base-files (14-ok3) ...
+Selecting previously unselected package libtinfo6:arm64.
+Preparing to unpack .../libtinfo6_6.4+20240113-1ok1_arm64.deb ...
+Unpacking libtinfo6:arm64 (6.4+20240113-1ok1) ...
+Selecting previously unselected package debianutils.
+dpkg: regarding .../debianutils_5.23.2-ok1_arm64.deb containing debianutils, pre-dependency problem:
+ debianutils pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../debianutils_5.23.2-ok1_arm64.deb ...
+Unpacking debianutils (5.23.2-ok1) ...
+Selecting previously unselected package bash.
+dpkg: regarding .../bash_5.3-ok1_arm64.deb containing bash, pre-dependency problem:
+ bash pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../bash_5.3-ok1_arm64.deb containing bash, pre-dependency problem:
+ bash pre-depends on libtinfo6 (>= 6)
+  libtinfo6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../bash_5.3-ok1_arm64.deb ...
+Unpacking bash (5.3-ok1) ...
+Selecting previously unselected package libcap2:arm64.
+Preparing to unpack .../libcap2_1%3a2.69-1ok3_arm64.deb ...
+Unpacking libcap2:arm64 (1:2.69-1ok3) ...
+Selecting previously unselected package libgpg-error0:arm64.
+Preparing to unpack .../libgpg-error0_1.47-ok1_arm64.deb ...
+Unpacking libgpg-error0:arm64 (1.47-ok1) ...
+Selecting previously unselected package libgcrypt20:arm64.
+Preparing to unpack .../libgcrypt20_1.10.3-ok2_arm64.deb ...
+Unpacking libgcrypt20:arm64 (1.10.3-ok2) ...
+Selecting previously unselected package liblz4-1:arm64.
+Preparing to unpack .../liblz4-1_1.9.4-1ok1_arm64.deb ...
+Unpacking liblz4-1:arm64 (1.9.4-1ok1) ...
+Selecting previously unselected package liblzma5:arm64.
+Preparing to unpack .../liblzma5_5.4.5-ok3_arm64.deb ...
+Unpacking liblzma5:arm64 (5.4.5-ok3) ...
+Selecting previously unselected package libzstd1:arm64.
+Preparing to unpack .../libzstd1_1.5.5-ok3_arm64.deb ...
+Unpacking libzstd1:arm64 (1.5.5-ok3) ...
+Selecting previously unselected package libsystemd0:arm64.
+Preparing to unpack .../libsystemd0_255.2-ok2.8_arm64.deb ...
+Unpacking libsystemd0:arm64 (255.2-ok2.8) ...
+Selecting previously unselected package bsdutils.
+dpkg: regarding .../bsdutils_1%3a2.39.3-ok2build5_arm64.deb containing bsdutils, pre-dependency problem:
+ bsdutils pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../bsdutils_1%3a2.39.3-ok2build5_arm64.deb containing bsdutils, pre-dependency problem:
+ bsdutils pre-depends on libsystemd0
+  libsystemd0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../bsdutils_1%3a2.39.3-ok2build5_arm64.deb ...
+Unpacking bsdutils (1:2.39.3-ok2build5) ...
+Selecting previously unselected package libacl1:arm64.
+Preparing to unpack .../libacl1_2.3.2-ok1_arm64.deb ...
+Unpacking libacl1:arm64 (2.3.2-ok1) ...
+Selecting previously unselected package libattr1:arm64.
+Preparing to unpack .../libattr1_1%3a2.5.2-ok1_arm64.deb ...
+Unpacking libattr1:arm64 (1:2.5.2-ok1) ...
+Selecting previously unselected package libgmp10:arm64.
+Preparing to unpack .../libgmp10_2%3a6.3.0+dfsg-ok5_arm64.deb ...
+Unpacking libgmp10:arm64 (2:6.3.0+dfsg-ok5) ...
+Selecting previously unselected package libpcre2-8-0:arm64.
+Preparing to unpack .../libpcre2-8-0_10.42-4ok2_arm64.deb ...
+Unpacking libpcre2-8-0:arm64 (10.42-4ok2) ...
+Selecting previously unselected package libselinux1:arm64.
+Preparing to unpack .../libselinux1_3.5-ok2_arm64.deb ...
+Unpacking libselinux1:arm64 (3.5-ok2) ...
+Selecting previously unselected package coreutils.
+dpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:
+ coreutils pre-depends on libacl1 (>= 2.2.23)
+  libacl1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:
+ coreutils pre-depends on libattr1 (>= 1:2.4.48)
+  libattr1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:
+ coreutils pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:
+ coreutils pre-depends on libgmp10 (>= 2:6.3.0+dfsg)
+  libgmp10:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../coreutils_9.4-ok4_arm64.deb containing coreutils, pre-dependency problem:
+ coreutils pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../coreutils_9.4-ok4_arm64.deb ...
+Unpacking coreutils (9.4-ok4) ...
+Selecting previously unselected package libbz2-1.0:arm64.
+Preparing to unpack .../libbz2-1.0_1%3a1.0.8-ok4_arm64.deb ...
+Unpacking libbz2-1.0:arm64 (1:1.0.8-ok4) ...
+Selecting previously unselected package libmd0:arm64.
+Preparing to unpack .../libmd0_1.1.0-ok1_arm64.deb ...
+Unpacking libmd0:arm64 (1.1.0-ok1) ...
+Selecting previously unselected package zlib1g:arm64.
+Preparing to unpack .../zlib1g_1%3a1.3.dfsg-ok3_arm64.deb ...
+Unpacking zlib1g:arm64 (1:1.3.dfsg-ok3) ...
+Selecting previously unselected package tar.
+dpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:
+ tar pre-depends on libacl1 (>= 2.2.23)
+  libacl1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:
+ tar pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../tar_1.35+dfsg-ok1_arm64.deb containing tar, pre-dependency problem:
+ tar pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../tar_1.35+dfsg-ok1_arm64.deb ...
+Unpacking tar (1.35+dfsg-ok1) ...
+Selecting previously unselected package dpkg.
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on libbz2-1.0
+  libbz2-1.0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on liblzma5 (>= 5.4.0)
+  liblzma5:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on libmd0 (>= 0.0.0)
+  libmd0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on libzstd1 (>= 1.5.5)
+  libzstd1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../dpkg_1.23.7-ok3_arm64.deb containing dpkg, pre-dependency problem:
+ dpkg pre-depends on zlib1g (>= 1:1.1.4)
+  zlib1g:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../dpkg_1.23.7-ok3_arm64.deb ...
+Unpacking dpkg (1.23.7-ok3) ...
+Selecting previously unselected package dash.
+dpkg: regarding .../dash_0.5.12-ok1_arm64.deb containing dash, pre-dependency problem:
+ dash pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../dash_0.5.12-ok1_arm64.deb ...
+Unpacking dash (0.5.12-ok1) ...
+Selecting previously unselected package diffutils.
+dpkg: regarding .../diffutils_1%3a3.12-ok2_arm64.deb containing diffutils, pre-dependency problem:
+ diffutils pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../diffutils_1%3a3.12-ok2_arm64.deb ...
+Unpacking diffutils (1:3.12-ok2) ...
+Selecting previously unselected package findutils.
+dpkg: regarding .../findutils_4.10.0-ok3.0_arm64.deb containing findutils, pre-dependency problem:
+ findutils pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../findutils_4.10.0-ok3.0_arm64.deb containing findutils, pre-dependency problem:
+ findutils pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../findutils_4.10.0-ok3.0_arm64.deb ...
+Unpacking findutils (4.10.0-ok3.0) ...
+Selecting previously unselected package grep.
+dpkg: regarding .../grep_3.12-ok5_arm64.deb containing grep, pre-dependency problem:
+ grep pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../grep_3.12-ok5_arm64.deb containing grep, pre-dependency problem:
+ grep pre-depends on libpcre2-8-0 (>= 10.32)
+  libpcre2-8-0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../grep_3.12-ok5_arm64.deb ...
+Unpacking grep (3.12-ok5) ...
+Selecting previously unselected package gzip.
+dpkg: regarding .../gzip_1.12-1ok4_arm64.deb containing gzip, pre-dependency problem:
+ gzip pre-depends on libc6 (>= 2.34)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../gzip_1.12-1ok4_arm64.deb ...
+Unpacking gzip (1.12-1ok4) ...
+Selecting previously unselected package hostname.
+dpkg: regarding .../hostname_3.25-ok5_arm64.deb containing hostname, pre-dependency problem:
+ hostname pre-depends on libc6 (>= 2.34)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../hostname_3.25-ok5_arm64.deb ...
+Unpacking hostname (3.25-ok5) ...
+Selecting previously unselected package libaudit-common.
+Preparing to unpack .../libaudit-common_1%3a4.1.2-ok1_all.deb ...
+Unpacking libaudit-common (1:4.1.2-ok1) ...
+Selecting previously unselected package libcap-ng0:arm64.
+Preparing to unpack .../libcap-ng0_0.8.4-ok4_arm64.deb ...
+Unpacking libcap-ng0:arm64 (0.8.4-ok4) ...
+Selecting previously unselected package libaudit1:arm64.
+Preparing to unpack .../libaudit1_1%3a4.1.2-ok1_arm64.deb ...
+Unpacking libaudit1:arm64 (1:4.1.2-ok1) ...
+Selecting previously unselected package libbsd0:arm64.
+Preparing to unpack .../libbsd0_0.11.7-4ok1_arm64.deb ...
+Unpacking libbsd0:arm64 (0.11.7-4ok1) ...
+Selecting previously unselected package debconf.
+Preparing to unpack .../debconf_1.5.86-ok1_all.deb ...
+Unpacking debconf (1.5.86-ok1) ...
+Selecting previously unselected package libpam0g:arm64.
+Preparing to unpack .../libpam0g_1.5.3-ok8_arm64.deb ...
+Unpacking libpam0g:arm64 (1.5.3-ok8) ...
+Selecting previously unselected package libpam-modules-bin.
+Preparing to unpack .../libpam-modules-bin_1.5.3-ok8_arm64.deb ...
+Unpacking libpam-modules-bin (1.5.3-ok8) ...
+Selecting previously unselected package libpam-modules:arm64.
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libaudit1 (>= 1:2.2.1)
+  libaudit1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libcrypt1 (>= 1:4.3.0)
+  libcrypt1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libpam0g (>= 1.4.1)
+  libpam0g:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libsystemd0
+  libsystemd0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on debconf (>= 0.5) | debconf-2.0
+  debconf is unpacked, but has never been configured.
+  debconf provides debconf-2.0 but is unpacked but not configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../libpam-modules_1.5.3-ok8_arm64.deb containing libpam-modules:arm64, pre-dependency problem:
+ libpam-modules pre-depends on libpam-modules-bin (= 1.5.3-ok8)
+  libpam-modules-bin is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../libpam-modules_1.5.3-ok8_arm64.deb ...
+Use of uninitialized value in concatenation (.) or string at /usr/share/perl5/Debconf/Config.pm line 23.
+Unpacking libpam-modules:arm64 (1.5.3-ok8) ...
+Selecting previously unselected package libpam-runtime.
+Preparing to unpack .../libpam-runtime_1.5.3-ok8_all.deb ...
+Unpacking libpam-runtime (1.5.3-ok8) ...
+Selecting previously unselected package login.
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libaudit1 (>= 1:2.2.1)
+  libaudit1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libbsd0 (>= 0.11.0)
+  libbsd0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libcrypt1 (>= 1:4.1.0)
+  libcrypt1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libpam0g (>= 0.99.7.1)
+  libpam0g:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libpam-runtime
+  libpam-runtime is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../login_1%3a4.14.3-ok3.5_arm64.deb containing login, pre-dependency problem:
+ login pre-depends on libpam-modules
+  libpam-modules:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../login_1%3a4.14.3-ok3.5_arm64.deb ...
+Unpacking login (1:4.14.3-ok3.5) ...
+Selecting previously unselected package ncurses-bin.
+dpkg: regarding .../ncurses-bin_6.4+20240113-1ok1_arm64.deb containing ncurses-bin, pre-dependency problem:
+ ncurses-bin pre-depends on libc6 (>= 2.34)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../ncurses-bin_6.4+20240113-1ok1_arm64.deb containing ncurses-bin, pre-dependency problem:
+ ncurses-bin pre-depends on libtinfo6 (>= 6.4+20230603)
+  libtinfo6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../ncurses-bin_6.4+20240113-1ok1_arm64.deb ...
+Unpacking ncurses-bin (6.4+20240113-1ok1) ...
+Selecting previously unselected package perl-base.
+dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+ perl-base pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+ perl-base pre-depends on libcrypt1 (>= 1:4.1.0)
+  libcrypt1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../perl-base_5.36.0-ok8.2_arm64.deb containing perl-base, pre-dependency problem:
+ perl-base pre-depends on dpkg (>= 1.17.17)
+  dpkg is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../perl-base_5.36.0-ok8.2_arm64.deb ...
+Unpacking perl-base (5.36.0-ok8.2) ...
+Selecting previously unselected package sed.
+dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+ sed pre-depends on libacl1 (>= 2.2.23)
+  libacl1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+ sed pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../sed_4.9-2ok1_arm64.deb containing sed, pre-dependency problem:
+ sed pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../sed_4.9-2ok1_arm64.deb ...
+Unpacking sed (4.9-2ok1) ...
+Selecting previously unselected package libblkid1:arm64.
+Preparing to unpack .../libblkid1_2.39.3-ok2build5_arm64.deb ...
+Unpacking libblkid1:arm64 (2.39.3-ok2build5) ...
+Selecting previously unselected package libmount1:arm64.
+Preparing to unpack .../libmount1_2.39.3-ok2build5_arm64.deb ...
+Unpacking libmount1:arm64 (2.39.3-ok2build5) ...
+Selecting previously unselected package libsmartcols1:arm64.
+Preparing to unpack .../libsmartcols1_2.39.3-ok2build5_arm64.deb ...
+Unpacking libsmartcols1:arm64 (2.39.3-ok2build5) ...
+Selecting previously unselected package libudev1:arm64.
+Preparing to unpack .../libudev1_255.2-ok2.8_arm64.deb ...
+Unpacking libudev1:arm64 (255.2-ok2.8) ...
+Selecting previously unselected package libuuid1:arm64.
+Preparing to unpack .../libuuid1_2.39.3-ok2build5_arm64.deb ...
+Unpacking libuuid1:arm64 (2.39.3-ok2build5) ...
+Selecting previously unselected package util-linux.
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libblkid1 (>= 2.37.2)
+  libblkid1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libc6 (>= 2.38)
+  libc6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libcap-ng0 (>= 0.7.9)
+  libcap-ng0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libcrypt1 (>= 1:4.1.0)
+  libcrypt1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libmount1 (>= 2.39.1)
+  libmount1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libpam0g (>= 0.99.7.1)
+  libpam0g:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libselinux1 (>= 3.1~)
+  libselinux1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libsmartcols1 (>= 2.38)
+  libsmartcols1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libsystemd0
+  libsystemd0:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libtinfo6 (>= 6)
+  libtinfo6:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libudev1 (>= 183)
+  libudev1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on libuuid1 (>= 2.16)
+  libuuid1:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+dpkg: regarding .../util-linux_2.39.3-ok2build5_arm64.deb containing util-linux, pre-dependency problem:
+ util-linux pre-depends on zlib1g (>= 1:1.1.4)
+  zlib1g:arm64 is unpacked, but has never been configured.
+
+dpkg: warning: ignoring pre-dependency problem!
+Preparing to unpack .../util-linux_2.39.3-ok2build5_arm64.deb ...
+Unpacking util-linux (2.39.3-ok2build5) ...
+Selecting previously unselected package libdebconfclient0:arm64.
+Preparing to unpack .../libdebconfclient0_0.271-ok1_arm64.deb ...
+Unpacking libdebconfclient0:arm64 (0.271-ok1) ...
+Selecting previously unselected package base-passwd.
+Preparing to unpack .../base-passwd_3.6.8-ok1_arm64.deb ...
+Unpacking base-passwd (3.6.8-ok1) ...
+Selecting previously unselected package init-system-helpers.
+Preparing to unpack .../init-system-helpers_1.66-ok1_all.deb ...
+Unpacking init-system-helpers (1.66-ok1) ...
+Selecting previously unselected package libc-bin.
+Preparing to unpack .../libc-bin_2.43-ok2_arm64.deb ...
+Unpacking libc-bin (2.43-ok2) ...
+Selecting previously unselected package ncurses-base.
+Preparing to unpack .../ncurses-base_6.4+20240113-1ok1_all.deb ...
+Unpacking ncurses-base (6.4+20240113-1ok1) ...
+Selecting previously unselected package sysvinit-utils.
+Preparing to unpack .../sysvinit-utils_3.08-ok1_arm64.deb ...
+Unpacking sysvinit-utils (3.08-ok1) ...
+Setting up gcc-15-base:arm64 (15.2.0-16ok8) ...
+Setting up libc-gconv-modules-extra:arm64 (2.43-ok2) ...
+Setting up libaudit-common (1:4.1.2-ok1) ...
+Setting up debconf (1.5.86-ok1) ...
+Setting up init-system-helpers (1.66-ok1) ...
+Setting up ncurses-base (6.4+20240113-1ok1) ...
+Setting up libgcc-s1:arm64 (15.2.0-16ok8) ...
+Setting up libc6:arm64 (2.43-ok2) ...
+Setting up mawk (1.3.4.20240123-ok1) ...
+update-alternatives: using /usr/bin/mawk to provide /usr/bin/awk (awk) in auto mode
+Setting up libcrypt1:arm64 (1:4.4.36-ok2) ...
+Setting up base-files (14-ok3) ...
+Setting up libtinfo6:arm64 (6.4+20240113-1ok1) ...
+Setting up debianutils (5.23.2-ok1) ...
+update-alternatives: using /usr/bin/which.debianutils to provide /usr/bin/which (which) in auto mode
+Setting up bash (5.3-ok1) ...
+update-alternatives: using /usr/share/man/man7/bash-builtins.7.gz to provide /usr/share/man/man7/builtins.7.gz (builtins.7.gz) in auto mode
+Setting up libcap2:arm64 (1:2.69-1ok3) ...
+Setting up libgpg-error0:arm64 (1.47-ok1) ...
+Setting up libgcrypt20:arm64 (1.10.3-ok2) ...
+Setting up liblz4-1:arm64 (1.9.4-1ok1) ...
+Setting up liblzma5:arm64 (5.4.5-ok3) ...
+Setting up libzstd1:arm64 (1.5.5-ok3) ...
+Setting up libsystemd0:arm64 (255.2-ok2.8) ...
+Setting up bsdutils (1:2.39.3-ok2build5) ...
+Setting up libacl1:arm64 (2.3.2-ok1) ...
+Setting up libattr1:arm64 (1:2.5.2-ok1) ...
+Setting up libgmp10:arm64 (2:6.3.0+dfsg-ok5) ...
+Setting up libpcre2-8-0:arm64 (10.42-4ok2) ...
+Setting up libselinux1:arm64 (3.5-ok2) ...
+Setting up coreutils (9.4-ok4) ...
+Setting up libbz2-1.0:arm64 (1:1.0.8-ok4) ...
+Setting up libmd0:arm64 (1.1.0-ok1) ...
+Setting up zlib1g:arm64 (1:1.3.dfsg-ok3) ...
+Setting up tar (1.35+dfsg-ok1) ...
+update-alternatives: using /usr/sbin/rmt-tar to provide /usr/sbin/rmt (rmt) in auto mode
+Setting up dpkg (1.23.7-ok3) ...
+Setting up dash (0.5.12-ok1) ...
+Setting up diffutils (1:3.12-ok2) ...
+Setting up findutils (4.10.0-ok3.0) ...
+Setting up grep (3.12-ok5) ...
+Setting up gzip (1.12-1ok4) ...
+Setting up hostname (3.25-ok5) ...
+Setting up libcap-ng0:arm64 (0.8.4-ok4) ...
+Setting up libaudit1:arm64 (1:4.1.2-ok1) ...
+Setting up libbsd0:arm64 (0.11.7-4ok1) ...
+Setting up libpam0g:arm64 (1.5.3-ok8) ...
+Setting up libpam-modules-bin (1.5.3-ok8) ...
+Setting up libpam-modules:arm64 (1.5.3-ok8) ...
+Setting up libpam-runtime (1.5.3-ok8) ...
+Setting up login (1:4.14.3-ok3.5) ...
+Setting up ncurses-bin (6.4+20240113-1ok1) ...
+Setting up perl-base (5.36.0-ok8.2) ...
+Setting up sed (4.9-2ok1) ...
+Setting up libblkid1:arm64 (2.39.3-ok2build5) ...
+Setting up libmount1:arm64 (2.39.3-ok2build5) ...
+Setting up libsmartcols1:arm64 (2.39.3-ok2build5) ...
+Setting up libudev1:arm64 (255.2-ok2.8) ...
+Setting up libuuid1:arm64 (2.39.3-ok2build5) ...
+Setting up util-linux (2.39.3-ok2build5) ...
+update-alternatives: using /bin/more to provide /usr/bin/pager (pager) in auto mode
+Setting up libdebconfclient0:arm64 (0.271-ok1) ...
+Setting up base-passwd (3.6.8-ok1) ...
+Setting up libc-bin (2.43-ok2) ...
+Setting up sysvinit-utils (3.08-ok1) ...
+I: installing remaining packages inside the chroot...
+Reading package lists...
+Building dependency tree...
+zlib1g is already the newest version (1:1.3.dfsg-ok3).
+debconf is already the newest version (1.5.86-ok1).
+mawk is already the newest version (1.3.4.20240123-ok1).
+libbz2-1.0 is already the newest version (1:1.0.8-ok4).
+libpam-runtime is already the newest version (1.5.3-ok8).
+libpam-modules is already the newest version (1.5.3-ok8).
+libpam-modules-bin is already the newest version (1.5.3-ok8).
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+ gpgv : Depends: libgcrypt20 (>= 1.12.1) but 1.10.3-ok2 is to be installed
+        Depends: libgpg-error0 (>= 1.49) but 1.47-ok1 is to be installed
+E: Unable to correct problems, you have held broken packages.
+E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?and(?or(?priority(required),?priority(important)),?not(?essential))) failed
+W: hooklistener errored out: E: received eof on socket
+
+I: main() received signal PIPE: waiting for setup...
+E: mmdebstrap failed to run
+
