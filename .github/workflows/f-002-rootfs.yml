@@ -1,13 +1,11 @@
-name: F-002 auditoria de origen del rootfs
+name: F-002 v5 main + overlay SIAO
 
-# Commitea su propia salida cruda: el TEXTO de un log de Actions da 403 por API.
 on:
   push:
     branches:
       - 'titan/f-002-rootfs'
     paths:
-      - 'tools/f002_auditar_origen.py'
-      - 'tools/f002_overlay.py'
+      - 'tools/f002_v5.py'
       - '.github/workflows/f-002-rootfs.yml'
   workflow_dispatch:
 
@@ -32,23 +30,21 @@ jobs:
           id
 
       - name: md5 del instrumento
-        run: md5sum tools/f002_auditar_origen.py
+        run: md5sum tools/f002_v5.py
 
       - name: Herramientas
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends \
             mmdebstrap dpkg-dev zstd apt-utils
-          echo '--- versiones, verbatim ---'
           mmdebstrap --version | head -2
-          dpkg --version | head -1
-          apt-cache --version | head -1
+          dpkg-deb --version | head -1
 
-      - name: Correr la auditoria de origen
+      - name: Correr F-002 v5
         env:
           F002_OUT: mediciones/f-002
-          F002_WORK: /tmp/f002v4
-        run: sudo -E python3 tools/f002_auditar_origen.py
+          F002_WORK: /tmp/f002v5
+        run: sudo -E python3 tools/f002_v5.py
 
       - name: Commitear la salida cruda
         if: always()
@@ -58,7 +54,7 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" mediciones || true
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(f-002 v4): auditoria de origen en arm64 (run ${{ github.run_id }})"
+          git commit -m "evidencia(f-002 v5): salida cruda en arm64 (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin "${{ github.ref_name }}" && \
             git push origin HEAD:"${{ github.ref_name }}" && exit 0
@@ -68,4 +64,4 @@ jobs:
 
       - name: Resumen
         if: always()
-        run: cat mediciones/f-002/F-002-v4-origen.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
+        run: cat mediciones/f-002/F-002-v5.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
