@@ -1,0 +1,24 @@
+falsador: se destraba /dev/kvm en el runner ubuntu-24.04 (x64)?
+disparo: 2026-09-06T15:09Z
+
+CONTEXTO MEDIDO: el nodo EXISTE en el runner x64 y da
+  "abre_rdwr": "ERR:PermissionError:[Errno 13] Permission denied"
+En el runner arm64 el nodo NO EXISTE (otra causa, otro problema).
+
+TRES VIAS, y V3 va primero porque es el discriminador:
+  V3 sudo directo  -> separa "permisos" (arreglable) de "KVM no esta" (no)
+  V1 usermod -aG kvm + sg kvm
+  V2 chmod 666 /dev/kvm
+
+Cada via corre el MISMO probe (ioctl KVM_GET_API_VERSION y KVM_CREATE_VM),
+porque abrir el device no prueba que KVM funcione.
+
+Y un paso final que mide USO real y no permisos: emulator -accel-check, que es
+el diagnostico del consumidor de verdad.
+
+DEFECTO PROPIO CAZADO ANTES DE GASTAR EL RUNNER: la v1 metia un heredoc dentro
+de sg kvm -c '...' y el validador lo marco "heredoc sin cierre PY". Corregido
+escribiendo el probe a un archivo. Y al cambiar el patron, el validador se
+declaro ROJO A SI MISMO ("cero bloques, no estaba mirando nada"), asi que el
+probe se valido aparte: PROBE_OK 1304 caracteres, y corrio en brain-env dando
+existe=false, que es lo correcto ahi.
