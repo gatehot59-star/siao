@@ -5,13 +5,13 @@
   "qemu": "/usr/bin/qemu-system-aarch64",
   "entrada_zip": "boot-6.6.img",
   "hitos": {
-    "banner_linux": false,
-    "version_leida": null,
-    "memoria_ok": false,
+    "banner_linux": true,
+    "version_leida": "6.6.58-android15-8-g217cec2d0381-ab12874290-4k",
+    "memoria_ok": true,
     "llego_a_init": false,
-    "bytes_de_salida": 61
+    "bytes_de_salida": 15217
   },
-  "rc_qemu": 1,
-  "veredicto": "ARNES ROJO o NO MEDIDO: no aparecio el banner de Linux",
-  "fecha_utc": "2026-09-06T15:23:50Z"
+  "rc_qemu": 0,
+  "veredicto": "ARNES VERDE: QEMU ejecuta un kernel arm64 REAL en esta maquina",
+  "fecha_utc": "2026-09-06T15:30:24Z"
 }
