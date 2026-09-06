@@ -1,0 +1,58 @@
+{
+  "falsador": "F-002",
+  "version": 6,
+  "pregunta": "un overlay NO FLAT entra donde el FLAT no entraba?",
+  "fecha_utc": "2026-09-06T01:59:11Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "34005270011"
+  },
+  "pre_vuelo": "En brain-env: no flat -> c='main', flat -> c=''; pero apt-get install -s dio rc=0 y 68 paquetes en LOS DOS. Asi que el componente cambia y el resolvedor no se queja: si mmdebstrap falla con los dos, la causa NO es el layout. mmdebstrap no esta en brain-env (which -> None), asi que el constructor solo se puede medir en el runner.",
+  "prediccion": "Predigo que el NO FLAT pasa y el FLAT falla. Si los dos fallan, mi sospecha del layout es falsa y hay que buscar en mmdebstrap.",
+  "controles": {
+    "FLAT": {
+      "layout": "flat",
+      "instalo": false,
+      "rc": 25,
+      "evidencia": "The following packages have unmet dependencies:\nE: Unable to correct problems, you have held broken packages.\nE: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?and(?or(?priority(required),?priority(important)),?not(?essential))) failed\nE: mmdebstrap failed to run"
+    },
+    "discrimina": false
+  },
+  "sujeto": {
+    "layout": "no flat",
+    "instalo": false,
+    "rc": 25,
+    "evidencia": "The following packages have unmet dependencies:\nE: Unable to correct problems, you have held broken packages.\nE: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?and(?or(?priority(required),?priority(important)),?not(?essential))) failed\nE: mmdebstrap failed to run"
+  },
+  "no_medido": [],
+  "manifiesto": [
+    {
+      "paquete": "libdevmapper1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927",
+      "bytes": 127826
+    },
+    {
+      "paquete": "dmsetup",
+      "version": "2:1.02.205-ok1",
+      "sha256": "92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19",
+      "bytes": 73304
+    },
+    {
+      "paquete": "libdevmapper-event1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3",
+      "bytes": 11934
+    }
+  ],
+  "veredicto_causa": "MI SOSPECHA ES FALSA: el no flat tambien falla, asi que la causa no es el layout",
+  "veredicto": {
+    "a_construye": "ROJO",
+    "b_origen": "NO MEDIDO",
+    "c_firmas": "NO MEDIDO"
+  },
+  "segundos": 26.5
+}
