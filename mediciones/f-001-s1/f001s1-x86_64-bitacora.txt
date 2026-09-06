@@ -1,13 +1,13 @@
 == F-001-S1 paso 0: el arnes de QEMU ==
-  fecha UTC 2026-09-06T15:23:46Z
+  fecha UTC 2026-09-06T15:32:16Z
   PREDICCION: aparece el banner de Linux y el kernel entra en panico por
   falta de init. Ese panico es el VERDE del arnes.
 $ uname -m; nproc; free -m | head -2; df -h / | tail -1
-  rc=0 en 0.1 s | out 211 B | err 0 B
+  rc=0 en 0.0 s | out 211 B | err 0 B
    | x86_64
    | 2
    |                total        used        free      shared  buff/cache   available
-   | Mem:            7937         995        4191          46        3090        6941
+   | Mem:            7938         935        3302          44        4059        7003
    | /dev/root        72G   59G   14G  82% /
 
   === /dev/kvm, con los TRES estados separados ===
@@ -43,16 +43,60 @@ $ qemu-system-aarch64 --version 2>&1 | head -2
   un kernel sano imprime su banner y despues entra en panico por
   'No working init found'. Ese panico ES el verde del arnes.
 $ timeout 240 qemu-system-aarch64 -machine virt -cpu cortex-a57 -smp 2 -m 2048 -nographic -no-reboot -kernel /tmp/f001s1/Image -append 'console=ttyAMA0 panic=1 earlycon' 2>&1 | head -200
-  rc=1 en 0.0 s | out 61 B | err 0 B
+  rc=0 en 2.5 s | out 15217 B | err 0 B
   guardado entero en <out>/f001s1-x86_64-boot.txt
 
   === HITOS DEL ARRANQUE ===
-   banner_linux       False
-   version_leida      None
-   memoria_ok         False
+   banner_linux       True
+   version_leida      6.6.58-android15-8-g217cec2d0381-ab12874290-4k
+   memoria_ok         True
    llego_a_init       False
-   bytes_de_salida    61
+   bytes_de_salida    15217
   --- salida del kernel, primeras 45 lineas ---
-   B| qemu-system-aarch64: failed to find romfile "efi-virtio.rom"
+   B| [    0.000000][    T0] Booting Linux on physical CPU 0x0000000000 [0x411fd070]
+   B| [    0.000000][    T0] Linux version 6.6.58-android15-8-g217cec2d0381-ab12874290-4k (kleaf@build-host) (Android (11368308, +pgo, +bolt, +lto, +mlgo, based on r510928) cla
+   B| [    0.000000][    T0] KASLR enabled
+   B| [    0.000000][    T0] random: crng init done
+   B| [    0.000000][    T0] Machine model: linux,dummy-virt
+   B| [    0.000000][    T0] stackdepot: disabled
+   B| [    0.000000][    T0] KVM is not available. Ignoring kvm-arm.mode
+   B| [    0.000000][    T0] earlycon: pl11 at MMIO 0x0000000009000000 (options '')
+   B| [    0.000000][    T0] printk: bootconsole [pl11] enabled
+   B| [    0.000000][    T0] Enabling dynamic shadow call stack
+   B| [    0.000000][    T0] efi: UEFI not found.
+   B| [    0.000000][    T0] Zone ranges:
+   B| [    0.000000][    T0]   DMA32    [mem 0x0000000040000000-0x00000000bfffffff]
+   B| [    0.000000][    T0]   Normal   empty
+   B| [    0.000000][    T0] Movable zone start for each node
+   B| [    0.000000][    T0] NoSplit zone start for each node
+   B| [    0.000000][    T0] NoMerge zone start for each node
+   B| [    0.000000][    T0] Early memory node ranges
+   B| [    0.000000][    T0]   node   0: [mem 0x0000000040000000-0x00000000bfffffff]
+   B| [    0.000000][    T0] Initmem setup node 0 [mem 0x0000000040000000-0x00000000bfffffff]
+   B| [    0.000000][    T0] cma: Reserved 16 MiB at 0x00000000bc800000 on node -1
+   B| [    0.000000][    T0] psci: probing for conduit method from DT.
+   B| [    0.000000][    T0] psci: PSCIv1.1 detected in firmware.
+   B| [    0.000000][    T0] psci: Using standard PSCI v0.2 function IDs
+   B| [    0.000000][    T0] psci: Trusted OS migration not required
+   B| [    0.000000][    T0] psci: SMC Calling Convention v1.0
+   B| [    0.000000][    T0] 'bootconfig' found on command line, but no bootconfig found
+   B| [    0.000000][    T0] percpu: Embedded 31 pages/cpu s88232 r8192 d30552 u126976
+   B| [    0.000000][    T0] Detected PIPT I-cache on CPU0
+   B| [    0.000000][    T0] CPU features: SYS_ID_AA64MMFR1_EL1[11:8]: already set to 0
+   B| [    0.000000][    T0] CPU features: detected: Spectre-v2
+   B| [    0.000000][    T0] CPU features: detected: Spectre-v3a
+   B| [    0.000000][    T0] CPU features: detected: Spectre-v4
+   B| [    0.000000][    T0] CPU features: detected: Spectre-BHB
+   B| [    0.000000][    T0] CPU features: kernel page table isolation forced ON by KASLR
+   B| [    0.000000][    T0] CPU features: detected: Kernel page table isolation (KPTI)
+   B| [    0.000000][    T0] CPU features: detected: ARM erratum 834220
+   B| [    0.000000][    T0] CPU features: detected: ARM erratum 1742098
+   B| [    0.000000][    T0] CPU features: detected: ARM erratum 832075
+   B| [    0.000000][    T0] CPU features: detected: ARM errata 1165522, 1319367, or 1530923
+   B| [    0.000000][    T0] alternatives: applying boot alternatives
+   B| [    0.000000][    T0] Kernel command line: console=ttynull stack_depot_disable=on cgroup_disable=pressure kasan.stacktrace=off kvm-arm.mode=protected bootconfig ioremap_
+   B| [    0.000000][    T0] cgroup: Disabling pressure control group feature
+   B| [    0.000000][    T0] Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+   B| [    0.000000][    T0] Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
 
-  VEREDICTO: ARNES ROJO o NO MEDIDO: no aparecio el banner de Linux
+  VEREDICTO: ARNES VERDE: QEMU ejecuta un kernel arm64 REAL en esta maquina
