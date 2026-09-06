@@ -1,7 +1,7 @@
 {
   "brazo": "baseline",
   "rama": "android15-6.6",
-  "rc_build": 0,
+  "rc_build": 2,
   "simbolos_del_fragmento": {
     "CONFIG_DEVTMPFS": "APAGADO",
     "CONFIG_DEVTMPFS_MOUNT": "AUSENTE",
@@ -15,5 +15,5 @@
     "CONFIG_CGROUP_PIDS": "APAGADO"
   },
   "module_symvers": false,
-  "fecha_utc": "2026-09-06T02:36:44Z"
+  "fecha_utc": "2026-09-06T02:50:07Z"
 }

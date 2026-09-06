@@ -3,15 +3,15 @@ $ bash -c nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1
   rc=0 en 0.0 s
    | 2
    |                total        used        free      shared  buff/cache   available
-   | Mem:            7911        1131        5250          44        1769        6780
+   | Mem:            7911        1107        5272          44        1772        6804
    | /dev/root        72G   31G   42G  43% /
    | Ubuntu clang version 18.1.3 (1ubuntu1)
    | Ubuntu LLD 18.1.3 (compatible with GNU linkers)
   bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android15-6.6.tar.gz
-  bajado: 238690338 B (227.6 MiB) en 51.3 s
-  sha256 del tar.gz: 1fef87e57fc92c6e902fb91ee97be8fd75843c36557d7151b4b742957880f2a5
+  bajado: 238722009 B (227.7 MiB) en 62.6 s
+  sha256 del tar.gz: 276b48a550d029d08ac6313a36cb303f74f6d59bb4b27d6d450affce28d76dc2
 $ bash -c tar -xzf /tmp/f004/ack.tar.gz -C /tmp/f004/ack
-  rc=0 en 7.0 s
+  rc=0 en 7.3 s
 $ bash -c head -5 /tmp/f004/ack/Makefile
   rc=0 en 0.0 s
   Makefile del arbol:
@@ -21,7 +21,7 @@ $ bash -c head -5 /tmp/f004/ack/Makefile
    | SUBLEVEL = 142
    | EXTRAVERSION =
 $ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 gki_defconfig
-  rc=0 en 6.7 s
+  rc=0 en 10.5 s
   salida guardada en <out>/f004-baseline-defconfig.txt (706 B out, 0 B err)
   estado de los simbolos del fragmento en el .config de este brazo:
       CONFIG_DEVTMPFS            APAGADO
@@ -34,9 +34,9 @@ $ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 gki_d
       CONFIG_PID_NS              APAGADO
       CONFIG_IPC_NS              AUSENTE
       CONFIG_CGROUP_PIDS         APAGADO
-$ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 -j$(nproc) Image modules 2>&1 | tail -40
-  rc=0 en 255.1 s
-  salida guardada en <out>/f004-baseline-build.txt (1275 B out, 0 B err)
+$ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 -j$(nproc) Image modules 2>&1
+  rc=2 en 269.6 s
+  salida guardada en <out>/f004-baseline-build.txt (106406 B out, 0 B err)
   ultimas lineas del build:
    |   CC      kernel/watchdog.o
    |   CC      kernel/seccomp.o
