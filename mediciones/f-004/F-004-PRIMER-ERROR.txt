@@ -1,0 +1,130 @@
+===== mediciones/f-004/f004-baseline-build.txt =====
+107143 mediciones/f-004/f004-baseline-build.txt
+--- primeras 60 lineas que matchean error/fatal/No such/Killed/space ---
+2501:/tmp/f004/ack/certs/extract-cert.c:152:7: error: use of undeclared identifier 'key_pass'
+2504:/tmp/f004/ack/certs/extract-cert.c:153:42: error: use of undeclared identifier 'key_pass'
+2508:make[4]: *** [/tmp/f004/ack/scripts/Makefile.host:114: certs/extract-cert] Error 1
+2509:make[3]: *** [/tmp/f004/ack/scripts/Makefile.build:480: certs] Error 2
+2619:make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+2620:make[1]: *** [/tmp/f004/ack/Makefile:252: __sub-make] Error 2
+2622:make: *** [Makefile:252: __sub-make] Error 2
+2629:2501:/tmp/f004/ack/certs/extract-cert.c:152:7: error: use of undeclared identifier 'key_pass'
+2630:2504:/tmp/f004/ack/certs/extract-cert.c:153:42: error: use of undeclared identifier 'key_pass'
+2631:2508:make[4]: *** [/tmp/f004/ack/scripts/Makefile.host:114: certs/extract-cert] Error 1
+2632:2509:make[3]: *** [/tmp/f004/ack/scripts/Makefile.build:480: certs] Error 2
+2633:2619:make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+2634:2620:make[1]: *** [/tmp/f004/ack/Makefile:252: __sub-make] Error 2
+2635:2622:make: *** [Makefile:252: __sub-make] Error 2
+--- contexto de la PRIMERA linea de make Error ---
+  CC [M]  arch/arm64/geniezone/vm.o
+  CC      kernel/trace/trace_seq.o
+  CC      kernel/trace/trace_stat.o
+  CC [M]  arch/arm64/geniezone/vcpu.o
+  CC      kernel/trace/trace_printk.o
+  CC [M]  arch/arm64/geniezone/vgic.o
+  CC [M]  arch/arm64/geniezone/hvc.o
+  CC      kernel/trace/pid_list.o
+  LD [M]  arch/arm64/geniezone/gzvm.o
+  AR      arch/arm64/built-in.a
+  CC      kernel/bpf/core.o
+  CC      kernel/trace/tracing_map.o
+  CC      kernel/trace/trace_sched_switch.o
+  CC      kernel/trace/trace_nop.o
+  CC      kernel/bpf/syscall.o
+  CC      kernel/trace/blktrace.o
+  CC      kernel/trace/trace_events.o
+  CC      kernel/bpf/verifier.o
+  CC      kernel/trace/trace_export.o
+  CC      kernel/trace/trace_event_perf.o
+  CC      kernel/trace/trace_events_filter.o
+  CC      kernel/trace/trace_events_trigger.o
+  CC      kernel/trace/trace_eprobe.o
+  CC      kernel/bpf/inode.o
+  CC      kernel/trace/trace_events_synth.o
+  CC      kernel/bpf/helpers.o
+  CC      kernel/trace/trace_events_hist.o
+  CC      kernel/bpf/tnum.o
+  CC      kernel/bpf/log.o
+  CC      kernel/trace/bpf_trace.o
+  CC      kernel/bpf/bpf_iter.o
+  CC      kernel/bpf/map_iter.o
+  CC      kernel/trace/trace_kprobe.o
+  CC      kernel/bpf/task_iter.o
+  CC      kernel/bpf/prog_iter.o
+  CC      kernel/trace/error_report-traces.o
+  CC      kernel/bpf/link_iter.o
+  CC      kernel/trace/power-traces.o
+  CC      kernel/bpf/hashtab.o
+  CC      kernel/trace/rpm-traces.o
+  CC      kernel/bpf/arraymap.o
+  CC      kernel/trace/trace_dynevent.o
+  CC      kernel/bpf/percpu_freelist.o
+  CC      kernel/trace/trace_probe.o
+  CC      kernel/bpf/bpf_lru_list.o
+  CC      kernel/bpf/lpm_trie.o
+  CC      kernel/trace/trace_uprobe.o
+  CC      kernel/bpf/map_in_map.o
+  CC      kernel/bpf/bloom_filter.o
+  AR      kernel/trace/built-in.a
+  CC      certs/system_keyring.o
+  HOSTCC  certs/extract-cert
+  CC      kernel/bpf/local_storage.o
+/tmp/f004/ack/certs/extract-cert.c:152:7: error: use of undeclared identifier 'key_pass'
+  152 |                 if (key_pass)
+      |                     ^
+/tmp/f004/ack/certs/extract-cert.c:153:42: error: use of undeclared identifier 'key_pass'
+  153 |                         ERR(!ENGINE_ctrl_cmd_string(e, "PIN", key_pass, 0), "Set PKCS#11 PIN");
+      |                                                               ^
+2 errors generated.
+make[4]: *** [/tmp/f004/ack/scripts/Makefile.host:114: certs/extract-cert] Error 1
+
+===== mediciones/f-004/f004-siao-build.txt =====
+1467 mediciones/f-004/f004-siao-build.txt
+--- primeras 60 lineas que matchean error/fatal/No such/Killed/space ---
+42:make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+43:make[1]: *** [/tmp/f004/ack/Makefile:252: __sub-make] Error 2
+45:make: *** [Makefile:252: __sub-make] Error 2
+--- contexto de la PRIMERA linea de make Error ---
+### comando
+bash -c make -C /tmp/f004/ack O=/tmp/f004/out-siao LLVM=1 ARCH=arm64 -j$(nproc) Image modules 2>&1 | tail -40
+
+### rc=0
+
+### stdout (ultimos 200k)
+  CC      kernel/module_signature.o
+  CC      kernel/kallsyms.o
+  CC      kernel/compat.o
+  CC      kernel/utsname.o
+  CC      kernel/pid_namespace.o
+  UPD     kernel/config_data
+  CC      kernel/stop_machine.o
+  CC      kernel/audit.o
+  CC      kernel/auditfilter.o
+  CC      kernel/auditsc.o
+  CC      kernel/audit_watch.o
+  CC      kernel/audit_fsnotify.o
+  CC      kernel/audit_tree.o
+  CC      kernel/kprobes.o
+  CC      kernel/hung_task.o
+  CC      kernel/watchdog.o
+  CC      kernel/seccomp.o
+  CC      kernel/utsname_sysctl.o
+  CC      kernel/delayacct.o
+  CC      kernel/taskstats.o
+  CC      kernel/tsacct.o
+  CC      kernel/tracepoint.o
+  CC      kernel/irq_work.o
+  CC      kernel/cpu_pm.o
+  CC      kernel/scs.o
+  CC      kernel/cfi.o
+  CC      kernel/jump_label.o
+  CC      kernel/context_tracking.o
+  CC      kernel/iomem.o
+  CHK     kernel/kheaders_data.tar.xz
+  GEN     kernel/kheaders_data.tar.xz
+  GZIP    kernel/config_data.gz
+  CC      kernel/configs.o
+  AR      kernel/built-in.a
+  CC [M]  kernel/kheaders.o
+make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+
