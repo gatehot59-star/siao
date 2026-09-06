@@ -1,0 +1,89 @@
+name: F-001-S1 arnes QEMU
+
+# Corre en las DOS arquitecturas a proposito: el Doc de KVM midio que x64 tiene
+# /dev/kvm usable y arm64 no lo tiene. Este falsador lo comprueba de forma
+# independiente Y saca la consecuencia que importa: el huesped es aarch64, asi que
+# KVM solo serviria si anfitrion y huesped comparten ISA. Los dos brazos dan el
+# control cruzado.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths:
+      - 'tools/f001s1_arnes.py'
+      - '.github/workflows/f-001-s1-arnes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  arnes:
+    name: arnes-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          nproc
+          free -m
+      - name: Estado de /dev/kvm ANTES de tocar nada
+        run: |
+          ls -la /dev/kvm 2>&1 || echo 'no existe /dev/kvm'
+          lsmod | grep -i kvm || echo 'sin modulos kvm'
+          id
+      - name: usermod -aG kvm, la via V1 del Doc de KVM
+        continue-on-error: true
+        run: |
+          set -x
+          if [ -e /dev/kvm ]; then
+            sudo usermod -aG kvm "$USER" || true
+            sudo chmod 666 /dev/kvm || true
+            ls -la /dev/kvm
+          else
+            echo 'no hay /dev/kvm en esta arquitectura: nada que destrabar'
+          fi
+      - name: Instalar QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends qemu-system-arm qemu-utils
+          qemu-system-aarch64 --version | head -2
+      - name: Correr el arnes
+        env:
+          F001_OUT: mediciones/f-001-s1
+          F001_WORK: /tmp/f001s1
+        run: python3 tools/f001s1_arnes.py
+      - name: Subir todo antes de analizar nada, R-11
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f001s1-${{ matrix.arch }}
+          path: mediciones/f-001-s1/
+          retention-days: 5
+          if-no-files-found: warn
+      - name: Commitear
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(F-001-S1): arnes QEMU en ${{ matrix.arch }} (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 8))
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: tail -50 mediciones/f-001-s1/f001s1-*-bitacora.txt >> "$GITHUB_STEP_SUMMARY" || true
