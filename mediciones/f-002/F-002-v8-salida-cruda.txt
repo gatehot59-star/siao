@@ -1,0 +1,52 @@
+== F-002 v8: el overlay minimo REAL ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_arch": "ARM64", "run_id": "34005960581"}
+LA CAUSA (del v7, sin filtro): gpgv : Depends: libgcrypt20 (>= 1.12.1) but 1.10.3-ok2 is to be installed / Depends: libgpg-error0 (>= 1.49) but 1.47-ok1. Son DOS cadenas rotas en huanghe/main arm64, no una. gpgv entra por el conjunto esencial que pide mmdebstrap, y mis apt-get -s pedian solo los 6 de systemd: el resolvedor y el constructor median conjuntos distintos, y de ahi salia el 'apt verde, mmdebstrap rojo'.
+OVERLAY MINIMO MEDIDO: ['libdevmapper1.02.1', 'libgcrypt20', 'libgpg-error0']
+SOBRABAN del overlay anterior: ['dmsetup', 'libdevmapper-event1.02.1']
+PREDICCION registrada antes de correr: Predigo VERDE: el apt-get -s iterativo en brain-env dio rc=0 y 161 paquetes con exactamente estos 3, y ahora el pedido del resolvedor y el del constructor son el MISMO conjunto.
+
+--- overlay: libdevmapper1.02.1, libgcrypt20, libgpg-error0 ---
+  libdevmapper1.02.1       2:1.02.205-ok1       127826 B sha256_ok=True   main tiene: 2:1.02.196-ok2
+$ dpkg-deb -f /tmp/f002v8/overlay/pool/main/libdevmapper1.02.1_1.02.205-ok1_arm64.deb
+  libgcrypt20              1.12.1-ok1           489520 B sha256_ok=True   main tiene: 1.10.3-ok2
+$ dpkg-deb -f /tmp/f002v8/overlay/pool/main/libgcrypt20_1.12.1-ok1_arm64.deb
+  libgpg-error0            1.59-ok1              68236 B sha256_ok=True   main tiene: 1.47-ok1
+$ dpkg-deb -f /tmp/f002v8/overlay/pool/main/libgpg-error0_1.59-ok1_arm64.deb
+
+--- overlay: libdevmapper1.02.1, dmsetup, libdevmapper-event1.02.1 ---
+  libdevmapper1.02.1       2:1.02.205-ok1       127826 B sha256_ok=True   main tiene: 2:1.02.196-ok2
+$ dpkg-deb -f /tmp/f002v8/overlay-viejo/pool/main/libdevmapper1.02.1_1.02.205-ok1_arm64.deb
+  dmsetup                  2:1.02.205-ok1        73304 B sha256_ok=True   main tiene: 2:1.02.196-ok2
+$ dpkg-deb -f /tmp/f002v8/overlay-viejo/pool/main/dmsetup_1.02.205-ok1_arm64.deb
+  libdevmapper-event1.02.1 2:1.02.205-ok1        11934 B sha256_ok=True   main tiene: 2:1.02.196-ok2
+$ dpkg-deb -f /tmp/f002v8/overlay-viejo/pool/main/libdevmapper-event1.02.1_1.02.205-ok1_arm64.deb
+
+==============================================================================
+>>> SUJETO main + overlay MEDIDO (3 correctos)
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v8/overlay huanghe main
+$ bash -c rm -rf /tmp/f002v8/rootfs && mkdir -p /tmp/f002v8/rootfs
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose 
+  salida COMPLETA en <out>/v8-sujeto-completo.txt (0 B out, 23178 B err)
+  rc=25 | systemd presente: False
+  --- unmet/Depends/Setting up, del texto COMPLETO (sin filtro previo) ---
+
+==============================================================================
+>>> CONTROL main + overlay VIEJO (el de los v5/v6/v7)
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v8/overlay-viejo huanghe main
+$ bash -c rm -rf /tmp/f002v8/viejo && mkdir -p /tmp/f002v8/viejo
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose 
+  salida COMPLETA en <out>/v8-control-viejo-completo.txt (0 B out, 53518 B err)
+  rc=25 | systemd presente: False
+  --- unmet/Depends/Setting up, del texto COMPLETO (sin filtro previo) ---
+   >>> The following packages have unmet dependencies:
+   >>> gpgv : Depends: libgcrypt20 (>= 1.12.1) but 1.10.3-ok2 is to be installed
+   >>> Depends: libgpg-error0 (>= 1.49) but 1.47-ok1 is to be installed
+   >>> E: Unable to correct problems, you have held broken packages.
+
+RESULTADO: sujeto=False (rc 25) | overlay viejo=False (rc 25)
+EL CONTROL DISCRIMINA: False
+
+VEREDICTO F-002 v8: {"a_construye": "ROJO", "b_origen": "NO MEDIDO", "c_firmas": "NO MEDIDO"}
+La prediccion SE REFUTO
