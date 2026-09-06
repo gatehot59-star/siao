@@ -1,0 +1,16 @@
+# Disparador de la etapa x86 de F-004 v3.
+# Un push a este archivo relanza el stgdiff leyendo los artifacts del run de abajo.
+#
+# run de build arm64 a leer: 34009100653
+#
+# Estado medido de ese run al momento de relanzar:
+#   v3-build-baseline  -> success  (runner 1000002044)
+#   v3-build-siao      -> success  (runner 1000002045)
+#   v3-criba-symvers   -> success  (runner 1000002047)
+#   v3-stgdiff-x86     -> failure  (runner 1000002046)
+#
+# Causa medida de esa failure, y por eso este relanzamiento existe: el job x86
+# hacia checkout del SHA disparador (e3f41d0b) y tools/f004_stg_x86.py se
+# commiteo un minuto despues (bb3b0e13), asi que el job no podia ver su lector.
+# No fue el stgdiff, no fue el ELF, no fue la arquitectura: fue el orden de dos
+# commits mios. Declarado antes de leer el resultado nuevo.
