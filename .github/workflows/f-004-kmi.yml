@@ -1,0 +1,117 @@
+name: F-004 KMI del fragmento SIAO
+
+# Dos jobs en PARALELO, uno por kernel: en 2 vCPU dos builds seriales no entran en las
+# 6 h de un job. El tercer job compara los Module.symvers y commitea el veredicto.
+on:
+  push:
+    branches:
+      - 'titan/f-004-kmi'
+    paths:
+      - 'tools/f004_kmi.py'
+      - '.github/workflows/f-004-kmi.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build-${{ matrix.brazo }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        brazo: [baseline, siao]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          nproc
+          free -m
+          df -h /
+
+      - name: md5 del instrumento
+        run: md5sum tools/f004_kmi.py
+
+      - name: Herramientas de kernel
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            clang lld llvm bc bison flex libssl-dev libelf-dev python3 \
+            rsync kmod cpio zstd
+          echo '--- versiones, verbatim ---'
+          clang --version | head -2
+          ld.lld --version | head -1
+          make --version | head -1
+
+      - name: Liberar disco (el arbol del kernel mas dos objdir no entran de taquito)
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
+          df -h /
+
+      - name: Compilar ${{ matrix.brazo }}
+        env:
+          F004_OUT: mediciones/f-004
+          F004_WORK: /tmp/f004
+          F004_RAMA: android15-6.6
+        run: python3 tools/f004_kmi.py build ${{ matrix.brazo }}
+
+      - name: Subir el Module.symvers y el .config
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f004-${{ matrix.brazo }}
+          path: mediciones/f-004/
+          retention-days: 5
+          if-no-files-found: warn
+
+  comparar:
+    name: comparar-KMI
+    needs: build
+    if: always()
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bajar los dos brazos
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/artifacts
+
+      - name: Juntarlos en mediciones/f-004
+        run: |
+          mkdir -p mediciones/f-004
+          find /tmp/artifacts -type f | sort
+          cp -v /tmp/artifacts/*/* mediciones/f-004/ 2>/dev/null || true
+          ls -la mediciones/f-004/
+
+      - name: Comparar los Module.symvers
+        env:
+          F004_OUT: mediciones/f-004
+          F004_RAMA: android15-6.6
+        run: python3 tools/f004_kmi.py comparar || true
+
+      - name: Commitear la evidencia
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(f-004): KMI por Module.symvers (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin "${{ github.ref_name }}" && \
+            git push origin HEAD:"${{ github.ref_name }}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+
+      - name: Resumen
+        if: always()
+        run: cat mediciones/f-004/F-004.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
