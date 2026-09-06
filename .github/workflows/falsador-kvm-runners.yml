@@ -1,0 +1,112 @@
+name: falsador-kvm-runners
+
+# LA PREGUNTA: los runners de GitHub exponen /dev/kvm USABLE?
+#
+# Por que importa: SIAO es arm64. La VM del corpus tiene KVM pero es x86_64, asi
+# que no acelera arm64. brain-env NO tiene /dev/kvm (medido: no such file) y es un
+# Celeron N4020 a 1,10 GHz. Si el runner ubuntu-24.04-arm expone KVM, entonces
+# Actions gana en las DOS dimensiones a la vez (arm64 nativo Y acelerado) y no hay
+# que instalar nada en la VM de produccion.
+#
+# POR QUE NO ALCANZA UN `ls /dev/kvm`: un nodo puede existir y el modulo no
+# responder, o existir sin permiso de escritura para el usuario del runner. Este
+# falsador mide TRES niveles y solo el tercero discrimina:
+#   1. el nodo existe
+#   2. se abre en lectura-escritura
+#   3. ioctl(KVM_GET_API_VERSION) devuelve un numero  <- el que decide
+# En la VM del corpus ese ioctl dio 12. Si aca da 12, KVM sirve de verdad.
+#
+# El job x64 es el CONTROL DE INSTRUMENTO: si el script falla en los dos, no se
+# puede distinguir "no hay KVM" de "mi script esta roto".
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "disparadores/falsador-kvm.txt"
+
+jobs:
+  kvm:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04-arm, ubuntu-24.04]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: medir KVM en ${{ matrix.runner }}
+        run: |
+          set -uo pipefail
+          echo "=== IDENTIDAD DEL RUNNER ==="
+          uname -m
+          nproc
+          id
+          grep -m1 'model name' /proc/cpuinfo 2>/dev/null || \
+            grep -m1 -E 'Processor|CPU part' /proc/cpuinfo 2>/dev/null || \
+            echo "sin model name (normal en arm64)"
+          free -m | head -2
+          echo
+          echo "=== NIVEL 1: existe el nodo? ==="
+          ls -la /dev/kvm 2>&1 || echo "NO EXISTE /dev/kvm"
+          echo
+          echo "=== extensiones del CPU ==="
+          # en x86 son vmx/svm; en arm64 la virtualizacion es EL2 y NO aparece
+          # en /proc/cpuinfo, asi que un cero aca NO prueba nada en arm64.
+          echo -n "vmx|svm en cpuinfo: "
+          grep -c -E 'vmx|svm' /proc/cpuinfo || true
+          echo
+          echo "=== NIVEL 2 y 3: abrir e ioctl ==="
+          python3 - <<'PY'
+          import fcntl, os, json
+          res = {"existe": os.path.exists("/dev/kvm")}
+          if res["existe"]:
+              res["escribible_por_este_usuario"] = os.access("/dev/kvm", os.W_OK)
+              try:
+                  f = os.open("/dev/kvm", os.O_RDWR)
+                  res["abre_rdwr"] = True
+                  try:
+                      # KVM_GET_API_VERSION = 0xAE00. Es el unico nivel que
+                      # distingue "nodo presente" de "KVM funcionando".
+                      res["api_version"] = fcntl.ioctl(f, 0xAE00, 0)
+                  except Exception as e:
+                      res["api_version"] = "ERR:" + type(e).__name__ + ":" + str(e)[:80]
+                  try:
+                      # KVM_CREATE_VM = 0xAE01. Prueba MAS FUERTE que el api
+                      # version: crear una VM de verdad.
+                      vm = fcntl.ioctl(f, 0xAE01, 0)
+                      res["create_vm_fd"] = vm
+                      os.close(vm)
+                  except Exception as e:
+                      res["create_vm_fd"] = "ERR:" + type(e).__name__ + ":" + str(e)[:80]
+                  os.close(f)
+              except Exception as e:
+                  res["abre_rdwr"] = "ERR:" + type(e).__name__ + ":" + str(e)[:80]
+          res["VEREDICTO"] = (
+              "KVM_USABLE" if res.get("api_version") == 12 and isinstance(res.get("create_vm_fd"), int)
+              else "KVM_PARCIAL" if isinstance(res.get("api_version"), int)
+              else "SIN_KVM")
+          print(json.dumps(res, indent=1))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as fh:
+              fh.write("### " + os.environ.get("MATRIX_RUNNER", "?") + chr(10) +
+                       "```json" + chr(10) + json.dumps(res, indent=1) + chr(10) + "```" + chr(10))
+          PY
+        env:
+          MATRIX_RUNNER: ${{ matrix.runner }}
+
+      - name: puede instalar el SDK y el emulador?
+        run: |
+          set -uo pipefail
+          echo "=== herramientas Android ya presentes? ==="
+          which java adb sdkmanager avdmanager emulator qemu-system-aarch64 2>&1 || true
+          echo "ANDROID_HOME=${ANDROID_HOME:-vacio}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-vacio}"
+          java -version 2>&1 | head -2 || echo "sin java"
+          echo
+          echo "=== imagenes de sistema disponibles para este ISA ==="
+          if command -v sdkmanager >/dev/null 2>&1; then
+            # NO filtro por API: la version la decide Abraham (AppFunctions
+            # necesita Android 16+, y eso todavia es NO MEDIDO).
+            sdkmanager --list 2>/dev/null | grep -E 'system-images;android-3[4-9]' | head -25 || \
+              echo "sin system-images en el listado"
+          else
+            echo "sdkmanager AUSENTE: habria que instalar cmdline-tools"
+          fi
