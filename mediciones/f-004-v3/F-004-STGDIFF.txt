@@ -1,0 +1,36 @@
+== F-004 v3 etapa x86: stg + stgdiff ==
+maquina: x86_64 | fecha UTC 2026-09-06T04:07:44Z
+  /tmp/stg/stg | 4944792 B | sha256 b8cf4364c4e7da8b57362afd817e697611cb7d9bdf8d9fdb6e3f2e8a2ece3adb
+  /tmp/stg/stgdiff | 5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f818970bdac8d3e4a323448918d742ee8cb
+$ /tmp/stg/stg --help
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+$ /tmp/stg/stgdiff --help
+  rc=127 en 0.0 s
+   | /tmp/stg/stgdiff: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+=== brazo baseline ===
+  vmlinux 173481992 B | modulos 97
+$ /tmp/stg/stg -o /tmp/baseline.stg --elf /tmp/k/baseline/vmlinux /tmp/k/baseline/arch/arm64/geniezone/gzvm.ko /tmp/k/baseline/drivers/base/regmap/regmap-kunit.ko /tmp/k/baseline/drivers/base/regmap/regmap-ram.ko /tmp/k/baseline/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/baseline/drivers/block/virtio_blk.ko /tmp/k/baseline/drivers/block/zram/zram.ko /tmp/k/baseline/drivers/bluetooth/btbcm.ko /tmp/
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+$ /tmp/stg/stg --output /tmp/baseline.stg --elf /tmp/k/baseline/vmlinux
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+$ /tmp/stg/stg -o /tmp/baseline.stg /tmp/k/baseline/vmlinux
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+  NO MEDIDO: stg no produjo .stg para baseline
+=== brazo siao ===
+  vmlinux 174758944 B | modulos 97
+$ /tmp/stg/stg -o /tmp/siao.stg --elf /tmp/k/siao/vmlinux /tmp/k/siao/arch/arm64/geniezone/gzvm.ko /tmp/k/siao/drivers/base/regmap/regmap-kunit.ko /tmp/k/siao/drivers/base/regmap/regmap-ram.ko /tmp/k/siao/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/siao/drivers/block/virtio_blk.ko /tmp/k/siao/drivers/block/zram/zram.ko /tmp/k/siao/drivers/bluetooth/btbcm.ko /tmp/k/siao/drivers/bluetooth/btqca.ko /t
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+$ /tmp/stg/stg --output /tmp/siao.stg --elf /tmp/k/siao/vmlinux
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+$ /tmp/stg/stg -o /tmp/siao.stg /tmp/k/siao/vmlinux
+  rc=127 en 0.0 s
+   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+  NO MEDIDO: stg no produjo .stg para siao
+=== stgdiff baseline vs siao (unica variable: el fragmento) ===
+  NO MEDIDO: falta al menos un .stg, brazos con stg = []
