@@ -1,0 +1,80 @@
+== F-002 v9: copy:// ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_arch": "ARM64", "run_id": "34006110659"}
+LA CAUSA: mmdebstrap la nombro con el fix incluido: 'package file ... not accessible from chroot directory -- use copy:// instead of file://'. Con file:// el .deb vive afuera del chroot y dpkg corre adentro. Seis versiones buscandola, y estaba escrita en la salida que yo venia filtrando.
+PREDICCION registrada antes de correr: Predigo VERDE con copy:// y ROJO con file://. El v8 ya mostro que con el overlay de estos 3 no hay ni un unmet: 60 paquetes resueltos y los del overlay configurados por dpkg.
+
+--- overlay siao-base-s1: libdevmapper1.02.1, libgcrypt20, libgpg-error0 ---
+  libdevmapper1.02.1     2:1.02.205-ok1     127826 B sha256_ok=True   main: 2:1.02.196-ok2
+$ dpkg-deb -f /tmp/f002v9/overlay/pool/main/libdevmapper1.02.1_1.02.205-ok1_arm64.deb
+  libgcrypt20            1.12.1-ok1         489520 B sha256_ok=True   main: 1.10.3-ok2
+$ dpkg-deb -f /tmp/f002v9/overlay/pool/main/libgcrypt20_1.12.1-ok1_arm64.deb
+  libgpg-error0          1.59-ok1            68236 B sha256_ok=True   main: 1.47-ok1
+$ dpkg-deb -f /tmp/f002v9/overlay/pool/main/libgpg-error0_1.59-ok1_arm64.deb
+  Release y Packages escritos
+
+==============================================================================
+>>> SUJETO con copy://   (esquema: copy:)
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] copy:///tmp/f002v9/overlay huanghe main
+$ bash -c rm -rf /tmp/f002v9/rootfs && mkdir -p /tmp/f002v9/rootfs
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/
+  salida COMPLETA en <out>/v9-sujeto-copy-completo.txt (0 B out, 104836 B err)
+  rc=0 | systemd presente: True
+  --- las lineas que importan, del texto COMPLETO ---
+   >>> 0 upgraded, 60 newly installed, 0 to remove and 0 not upgraded.
+   >>> 0 upgraded, 117 newly installed, 0 to remove and 0 not upgraded.
+   >>> Setting up systemd (255.2-ok2.8) ...
+
+==============================================================================
+>>> CONTROL con file:// (el de los v5-v8)   (esquema: file:)
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v9/overlay huanghe main
+$ bash -c rm -rf /tmp/f002v9/con-file && mkdir -p /tmp/f002v9/con-file
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/
+  salida COMPLETA en <out>/v9-control-file-completo.txt (0 B out, 23296 B err)
+  rc=25 | systemd presente: False
+  --- las lineas que importan, del texto COMPLETO ---
+   >>> 0 upgraded, 60 newly installed, 0 to remove and 0 not upgraded.
+   >>> E: package file /tmp/f002v9/overlay/pool/main/libgpg-error0_1.59-ok1_arm64.deb not accessible from chroot directory -- use copy:// instead of file:// or a bind-mount. You can also try using --hook-dir=/usr/share/mmdebstrap/hooks/file-mirror-automount
+   >>> E: mmdebstrap failed to run
+
+RESULTADO: copy://=True (rc 0) | file://=False (rc 25)
+EL CONTROL DISCRIMINA: True
+$ bash -c du -sb /tmp/f002v9/rootfs | cut -f1
+  rootfs: 260158072 B (0.242 GiB)
+$ bash -c dpkg-query --admindir=/tmp/f002v9/rootfs/var/lib/dpkg -W -f '${Package} ${Version}\n' systemd gpgv libgcrypt20 libgpg-error0 libdevmapper1.02.1 libcryptsetup12 base-files 2>&1
+  LAS DOS CADENAS QUE ESTABAN ROTAS, ahora instaladas:
+   | base-files 14-ok3
+   | gpgv 2.4.9-ok1.2
+   | libcryptsetup12 2:2.8.4-1ok10
+   | libdevmapper1.02.1 2:1.02.205-ok1
+   | libgcrypt20 1.12.1-ok1
+   | libgpg-error0 1.59-ok1
+   | systemd 255.2-ok2.8
+$ bash -c cat /tmp/f002v9/rootfs/etc/os-release | head -4
+  os-release del rootfs:
+   | NAME="openKylin"
+   | FULL_NAME="openKylin"
+   | VERSION="3.0 (huanghe)"
+   | VERSION_US="3.0 (huanghe)"
+$ bash -c ls -la /tmp/f002v9/rootfs/usr/lib/systemd/systemd
+  el init: -rwxr-xr-x 1 root root 133384 Jan 19  2026 /tmp/f002v9/rootfs/usr/lib/systemd/systemd
+
+--- CRITERIO (b): apt-cache policy dentro del chroot (R-04) ---
+$ bash -c chroot /tmp/f002v9/rootfs apt-get update -qq -o Acquire::AllowInsecureRepositories=true -o APT::Get::AllowUnauthenticated=true 2>&1 | tail -3
+$ bash -c chroot /tmp/f002v9/rootfs dpkg-query -W -f '${Package}\n' | sort
+$ bash -c chroot /tmp/f002v9/rootfs apt-cache policy adduser apt apt-utils base-files base-passwd bash bsdextrautils bsdmainutils bsdutils coreutils cpio cron cron-daemon-common dash dbus dbus-bin dbus-daemon dbus-session-bus-common dbus-system-bus-common debconf debconf-i18n debianutils diffutils dmidecode dpkg e2fsprogs fdisk findutils gcc-10-base gcc-15-base gcc-7-base gcc-8-base gcc-9-base gnu-c
+  salida COMPLETA en <out>/v9-policy-completo.txt (41885 B out, 0 B err)
+  paquetes instalados: 177
+  ORIGEN, contado por apt:
+      huanghe/main                                 174
+      OVERLAY-SIAO                                 3
+  del OVERLAY, segun apt:
+      libdevmapper1.02.1       2:1.02.205-ok1
+      libgcrypt20              1.12.1-ok1
+      libgpg-error0            1.59-ok1
+  de huanghe-proposed DIRECTO: 0 (debe ser 0)
+  CONTROL de (b): systemd de huanghe y NO de proposed? True [{'paquete': 'systemd', 'version': '255.2-ok2.8', 'uri': 'https://mirrors.dotsrc.org/mirrors/pub/openkylin', 'suite': 'huanghe/main'}]
+
+VEREDICTO F-002 v9: {"a_construye": "VERDE", "b_origen": "VERDE", "c_firmas": "ROJO (trusted=yes, R-07)"}
+La prediccion ACERTO

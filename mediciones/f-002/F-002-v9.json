@@ -1,0 +1,1165 @@
+{
+  "falsador": "F-002",
+  "version": 9,
+  "fecha_utc": "2026-09-06T02:18:05Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "34006110659"
+  },
+  "la_causa": "mmdebstrap la nombro con el fix incluido: 'package file ... not accessible from chroot directory -- use copy:// instead of file://'. Con file:// el .deb vive afuera del chroot y dpkg corre adentro. Seis versiones buscandola, y estaba escrita en la salida que yo venia filtrando.",
+  "overlay": [
+    "libdevmapper1.02.1",
+    "libgcrypt20",
+    "libgpg-error0"
+  ],
+  "prediccion": "Predigo VERDE con copy:// y ROJO con file://. El v8 ya mostro que con el overlay de estos 3 no hay ni un unmet: 60 paquetes resueltos y los del overlay configurados por dpkg.",
+  "controles": {
+    "file": {
+      "esquema": "file://",
+      "instalo": false,
+      "rc": 25,
+      "causa_detectada": true,
+      "evidencia": "E: package file /tmp/f002v9/overlay/pool/main/libgpg-error0_1.59-ok1_arm64.deb not accessible from chroot directory -- use copy:// instead of file:// or a bind-mount. You can also try using --hook-dir=/usr/share/mmdebstrap/hooks/file-mirror-automount to automatically create bind-mounts or copy the files as necessary."
+    },
+    "discrimina": true
+  },
+  "no_medido": [],
+  "manifiesto": [
+    {
+      "paquete": "libdevmapper1.02.1",
+      "version": "2:1.02.205-ok1",
+      "version_en_main": "2:1.02.196-ok2",
+      "sha256": "a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927",
+      "bytes": 127826,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/libdevmapper1.02.1_1.02.205-ok1_arm64.deb"
+    },
+    {
+      "paquete": "libgcrypt20",
+      "version": "1.12.1-ok1",
+      "version_en_main": "1.10.3-ok2",
+      "sha256": "77d4659da56e39d700fd226a58167193c1b14013e9b12b8ba4af56accb20fd19",
+      "bytes": 489520,
+      "origen": "huanghe-proposed/pool/main/libg/libgcrypt20/libgcrypt20_1.12.1-ok1_arm64.deb"
+    },
+    {
+      "paquete": "libgpg-error0",
+      "version": "1.59-ok1",
+      "version_en_main": "1.47-ok1",
+      "sha256": "d7f13c7de1981234816004c1e4f6a436c312eb99471072a48ff8fafb6ba890f3",
+      "bytes": 68236,
+      "origen": "huanghe-proposed/pool/main/libg/libgpg-error/libgpg-error0_1.59-ok1_arm64.deb"
+    }
+  ],
+  "sujeto": {
+    "esquema": "copy://",
+    "instalo": true,
+    "rc": 0
+  },
+  "prediccion_acerto": true,
+  "rootfs_bytes": 260158072,
+  "cadenas": "base-files 14-ok3\ngpgv 2.4.9-ok1.2\nlibcryptsetup12 2:2.8.4-1ok10\nlibdevmapper1.02.1 2:1.02.205-ok1\nlibgcrypt20 1.12.1-ok1\nlibgpg-error0 1.59-ok1\nsystemd 255.2-ok2.8",
+  "os_release": "NAME=\"openKylin\"\nFULL_NAME=\"openKylin\"\nVERSION=\"3.0 (huanghe)\"\nVERSION_US=\"3.0 (huanghe)\"",
+  "criterio_b": {
+    "n_paquetes": 177,
+    "por_origen": {
+      "huanghe/main": 174,
+      "OVERLAY-SIAO": 3
+    },
+    "del_overlay": [
+      {
+        "paquete": "libdevmapper1.02.1",
+        "version": "2:1.02.205-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgcrypt20",
+        "version": "1.12.1-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgpg-error0",
+        "version": "1.59-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      }
+    ],
+    "n_del_overlay": 3,
+    "n_de_proposed_directo": 0,
+    "control_systemd": true,
+    "detalle": [
+      {
+        "paquete": "adduser",
+        "version": "3.137-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "apt",
+        "version": "3.1.16-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "apt-utils",
+        "version": "3.1.16-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "base-files",
+        "version": "14-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "base-passwd",
+        "version": "3.6.8-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "bash",
+        "version": "5.3-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "bsdextrautils",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "bsdmainutils",
+        "version": "12.1.8-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "bsdutils",
+        "version": "1:2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "coreutils",
+        "version": "9.4-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "cpio",
+        "version": "2.15+dfsg-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "cron",
+        "version": "3.0pl1-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "cron-daemon-common",
+        "version": "3.0pl1-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dash",
+        "version": "0.5.12-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dbus",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dbus-bin",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dbus-daemon",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dbus-session-bus-common",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dbus-system-bus-common",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "debconf",
+        "version": "1.5.86-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "debconf-i18n",
+        "version": "1.5.86-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "debianutils",
+        "version": "5.23.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "diffutils",
+        "version": "1:3.12-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dmidecode",
+        "version": "3.6-2build1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "dpkg",
+        "version": "1.23.7-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "e2fsprogs",
+        "version": "1.47.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "fdisk",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "findutils",
+        "version": "4.10.0-ok3.0",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gcc-10-base",
+        "version": "10-20200411-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gcc-15-base",
+        "version": "15.2.0-16ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gcc-7-base",
+        "version": "7.5.0-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gcc-8-base",
+        "version": "8.4.0-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gcc-9-base",
+        "version": "9.3.0-ok12",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gnu-coreutils",
+        "version": "9.5-1ok3.3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gpgv",
+        "version": "2.4.9-ok1.2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "grep",
+        "version": "3.12-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "groff-base",
+        "version": "1.23.0-10ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "gzip",
+        "version": "1.12-1ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "hostname",
+        "version": "3.25-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ifupdown",
+        "version": "0.8.41-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "info",
+        "version": "7.1-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "init",
+        "version": "1.66-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "init-system-helpers",
+        "version": "1.66-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "install-info",
+        "version": "7.1-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "iproute2",
+        "version": "6.19.0-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "iputils-ping",
+        "version": "3:20250605-ok1k0.1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "isc-dhcp-client",
+        "version": "4.4.3-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "isc-dhcp-common",
+        "version": "4.4.3-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "kmod",
+        "version": "34.2-2-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "less",
+        "version": "590-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libacl1",
+        "version": "2.3.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libapparmor1",
+        "version": "5.0.0~beta1-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libapt-pkg6.0t64",
+        "version": "3.1.16-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libattr1",
+        "version": "1:2.5.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libaudit-common",
+        "version": "1:4.1.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libaudit1",
+        "version": "1:4.1.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libblkid1",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libbpf1",
+        "version": "1:1.3.0-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libbsd0",
+        "version": "0.11.7-4ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libbz2-1.0",
+        "version": "1:1.0.8-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libc-bin",
+        "version": "2.43-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libc-gconv-modules-extra",
+        "version": "2.43-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libc6",
+        "version": "2.43-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcap-ng0",
+        "version": "0.8.4-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcap2",
+        "version": "1:2.69-1ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcap2-bin",
+        "version": "1:2.69-1ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcom-err2",
+        "version": "1.47.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcrypt1",
+        "version": "1:4.4.36-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libcryptsetup12",
+        "version": "2:2.8.4-1ok10",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libdb5.3t64",
+        "version": "5.3.28+dfsg2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libdbus-1-3",
+        "version": "1.16.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libdebconfclient0",
+        "version": "0.271-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libdevmapper1.02.1",
+        "version": "2:1.02.205-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libedit2",
+        "version": "3.1-20230828-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libelf1t64",
+        "version": "0.194-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libestr0",
+        "version": "0.1.11-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libexpat1",
+        "version": "2.7.4-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libext2fs2t64",
+        "version": "1.47.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libfastjson4",
+        "version": "1.2304.0-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libfdisk1",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgcc-s1",
+        "version": "15.2.0-16ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgcrypt20",
+        "version": "1.12.1-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgdbm6t64",
+        "version": "1.26-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgmp10",
+        "version": "2:6.3.0+dfsg-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgpg-error0",
+        "version": "1.59-ok1",
+        "uri": "copy:/tmp/f002v9/overlay",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libgssapi-krb5-2",
+        "version": "1.22.1-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libidn2-0",
+        "version": "2.3.7-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libjansson4",
+        "version": "2.14-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libjson-c5",
+        "version": "0.18-3ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libk5crypto3",
+        "version": "1.22.1-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libkeyutils1",
+        "version": "1.6.3-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libkmod2",
+        "version": "34.2-2-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libkrb5-3",
+        "version": "1.22.1-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libkrb5support0",
+        "version": "1.22.1-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "liblocale-gettext-perl",
+        "version": "1.07-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "liblz4-1",
+        "version": "1.9.4-1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "liblzma5",
+        "version": "5.4.5-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libmd0",
+        "version": "1.1.0-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libmnl-dev",
+        "version": "1.0.5-ok1.0",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libmnl0",
+        "version": "1.0.5-ok1.0",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libmount1",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libncursesw6",
+        "version": "6.4+20240113-1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libnftables1",
+        "version": "1.0.9-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libnftnl11",
+        "version": "1.2.6-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpam-modules",
+        "version": "1.5.3-ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpam-modules-bin",
+        "version": "1.5.3-ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpam-runtime",
+        "version": "1.5.3-ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpam-systemd",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpam0g",
+        "version": "1.5.3-ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpcre2-8-0",
+        "version": "10.42-4ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpcre3",
+        "version": "2:8.39-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpipeline1",
+        "version": "1.5.7-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libpopt0",
+        "version": "1.19+dfsg-1ok1.0",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libproc2-0",
+        "version": "2:4.0.4-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libreadline8",
+        "version": "8.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libseccomp2",
+        "version": "2.5.5-1ok1.2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libselinux1",
+        "version": "3.5-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsemanage-common",
+        "version": "3.5-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsemanage2",
+        "version": "3.5-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsepol2",
+        "version": "3.5-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsmartcols1",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libss2",
+        "version": "1.47.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libssl3t64",
+        "version": "3.2.1-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libstdc++6",
+        "version": "15.2.0-16ok8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsystemd-shared",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libsystemd0",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtext-charwidth-perl",
+        "version": "0.04-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtext-iconv-perl",
+        "version": "1.7-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtext-wrapi18n-perl",
+        "version": "0.06-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtinfo6",
+        "version": "6.4+20240113-1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtirpc-common",
+        "version": "1.3.4+ds-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libtirpc3t64",
+        "version": "1.3.4+ds-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libuchardet0",
+        "version": "0.0.8-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libudev1",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libunistring2",
+        "version": "0.9.10-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libuuid1",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libxtables12",
+        "version": "1.8.11-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libxxhash0",
+        "version": "0.8.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "libzstd1",
+        "version": "1.5.5-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "login",
+        "version": "1:4.14.3-ok3.5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "logrotate",
+        "version": "3.21.0-ok2.1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "logsave",
+        "version": "1.47.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "lsb-base",
+        "version": "11.6-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "man-db",
+        "version": "2.12.0-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "mawk",
+        "version": "1.3.4.20240123-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "mount",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "nano",
+        "version": "7.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ncal",
+        "version": "12.1.8-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ncurses-base",
+        "version": "6.4+20240113-1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ncurses-bin",
+        "version": "6.4+20240113-1ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "net-tools",
+        "version": "2.10-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "netbase",
+        "version": "6.4-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "nftables",
+        "version": "1.0.9-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "openkylin-archive-anything",
+        "version": "2023.02.06-ok4",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "openkylin-keyring",
+        "version": "2022.05.12-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "passwd",
+        "version": "1:4.14.3-ok3.5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "perl-base",
+        "version": "5.36.0-ok8.2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "procps",
+        "version": "2:4.0.4-ok5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "readline-common",
+        "version": "8.2-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "rsyslog",
+        "version": "8.2312.0-ok2.1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "sed",
+        "version": "4.9-2ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "sensible-utils",
+        "version": "0.0.22-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "systemd",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "systemd-dev",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "systemd-resolved",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "systemd-sysv",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "sysvinit-utils",
+        "version": "3.08-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "tar",
+        "version": "1.35+dfsg-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "tzdata",
+        "version": "2024a-ok2",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ubuntu-keyring",
+        "version": "2023.11.28.1-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ubuntukylin-keyring",
+        "version": "2014.04.10-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "ucf",
+        "version": "3.0043+nmu1-ok1",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "udev",
+        "version": "255.2-ok2.8",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "util-linux",
+        "version": "2.39.3-ok2build5",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "vim-common",
+        "version": "2:9.1.0016-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "vim-tiny",
+        "version": "2:9.1.0016-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      },
+      {
+        "paquete": "zlib1g",
+        "version": "1:1.3.dfsg-ok3",
+        "uri": "https://mirrors.dotsrc.org/mirrors/pub/openkylin",
+        "suite": "huanghe/main"
+      }
+    ]
+  },
+  "veredicto": {
+    "a_construye": "VERDE",
+    "b_origen": "VERDE",
+    "c_firmas": "ROJO (trusted=yes, R-07)"
+  },
+  "segundos": 79.8
+}
