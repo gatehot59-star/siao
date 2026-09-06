@@ -1,0 +1,140 @@
+variable symbol 'struct static_key_true pids_cgrp_subsys_enabled_key' was added
+
+variable symbol 'struct static_key_true pids_cgrp_subsys_on_dfl_key' was added
+
+function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+
+type 'struct task_struct' changed
+  member 'u64 android_kabi_reserved3' was removed
+  member 'u64 android_kabi_reserved4' was removed
+  member 'u64 android_kabi_reserved5' was removed
+  member 'union { struct sysv_sem sysvsem; struct { u64 android_kabi_reserved3; }; union { }; }' was added
+  member 'union { struct sysv_shm sysvshm; struct { u64 android_kabi_reserved4; u64 android_kabi_reserved5; }; union { }; }' was added
+
+type 'struct cgroup' changed
+  byte size changed from 1920 to 1984
+  member changed from 'struct cgroup_subsys_state* subsys[7]' to 'struct cgroup_subsys_state* subsys[8]'
+    type changed from 'struct cgroup_subsys_state*[7]' to 'struct cgroup_subsys_state*[8]'
+      number of elements changed from 7 to 8
+  member 'struct cgroup_root* root' changed
+    offset changed from 6272 to 6336
+  member 'struct list_head cset_links' changed
+    offset changed from 6336 to 6400
+  member changed from 'struct list_head e_csets[7]' to 'struct list_head e_csets[8]'
+    offset changed from 6464 to 6528
+    type changed from 'struct list_head[7]' to 'struct list_head[8]'
+      number of elements changed from 7 to 8
+  member 'struct cgroup* dom_cgrp' changed
+    offset changed from 7360 to 7552
+  member 'struct cgroup* old_dom_cgrp' changed
+    offset changed from 7424 to 7616
+  member 'struct cgroup_rstat_cpu* rstat_cpu' changed
+    offset changed from 7488 to 7680
+  member 'struct list_head rstat_css_list' changed
+    offset changed from 7552 to 7744
+  member 'struct cacheline_padding _pad_' changed
+    offset changed from 7680 to 8192
+  member 'struct cgroup* rstat_flush_next' changed
+    offset changed from 7680 to 8192
+  member 'struct cgroup_base_stat last_bstat' changed
+    offset changed from 7744 to 8256
+  member 'struct cgroup_base_stat bstat' changed
+    offset changed from 7936 to 8448
+  member 'struct prev_cputime prev_cputime' changed
+    offset changed from 8128 to 8640
+  member 'struct list_head pidlists' changed
+    offset changed from 8320 to 8832
+  member 'struct mutex pidlist_mutex' changed
+    offset changed from 8448 to 8960
+  member 'wait_queue_head_t offline_waitq' changed
+    offset changed from 8832 to 9344
+  member 'struct work_struct release_agent_work' changed
+    offset changed from 9024 to 9536
+  member 'struct psi_group* psi' changed
+    offset changed from 9408 to 9920
+  member 'struct cgroup_bpf bpf' changed
+    offset changed from 9472 to 9984
+  member 'atomic_t congestion_count' changed
+    offset changed from 14720 to 15232
+  member 'struct cgroup_freezer_state freezer' changed
+    offset changed from 14752 to 15264
+  member 'struct bpf_local_storage* bpf_cgrp_storage' changed
+    offset changed from 14912 to 15424
+  member 'union { struct cgroup_kmi_ext_info* kmi_ext_info; struct { u64 android_backport_reserved1; }; union { }; }' changed
+    offset changed from 14976 to 15488
+  member 'struct cgroup* ancestors[0]' changed
+    offset changed from 15040 to 15552
+
+type 'struct cgroup_root' changed
+  byte size changed from 6272 to 6336
+  member 'struct cgroup* cgrp_ancestor_storage' changed
+    offset changed from 15872 to 16384
+  member 'atomic_t nr_cgrps' changed
+    offset changed from 15936 to 16448
+  member 'struct list_head root_list' changed
+    offset changed from 16000 to 16512
+  member 'unsigned int flags' changed
+    offset changed from 16128 to 16640
+  member 'char release_agent_path[4096]' changed
+    offset changed from 16160 to 16672
+  member 'char name[64]' changed
+    offset changed from 48928 to 49440
+  member changed from 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[28]; }; union { }; }' to 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[32]; }; union { }; }'
+    offset changed from 49472 to 49984
+    type changed from 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[28]; }; union { }; }' to 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[32]; }; union { }; }'
+      member changed from 'struct { u8 android_backport_reserved1[28]; }' to 'struct { u8 android_backport_reserved1[32]; }'
+        type changed from 'struct { u8 android_backport_reserved1[28]; }' to 'struct { u8 android_backport_reserved1[32]; }'
+          member changed from 'u8 android_backport_reserved1[28]' to 'u8 android_backport_reserved1[32]'
+            type changed from 'u8[28]' to 'u8[32]'
+              number of elements changed from 28 to 32
+
+type 'struct css_set' changed
+  byte size changed from 424 to 448
+  member changed from 'struct cgroup_subsys_state* subsys[7]' to 'struct cgroup_subsys_state* subsys[8]'
+    type changed from 'struct cgroup_subsys_state*[7]' to 'struct cgroup_subsys_state*[8]'
+      number of elements changed from 7 to 8
+  member 'refcount_t refcount' changed
+    offset changed from 448 to 512
+  member 'struct css_set* dom_cset' changed
+    offset changed from 512 to 576
+  member 'struct cgroup* dfl_cgrp' changed
+    offset changed from 576 to 640
+  member 'int nr_tasks' changed
+    offset changed from 640 to 704
+  member 'struct list_head tasks' changed
+    offset changed from 704 to 768
+  member 'struct list_head mg_tasks' changed
+    offset changed from 832 to 896
+  member 'struct list_head dying_tasks' changed
+    offset changed from 960 to 1024
+  member 'struct list_head task_iters' changed
+    offset changed from 1088 to 1152
+  member changed from 'struct list_head e_cset_node[7]' to 'struct list_head e_cset_node[8]'
+    offset changed from 1216 to 1280
+    type changed from 'struct list_head[7]' to 'struct list_head[8]'
+      number of elements changed from 7 to 8
+  member 'struct list_head threaded_csets' changed
+    offset changed from 2112 to 2304
+  member 'struct list_head threaded_csets_node' changed
+    offset changed from 2240 to 2432
+  member 'struct hlist_node hlist' changed
+    offset changed from 2368 to 2560
+  member 'struct list_head cgrp_links' changed
+    offset changed from 2496 to 2688
+  member 'struct list_head mg_src_preload_node' changed
+    offset changed from 2624 to 2816
+  member 'struct list_head mg_dst_preload_node' changed
+    offset changed from 2752 to 2944
+  member 'struct list_head mg_node' changed
+    offset changed from 2880 to 3072
+  member 'struct cgroup* mg_src_cgrp' changed
+    offset changed from 3008 to 3200
+  member 'struct cgroup* mg_dst_cgrp' changed
+    offset changed from 3072 to 3264
+  member 'struct css_set* mg_dst_cset' changed
+    offset changed from 3136 to 3328
+  member 'bool dead' changed
+    offset changed from 3200 to 3392
+  member 'struct callback_head callback_head' changed
+    offset changed from 3264 to 3456
+

@@ -1,0 +1,236 @@
+== F-004b: stgdiff del parche KABI ==
+maquina: x86_64 | fecha UTC 2026-09-06T11:53:48Z
+PREDICCION DECLARADA: pasada sin CRC VACIA, task_struct sin cambio de tamano.
+  bajado bin/stg                 4944792 B | sha256 b8cf4364c4e7da8b57362afd817e6976
+  bajado bin/stgdiff             5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f81
+  bajado lib64/libc++.so         1306352 B | sha256 7b91de1cba2ad902aad871b77e58af40
+=== brazo baseline ===
+  vmlinux 173485208 B | modulos 97
+$ /tmp/stg/stg -o /tmp/baseline.stg --elf /tmp/k/baseline/vmlinux /tmp/k/baseline/arch/arm64/geniezone/gzvm.ko /tmp/k/baseline/drivers/base/regmap/regmap-kunit.ko /tmp/k/baseline/drivers/base/regmap/regmap-ram.ko /tmp/k/baseline/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/baseline/drivers/block/virtio_blk.ko /tmp/k/baseline/drivers/block/zram/zram.ko /tmp/k/baseline/drivers/blue
+  rc=0 en 16.8 s
+  baseline.stg 11317742 B | sha256 440f48ed6759f80e7f97eabcc09efc6f
+=== brazo kabi ===
+  vmlinux 174829168 B | modulos 97
+$ /tmp/stg/stg -o /tmp/kabi.stg --elf /tmp/k/kabi/vmlinux /tmp/k/kabi/arch/arm64/geniezone/gzvm.ko /tmp/k/kabi/drivers/base/regmap/regmap-kunit.ko /tmp/k/kabi/drivers/base/regmap/regmap-ram.ko /tmp/k/kabi/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/kabi/drivers/block/virtio_blk.ko /tmp/k/kabi/drivers/block/zram/zram.ko /tmp/k/kabi/drivers/bluetooth/btbcm.ko /tmp/k/kabi/drivers/b
+  rc=0 en 17.2 s
+  kabi.stg 11319678 B | sha256 ce3743b1f3b4cc0b26ffd8f076e46298
+=== pasada CON CRC ===
+$ /tmp/stg/stgdiff --stg /tmp/baseline.stg /tmp/kabi.stg --format small --output mediciones/f-004b/F-004b-abi.report
+  rc=4 en 0.5 s
+  rc=4 | reporte 876054 B | 19061 lineas
+  'CRC changed' x 6307 | 'was added' x 5 | 'offset changed' x 51
+   | variable symbol 'struct static_key_true pids_cgrp_subsys_enabled_key' was added
+   | 
+   | variable symbol 'struct static_key_true pids_cgrp_subsys_on_dfl_key' was added
+   | 
+   | function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   | 
+   | variable symbol 'const struct dwc3* const ANDROID_GKI_struct_dwc3' changed
+   |   CRC changed from 0xd68c3bec to 0x39ac9507
+   | 
+   | function symbol 'struct block_device* I_BDEV(struct inode*)' changed
+   |   CRC changed from 0x974b1685 to 0x6ddfafed
+   | 
+   | function symbol 'void __ClearPageMovable(struct page*)' changed
+   |   CRC changed from 0xd52f347f to 0xb89384d0
+   | 
+   | function symbol 'void __SetPageMovable(struct page*, const struct movable_operations*)' changed
+   |   CRC changed from 0x69d31e82 to 0x95f48e06
+   | 
+   | function symbol 'int ___pskb_trim(struct sk_buff*, unsigned int)' changed
+   |   CRC changed from 0x84efba44 to 0xfe089467
+   | 
+   | function symbol 'int __account_locked_vm(struct mm_struct*, unsigned long, bool, struct task_struct*, bool)' changed
+   |   CRC changed from 0x91574f5 to 0x40b51b62
+   | 
+   | function symbol 'struct page* __alloc_pages(gfp_t, unsigned int, int, nodemask_t*)' changed
+   |   CRC changed from 0xa184bb4e to 0x51277847
+   | 
+   | function symbol 'unsigned long __alloc_pages_bulk(gfp_t, int, nodemask_t*, int, struct list_head*, struct page**)' changed
+   |   CRC changed from 0x2ecbbb9d to 0x776dda0f
+   | 
+   | function symbol 'struct sk_buff* __alloc_skb(unsigned int, gfp_t, int, int)' changed
+   |   CRC changed from 0x41ded6bf to 0xd7623849
+   | 
+   | function symbol 'void __audit_inode_child(struct inode*, const struct dentry*, unsigned char)' changed
+   |   CRC changed from 0x9e13972f to 0x1e538308
+   | 
+   | function symbol 'void __balance_callbacks(struct rq*)' changed
+   |   CRC changed from 0xe740acf6 to 0x960ed306
+   | 
+   | function symbol 'void __bforget(struct buffer_head*)' changed
+   |   CRC changed from 0x5e568d9b to 0x8ca3a26
+   | 
+   | function symbol 'int __bh_read(struct buffer_head*, blk_opf_t, bool)' changed
+   |   CRC changed from 0xfd3c214a to 0xfa6db7b2
+   | 
+   | function symbol 'void __bh_read_batch(int, struct buffer_head**, blk_opf_t, bool)' changed
+   |   CRC changed from 0x6800dc53 to 0xef88dfef
+   | 
+   | function symbol 'void __bio_add_page(struct bio*, struct page*, unsigned int, unsigned int)' changed
+   |   CRC changed from 0x8f8718e0 to 0x66366eb3
+   | 
+   | function symbol 'void __bio_advance(struct bio*, unsigned int)' changed
+   |   CRC changed from 0x853440fb to 0xdbe1fb22
+   | 
+   | function symbol 'void __bio_release_pages(struct bio*, bool)' changed
+   |   CRC changed from 0x8e5f73ce to 0x5d5b768f
+   | 
+   | function symbol 'struct gendisk* __blk_alloc_disk(int, struct lock_class_key*)' changed
+   |   CRC changed from 0xe3d059e4 to 0x84a69f95
+   | 
+   | function symbol 'struct gendisk* __blk_mq_alloc_disk(struct blk_mq_tag_set*, void*, struct lock_class_key*)' changed
+   |   CRC changed from 0xa1ec36bc to 0xb2bc498c
+   | 
+   | function symbol 'void __blk_mq_end_request(struct request*, blk_status_t)' changed
+   |   CRC changed from 0xa0f93117 to 0x16e1c334
+   | 
+   | function symbol 'int __blk_rq_map_sg(struct request_queue*, struct request*, struct scatterlist*, struct scatterlist**)' changed
+   |   CRC changed from 0x7f27f068 to 0x931673dd
+   | 
+   | function symbol 'u64 __blkg_prfill_rwstat(struct seq_file*, struct blkg_policy_data*, const struct blkg_rwstat_sample*)' changed
+   |   CRC changed from 0x698cd264 to 0xcb1c71f
+   | 
+   | function symbol 'u64 __blkg_prfill_u64(struct seq_file*, struct blkg_policy_data*, u64)' changed
+   |   CRC changed from 0xd723e6b1 to 0x1c8d4121
+   | 
+   | function symbol 'int __block_write_begin(struct page*, loff_t, unsigned int, get_block_t*)' changed
+   |   CRC changed from 0x134bda42 to 0xa663b770
+   | 
+   | function symbol 'int __block_write_full_folio(struct inode*, struct folio*, get_block_t*, struct writeback_control*, bh_end_io_t*)' changed
+   |   CRC changed from 0x615eaae1 to 0xa3a69a04
+   | 
+   | function symbol 'struct buffer_head* __bread_gfp(struct block_device*, sector_t, unsigned int, gfp_t)' changed
+   |   CRC changed from 0x7a29d8a9 to 0x245daac
+   | 
+   | function symbol 'void __breadahead(struct block_device*, sector_t, unsigned int)' changed
+   |   CRC changed from 0x84978ae5 to 0xcd7d87e3
+   | 
+   | function symbol 'int __break_lease(struct inode*, unsigned int, unsigned int)' changed
+   |   CRC changed from 0x82a95cd5 to 0x90bfccbb
+   | 
+   | function symbol 'void __brelse(struct buffer_head*)' changed
+   |   CRC changed from 0x6a8d2def to 0x3c119a52
+   | 
+   | function symbol 'int __cgroup_bpf_run_filter_sk(struct sock*, enum cgroup_bpf_attach_type)' changed
+   |   CRC changed from 0xc1669575 to 0x6331b7a
+   | 
+   | function symbol 'int __cgroup_bpf_run_filter_skb(struct sock*, struct sk_buff*, enum cgroup_bpf_attach_type)' changed
+   |   CRC changed from 0xfc0eb20f to 0x391423b7
+   | 
+   | function symbol 'int __cgroup_bpf_run_filter_sock_addr(struct sock*, struct sockaddr*, int*, enum cgroup_bpf_attach_type, void*, u32*)' changed
+   ... (cortado en el resumen; el reporte va commiteado ENTERO)
+=== pasada SIN CRC ===
+$ /tmp/stg/stgdiff --stg /tmp/baseline.stg /tmp/kabi.stg --ignore linux_symbol_crc --format small --output mediciones/f-004b/F-004b-abi-sin-crc.report
+  rc=4 en 0.5 s
+  rc=4 | reporte 6877 B | 140 lineas
+  'CRC changed' x 0 | 'was added' x 5 | 'offset changed' x 51
+   | variable symbol 'struct static_key_true pids_cgrp_subsys_enabled_key' was added
+   | 
+   | variable symbol 'struct static_key_true pids_cgrp_subsys_on_dfl_key' was added
+   | 
+   | function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   | 
+   | type 'struct task_struct' changed
+   |   member 'u64 android_kabi_reserved3' was removed
+   |   member 'u64 android_kabi_reserved4' was removed
+   |   member 'u64 android_kabi_reserved5' was removed
+   |   member 'union { struct sysv_sem sysvsem; struct { u64 android_kabi_reserved3; }; union { }; }' was added
+   |   member 'union { struct sysv_shm sysvshm; struct { u64 android_kabi_reserved4; u64 android_kabi_reserved5; }; union { }; }' was added
+   | 
+   | type 'struct cgroup' changed
+   |   byte size changed from 1920 to 1984
+   |   member changed from 'struct cgroup_subsys_state* subsys[7]' to 'struct cgroup_subsys_state* subsys[8]'
+   |     type changed from 'struct cgroup_subsys_state*[7]' to 'struct cgroup_subsys_state*[8]'
+   |       number of elements changed from 7 to 8
+   |   member 'struct cgroup_root* root' changed
+   |     offset changed from 6272 to 6336
+   |   member 'struct list_head cset_links' changed
+   |     offset changed from 6336 to 6400
+   |   member changed from 'struct list_head e_csets[7]' to 'struct list_head e_csets[8]'
+   |     offset changed from 6464 to 6528
+   |     type changed from 'struct list_head[7]' to 'struct list_head[8]'
+   |       number of elements changed from 7 to 8
+   |   member 'struct cgroup* dom_cgrp' changed
+   |     offset changed from 7360 to 7552
+   |   member 'struct cgroup* old_dom_cgrp' changed
+   |     offset changed from 7424 to 7616
+   |   member 'struct cgroup_rstat_cpu* rstat_cpu' changed
+   |     offset changed from 7488 to 7680
+   |   member 'struct list_head rstat_css_list' changed
+   |     offset changed from 7552 to 7744
+   |   member 'struct cacheline_padding _pad_' changed
+   |     offset changed from 7680 to 8192
+   |   member 'struct cgroup* rstat_flush_next' changed
+   |     offset changed from 7680 to 8192
+   |   member 'struct cgroup_base_stat last_bstat' changed
+   |     offset changed from 7744 to 8256
+   |   member 'struct cgroup_base_stat bstat' changed
+   |     offset changed from 7936 to 8448
+   |   member 'struct prev_cputime prev_cputime' changed
+   |     offset changed from 8128 to 8640
+   |   member 'struct list_head pidlists' changed
+   |     offset changed from 8320 to 8832
+   |   member 'struct mutex pidlist_mutex' changed
+   |     offset changed from 8448 to 8960
+   |   member 'wait_queue_head_t offline_waitq' changed
+   |     offset changed from 8832 to 9344
+   |   member 'struct work_struct release_agent_work' changed
+   |     offset changed from 9024 to 9536
+   |   member 'struct psi_group* psi' changed
+   |     offset changed from 9408 to 9920
+   |   member 'struct cgroup_bpf bpf' changed
+   |     offset changed from 9472 to 9984
+   |   member 'atomic_t congestion_count' changed
+   |     offset changed from 14720 to 15232
+   |   member 'struct cgroup_freezer_state freezer' changed
+   |     offset changed from 14752 to 15264
+   |   member 'struct bpf_local_storage* bpf_cgrp_storage' changed
+   |     offset changed from 14912 to 15424
+   |   member 'union { struct cgroup_kmi_ext_info* kmi_ext_info; struct { u64 android_backport_reserved1; }; union { }; }' changed
+   |     offset changed from 14976 to 15488
+   |   member 'struct cgroup* ancestors[0]' changed
+   |     offset changed from 15040 to 15552
+   | 
+   | type 'struct cgroup_root' changed
+   |   byte size changed from 6272 to 6336
+   |   member 'struct cgroup* cgrp_ancestor_storage' changed
+   |     offset changed from 15872 to 16384
+   |   member 'atomic_t nr_cgrps' changed
+   |     offset changed from 15936 to 16448
+   |   member 'struct list_head root_list' changed
+   |     offset changed from 16000 to 16512
+   |   member 'unsigned int flags' changed
+   |     offset changed from 16128 to 16640
+   |   member 'char release_agent_path[4096]' changed
+   |     offset changed from 16160 to 16672
+   |   member 'char name[64]' changed
+   |     offset changed from 48928 to 49440
+   |   member changed from 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[28]; }; union { }; }' to 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[32]; 
+   |     offset changed from 49472 to 49984
+   |     type changed from 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[28]; }; union { }; }' to 'union { struct callback_head rcu; struct { u8 android_backport_reserved1[32]; 
+   |       member changed from 'struct { u8 android_backport_reserved1[28]; }' to 'struct { u8 android_backport_reserved1[32]; }'
+   |         type changed from 'struct { u8 android_backport_reserved1[28]; }' to 'struct { u8 android_backport_reserved1[32]; }'
+   |           member changed from 'u8 android_backport_reserved1[28]' to 'u8 android_backport_reserved1[32]'
+   |             type changed from 'u8[28]' to 'u8[32]'
+   |               number of elements changed from 28 to 32
+   | 
+   | type 'struct css_set' changed
+   |   byte size changed from 424 to 448
+   |   member changed from 'struct cgroup_subsys_state* subsys[7]' to 'struct cgroup_subsys_state* subsys[8]'
+   |     type changed from 'struct cgroup_subsys_state*[7]' to 'struct cgroup_subsys_state*[8]'
+   |       number of elements changed from 7 to 8
+   |   member 'refcount_t refcount' changed
+   |     offset changed from 448 to 512
+   |   member 'struct css_set* dom_cset' changed
+   |     offset changed from 512 to 576
+   |   member 'struct cgroup* dfl_cgrp' changed
+   ... (cortado en el resumen; el reporte va commiteado ENTERO)
+
+================ VEREDICTO CONTRA LA PREDICCION ================
+  F-004 v3 (sin parche):  CON CRC 1.521.915 B | SIN CRC 15.221 B | task_struct CAMBIO
+  F-004b   (con parche):  CON CRC 876054 B | SIN CRC 6877 B
+  CRC cambiados: 10.867 -> 6307
+  task_struct cambio de tipo?  True
+  PREDICCION FALSA: task_struct sigue cambiando. El padding no alcanzo
+  o el parche no hizo lo que crei. Gana la medicion.
