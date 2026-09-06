@@ -1,4 +1,4 @@
-name: F-002 rootfs openKylin arm64 con overlay propio
+name: F-002 auditoria de origen del rootfs
 
 # Commitea su propia salida cruda: el TEXTO de un log de Actions da 403 por API.
 on:
@@ -6,8 +6,8 @@ on:
     branches:
       - 'titan/f-002-rootfs'
     paths:
+      - 'tools/f002_auditar_origen.py'
       - 'tools/f002_overlay.py'
-      - 'tools/f002_rootfs_con_pin.py'
       - '.github/workflows/f-002-rootfs.yml'
   workflow_dispatch:
 
@@ -32,28 +32,23 @@ jobs:
           id
 
       - name: md5 del instrumento
-        run: md5sum tools/f002_overlay.py
+        run: md5sum tools/f002_auditar_origen.py
 
       - name: Herramientas
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends mmdebstrap dpkg-dev zstd
+          sudo apt-get install -y -qq --no-install-recommends \
+            mmdebstrap dpkg-dev zstd apt-utils
           echo '--- versiones, verbatim ---'
           mmdebstrap --version | head -2
           dpkg --version | head -1
-          command -v dpkg-scanpackages && echo 'dpkg-scanpackages presente'
+          apt-cache --version | head -1
 
-      - name: Los dos Release, verbatim
-        run: |
-          curl -s --max-time 40 https://mirrors.dotsrc.org/mirrors/pub/openkylin/dists/huanghe/Release | head -9
-          echo '==='
-          curl -s --max-time 40 https://mirrors.dotsrc.org/mirrors/pub/openkylin/dists/huanghe-proposed/Release | head -9
-
-      - name: Correr F-002 v3 (overlay propio)
+      - name: Correr la auditoria de origen
         env:
           F002_OUT: mediciones/f-002
-          F002_WORK: /tmp/f002v3
-        run: sudo -E python3 tools/f002_overlay.py
+          F002_WORK: /tmp/f002v4
+        run: sudo -E python3 tools/f002_auditar_origen.py
 
       - name: Commitear la salida cruda
         if: always()
@@ -63,7 +58,7 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" mediciones || true
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(f-002 v3): salida cruda en arm64 (run ${{ github.run_id }})"
+          git commit -m "evidencia(f-002 v4): auditoria de origen en arm64 (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin "${{ github.ref_name }}" && \
             git push origin HEAD:"${{ github.ref_name }}" && exit 0
@@ -73,4 +68,4 @@ jobs:
 
       - name: Resumen
         if: always()
-        run: cat mediciones/f-002/F-002-v3.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
+        run: cat mediciones/f-002/F-002-v4-origen.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
