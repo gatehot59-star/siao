@@ -1,0 +1,43 @@
+== F-004d: stgdiff del fragmento de OCHO, sin parche al ACK ==
+maquina: x86_64 | fecha UTC 2026-09-06T13:59:21Z
+PREDICCION: 1 linea, 0 CRC, 0 byte-size, 0 offsets, 0 structs.
+  bajado bin/stg               4944792 B
+  bajado bin/stgdiff           5000176 B
+  bajado lib64/libc++.so       1306352 B
+  baseline: mediciones/f-004b/baseline.stg | 11317742 B | sha256 440f48ed6759f80e7f97eabcc09efc6f
+  vmlinux 174251576 B | modulos 97
+$ /tmp/stg/stg -o mediciones/f-004d/ocho.stg --elf /tmp/k/d/vmlinux /tmp/k/d/arch/arm64/geniezone/gzvm.ko /tmp/k/d/drivers/base/regmap/regmap-kunit.ko /tmp/k/d/drivers/base/regmap/regmap-ram.ko /tmp/k/d/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/d/drivers/block/virtio_blk.ko /tmp/k/d/drivers/block/zram/zram.ko /tmp/k/d/drivers/bluetooth/btbcm.ko /tmp/k/d/drivers/bluetooth/btqca
+  rc=0 en 20.4 s
+  ocho.stg 11318014 B
+=== pasada CON CRC ===
+$ /tmp/stg/stgdiff --stg mediciones/f-004b/baseline.stg mediciones/f-004d/ocho.stg --format small --output mediciones/f-004d/F-004d-abi.report
+  rc=4 en 0.6 s
+  rc=4 | 68 B
+  CRC changed x0 | was added x1 | was removed x0
+  byte size changed x0 | offset changed x0
+  structs tocadas: NINGUNA
+=== pasada SIN CRC ===
+$ /tmp/stg/stgdiff --stg mediciones/f-004b/baseline.stg mediciones/f-004d/ocho.stg --ignore linux_symbol_crc --format small --output mediciones/f-004d/F-004d-abi-sin-crc.report
+  rc=4 en 0.5 s
+  rc=4 | 68 B
+  CRC changed x0 | was added x1 | was removed x0
+  byte size changed x0 | offset changed x0
+  structs tocadas: NINGUNA
+  --- reporte ENTERO ---
+   | function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   | 
+
+================ VEREDICTO CONTRA LA PREDICCION ================
+  criterio (R-12): rompen 'byte size changed' y 'offset changed'.
+
+  serie completa, misma referencia, misma herramienta:
+    F-004 v3  10 simbolos, sin parche : SIN CRC 15.221 B | offsets muchos | CRC 10.867
+    F-004b    10 simbolos, con parche : SIN CRC  6.877 B | offsets 51     | CRC  6.307
+    F-004c     9 simbolos, con parche : SIN CRC    495 B | offsets  0     | CRC      0
+    F-004d     8 simbolos, SIN parche : SIN CRC     68 B | offsets  0     | CRC      0
+
+  PREDICCION CUMPLIDA, y en su forma fuerte: CERO structs tocadas.
+  El fragmento de OCHO es ABI-COMPATIBLE con el GKI de stock y NO
+  necesita UN SOLO parche al arbol de Android: cero deuda, cero slots
+  de Google consumidos, cero rebase por LTS.
+  R-13: esto dice ABI-compatible. Que un .ko real CARGUE es F-007.

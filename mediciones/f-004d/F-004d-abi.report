@@ -1,0 +1,2 @@
+function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+
