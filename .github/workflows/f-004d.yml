@@ -1,13 +1,19 @@
 name: F-004d ocho simbolos sin parche
 
-# UN solo build: el baseline no se recompila, se usa mediciones/f-004b/baseline.stg
-# que salio con sha256 identico en dos runs y dos runners. Ahorra un runner entero.
-# Y un job de CERO BUILDS que cierra tres preguntas del auditor con grep.
+# DEFECTO MIO, medido: los runs 34035889816 y 34035926358 murieron con CERO jobs
+# creados y con el NOMBRE DEL ARCHIVO en vez del 'name:' del workflow. Esa es la
+# firma de YAML que no parseo, no de un job que fallo.
+# La causa: un paso se llamaba 'Subir todo (R-11: nada se queda en /tmp)'. Un
+# escalar PLANO que contiene ': ' lo lee YAML como un mapping. Va entre comillas.
+#
+# UN solo build: el baseline no se recompila, se usa mediciones/f-004b/baseline.stg,
+# que salio con sha256 identico en dos runs y dos runners.
 on:
   push:
     branches: ['titan/f-004-kmi']
     paths:
       - 'tools/f004d_sin_sysvipc.py'
+      - 'tools/f004d_stg.py'
       - '.github/workflows/f-004d.yml'
   workflow_dispatch:
 
@@ -24,20 +30,21 @@ jobs:
       - name: Las tres preguntas del auditor, con grep
         run: |
           set -x
-          out=mediciones/peritaje/CERO-BUILDS.txt
           mkdir -p mediciones/peritaje
+          out=mediciones/peritaje/CERO-BUILDS.txt
+          cfg=mediciones/f-004-v3/config-baseline.txt
           {
             echo "### fecha $(date -u +%FT%TZ) | maquina $(uname -m)"
+            echo "### fuente: $cfg (gki_defconfig PURO del baseline)"
             echo
-            echo '=== 1) CGROUP_DEVICE y sus alternativas en el .config del BASELINE ==='
-            echo '(archivo: mediciones/f-004-v3/config-baseline.txt, gki_defconfig puro)'
-            grep -E '^(# )?CONFIG_(CGROUP_DEVICE|CGROUP_BPF|CGROUP_FREEZER|CGROUP_PIDS|CGROUP_SCHED|MEMCG|CGROUP_CPUACCT|BLK_CGROUP|CGROUP_HUGETLB|CGROUP_RDMA|CGROUP_MISC|CGROUP_PERF|CGROUP_DEBUG|NET_CLS_CGROUP|CGROUP_NET_PRIO|CGROUP_NET_CLASSID)\b' mediciones/f-004-v3/config-baseline.txt | sort
+            echo '=== 1) CGROUP_DEVICE y sus alternativas en el baseline ==='
+            grep -E 'CONFIG_CGROUP_|CONFIG_MEMCG|CONFIG_BLK_CGROUP' "$cfg" | sort
             echo
-            echo '=== 2) TRIM_UNUSED_KSYMS y la whitelist ==='
-            grep -E '^(# )?CONFIG_(TRIM_UNUSED_KSYMS|UNUSED_KSYMS_WHITELIST|MODVERSIONS|MODULE_SIG|MODULE_SIG_FORCE|MODULE_SIG_PROTECT|ANDROID_KABI_RESERVE)\b' mediciones/f-004-v3/config-baseline.txt | sort
+            echo '--- cuantos subsistemas de cgroup estan en =y (dimensionan subsys[]) ---'
+            grep -cE '^CONFIG_CGROUP_[A-Z_]+=y$' "$cfg" || true
             echo
-            echo '=== 3) cuantos subsistemas de cgroup hay prendidos, que es lo que dimensiona subsys[] ==='
-            grep -cE '^CONFIG_CGROUP_[A-Z_]+=y$' mediciones/f-004-v3/config-baseline.txt || true
+            echo '=== 2) el enforcer del KMI y la whitelist ==='
+            grep -E 'CONFIG_TRIM_UNUSED_KSYMS|CONFIG_UNUSED_KSYMS_WHITELIST|CONFIG_MODVERSIONS|CONFIG_MODULE_SIG|CONFIG_ANDROID_KABI' "$cfg" | sort
           } | tee "$out"
       - name: Listas de simbolos de Google y licencia de Lindroid
         run: |
@@ -45,22 +52,21 @@ jobs:
           out=mediciones/peritaje/CERO-BUILDS.txt
           {
             echo
-            echo '=== 4) listas de simbolos KMI que Google publica en android15-6.6 ==='
-            curl -sSL 'https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/android?format=TEXT' | base64 -d | awk '{print $NF}' | sort | head -50
+            echo '=== 3) listas de simbolos KMI que Google publica ==='
+            curl -sSL 'https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/android?format=TEXT' | base64 -d | awk '{print $NF}' | sort
             echo
-            echo '--- cuantos simbolos tiene la lista generica ---'
+            echo '--- tamano de la lista generica y su FORMATO real ---'
             curl -sSL 'https://android.googlesource.com/kernel/common/+/refs/heads/android15-6.6/android/abi_gki_aarch64?format=TEXT' | base64 -d > /tmp/prot.txt || true
             wc -l /tmp/prot.txt || true
-            echo '--- sus primeras 15 lineas, verbatim, para ver el FORMATO real ---'
-            head -15 /tmp/prot.txt || true
+            head -12 /tmp/prot.txt || true
             echo
-            echo '=== 5) licencia de vendor_lindroid (rama lindroid-22.1) ==='
+            echo '=== 4) licencia de vendor_lindroid, rama lindroid-22.1 ==='
             for f in LICENSE LICENSE.txt COPYING NOTICE MODULE_LICENSE_APACHE2 Android.bp; do
               code=$(curl -s -o /dev/null -w '%{http_code}' "https://raw.githubusercontent.com/Linux-on-droid/vendor_lindroid/lindroid-22.1/$f")
               echo "  $f -> HTTP $code"
             done
-            echo '--- cabecera de un fuente suyo, que es donde AOSP pone la licencia ---'
-            curl -sSL 'https://raw.githubusercontent.com/Linux-on-droid/vendor_lindroid/lindroid-22.1/lindroid.mk' | head -12
+            echo '--- cabecera de lindroid.mk, donde AOSP pone la licencia ---'
+            curl -sSL 'https://raw.githubusercontent.com/Linux-on-droid/vendor_lindroid/lindroid-22.1/lindroid.mk' | head -10
           } | tee -a "$out"
       - name: Commitear el peritaje
         if: always()
@@ -110,7 +116,7 @@ jobs:
           F004_WORK: /tmp/f004d
           F004_RAMA: android15-6.6
         run: python3 tools/f004d_sin_sysvipc.py build
-      - name: Subir todo (R-11: nada se queda en /tmp)
+      - name: 'Subir todo, R-11: nada se queda en /tmp'
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -133,7 +139,7 @@ jobs:
         with:
           name: f004d-todo
           path: /tmp/art
-      - name: R-11 - copiar TODO a mediciones antes de analizar nada
+      - name: 'R-11, copiar TODO a mediciones antes de analizar nada'
         run: |
           set -x
           mkdir -p mediciones/f-004d
@@ -147,14 +153,13 @@ jobs:
           f=$(find /tmp/art mediciones/f-004d -name 'elf-d.tar.zst' | head -1)
           if [ -n "$f" ]; then tar -x --zstd -f "$f" -C /tmp/k/d; fi
           ls -la /tmp/k/d | head -4 || true
-      - name: stg + stgdiff contra el baseline commiteado
+      - name: stg y stgdiff contra el baseline commiteado
         run: python3 tools/f004d_stg.py
       - name: Commitear
         if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm --cached mediciones/f-004d/elf-d.tar.zst 2>/dev/null || true
           rm -f mediciones/f-004d/elf-d.tar.zst
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
