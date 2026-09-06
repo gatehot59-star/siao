@@ -1,0 +1,22 @@
+{
+  "falsador": "F-004d",
+  "rama": "android14-6.1",
+  "rc_build": 2,
+  "parche_al_ack": false,
+  "n_simbolos": 8,
+  "simbolos": {
+    "CONFIG_DEVTMPFS": "y",
+    "CONFIG_DEVTMPFS_MOUNT": "y",
+    "CONFIG_FHANDLE": "y",
+    "CONFIG_POSIX_MQUEUE": "y",
+    "CONFIG_TMPFS_XATTR": "y",
+    "CONFIG_AUTOFS_FS": "y",
+    "CONFIG_PID_NS": "y",
+    "CONFIG_IPC_NS": "y"
+  },
+  "module_symvers": true,
+  "prediccion": "1 linea, 0 CRC, 0 byte-size, 0 offsets",
+  "fecha_utc": "2026-09-06T18:05:13Z",
+  "n_lineas_symvers": 16036,
+  "sha256_symvers": "a86d08ccab5fc5b4f46dbdbf9ef53885e743dc2648908481967f036da8539d72"
+}

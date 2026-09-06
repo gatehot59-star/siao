@@ -1,0 +1,17 @@
+== F-004d en la generacion android14-6.1 ==
+  maquina x86_64 | fecha UTC 2026-09-06T18:05:25Z
+  PREDICCION: ~68 B, 0 CRC, 0 byte-size, 0 offsets, 0 structs.
+  R-17: baseline PROPIO de 6.1. No se cita nada de 6.6.
+  bajado bin/stg               4944792 B
+  bajado bin/stgdiff           5000176 B
+  bajado lib64/libc++.so       1306352 B
+  NO MEDIDO: no llego el vmlinux de 'baseline'
+  NO MEDIDO: no llego el vmlinux de 'ocho'
+  NO MEDIDO: falta al menos un brazo
+
+================ VEREDICTO ================
+  serie, cada una contra SU PROPIO baseline de SU generacion:
+    F-004d @ android15-6.6 : SIN CRC     68 B | offsets 0 | CRC 0   (medido ayer)
+    F-004d @ android14-6.1 : SIN CRC      ? B | offsets ? | CRC ?
+  NO MEDIDO
+  R-13: esto dice ABI-compatible. Que un .ko real CARGUE es F-007c.
