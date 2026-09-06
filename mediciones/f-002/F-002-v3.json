@@ -1,0 +1,73 @@
+{
+  "falsador": "F-002",
+  "version": 3,
+  "fecha_utc": "2026-09-06T00:28:34Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "34001361059"
+  },
+  "por_que_v3": "el v2 midio que main y -proposed no son un conjunto consistente: login.defs existe solo en -proposed y el passwd de ahi lo pide. Ningun pin arregla eso. -proposed NO entra como fuente: se sirve un overlay propio con sha256 verificado.",
+  "overlay_pkgs": [
+    "libdevmapper1.02.1",
+    "dmsetup",
+    "libdevmapper-event1.02.1"
+  ],
+  "controles": {
+    "N1_solo_main": {
+      "esperado": "FALLA por libdevmapper",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "evidencia": "The following packages have unmet dependencies:\n libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed"
+    },
+    "N2_main_mas_proposed": {
+      "esperado": "FALLA por login.defs",
+      "instalo": true,
+      "rc": 0,
+      "discrimina": false,
+      "evidencia": ""
+    },
+    "N3_overlay_hash_roto": {
+      "esperado": "apt RECHAZA el .deb por hash",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "hash_mismatch_detectado": false,
+      "evidencia": ""
+    }
+  },
+  "sujeto": {
+    "instalo": false,
+    "rc": 25,
+    "evidencia": "The following packages have unmet dependencies:\nE: Unable to correct problems, you have held broken packages.\nE: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?and(?or(?priority(required),?priority(important)),?not(?essential))) failed\nW: hooklistener errored out: E: received eof on socket\nI: main() received signal PIPE: waiting for setup...\nE: mmdebstrap failed to run"
+  },
+  "no_medido": [],
+  "manifiesto": [
+    {
+      "paquete": "libdevmapper1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256_oficial": "a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927",
+      "bytes": 127826,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/libdevmapper1.02.1_1.02.205-ok1_arm64.deb"
+    },
+    {
+      "paquete": "dmsetup",
+      "version": "2:1.02.205-ok1",
+      "sha256_oficial": "92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19",
+      "bytes": 73304,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/dmsetup_1.02.205-ok1_arm64.deb"
+    },
+    {
+      "paquete": "libdevmapper-event1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256_oficial": "6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3",
+      "bytes": 11934,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/libdevmapper-event1.02.1_1.02.205-ok1_arm64.deb"
+    }
+  ],
+  "veredicto": "ROJO",
+  "segundos": 158.2
+}
