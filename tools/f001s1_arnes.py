@@ -8,43 +8,35 @@ cosas que cambian el diseno de F-001-S1 y que yo NO habia medido:
      Actions arm64 -> /dev/kvm NO EXISTE
      brain-env     -> /dev/kvm NO EXISTE
 
-LA CONSECUENCIA QUE EL DOC NO SACA, y es la que me importa: el kernel de SIAO es
-aarch64. KVM solo acelera cuando el HUESPED es de la MISMA ISA que el anfitrion.
-En x64 hay KVM pero el huesped es arm64 -> no aplica. En arm64 el huesped si es de
-la misma ISA pero NO HAY /dev/kvm. O sea que F-001-S1 va por TCG en las dos, y el
-dato util del doc es el inverso del titular: sirve para NO perder tiempo buscando
-aceleracion que para este caso no existe.
+LA CONSECUENCIA QUE EL DOC NO SACA: el kernel de SIAO es aarch64, y KVM solo
+acelera cuando huesped y anfitrion comparten ISA. En x64 hay KVM pero el huesped
+es arm64 -> no aplica. En arm64 la ISA coincide pero NO HAY /dev/kvm. O sea que
+F-001-S1 va por TCG en las dos, y el dato util del doc es el inverso del titular:
+sirve para NO perder tiempo buscando aceleracion que para este caso no existe.
 
-Y LA LECCION DE METODO, que aplico literal: el doc cuenta que un veredicto
-'SIN_KVM' colapso tres estados (no existe / sin permiso / roto) y produjo una
-conclusion falsa sobre una salida correcta. Aca el chequeo devuelve los TRES
-estados separados, y ninguno se llama igual que otro.
+DOS DEFECTOS MIOS, los dos medidos y los dos corregidos aca:
+  1. (run 15:17) el zip trae 'boot-6.6.img' y mi filtro pedia endswith('boot.img').
+     No fallo: se salteo, con rc=0 y sin veredicto. Guard demasiado estrecho.
+  2. (run 15:23) 'failed to find romfile efi-virtio.rom', rc=1 en 0,1 s. La maquina
+     'virt' agrega una NIC virtio por defecto y su ROM de arranque PXE viene en el
+     paquete ipxe-qemu. NO era el kernel ni QEMU: era mi invocacion. Se arregla con
+     -nic none (la red no hace falta para arrancar sin rootfs) y con el paquete.
+  Los dos los delato la salida cruda, no una relectura del codigo.
 
-DEFECTO MIO DEL PRIMER INTENTO (run de las 15:17 UTC, los DOS brazos):
-     entradas del zip: ['boot-6.6.img']
-  y mi filtro pedia n.endswith("boot.img"). 'boot-6.6.img' NO termina en
-  'boot.img', asi que el arranque no se corrio y los dos brazos quedaron a mitad
-  de camino, con rc=0 y sin veredicto. Es el patron del guard demasiado estrecho:
-  no fallo, se salteo, y el exit code no lo delato. Ahora el filtro es .img y se
-  imprime QUE entrada eligio.
-
-QUE MIDE, en orden de lo que bloquea:
-  1. /dev/kvm con sus tres estados, en la maquina donde corra.
-  2. Si existe qemu-system-aarch64 y con que version.
-  3. UN ARRANQUE REAL: baja el boot.img certificado de Google, le saca el Image,
-     y lo arranca en QEMU SIN rootfs. Un kernel sano imprime su banner y despues
-     entra en panico por 'No working init found'. Ese panico es el VERDE: prueba
-     que el arnes ejecuta un kernel arm64 de verdad. Si no aparece el banner, el
-     arnes esta roto y no tiene sentido compilar nada.
+Y UN CONTROL POSITIVO, porque un instrumento que no puede dar rojo no mide nada:
+  antes del arranque real, se corre QEMU con un -kernel que NO existe. Si eso
+  tambien dijera 'VERDE', el instrumento seria un adorno.
 
 PREDICCION DECLARADA ANTES DE CORRER:
-  el banner de Linux aparece y el kernel entra en panico por falta de init.
-  O sea: arnes VERDE, y el unico rojo posible es de mi propio arnes.
+  el control positivo falla, y el arranque real imprime el banner de Linux y entra
+  en panico por falta de init. Ese panico es el VERDE del arnes.
 """
-import json, os, re, shutil, struct, subprocess, sys, time, urllib.request, zipfile
+import json, os, re, shutil, struct, subprocess, time, urllib.request, zipfile
 
 OUT = os.environ.get("F001_OUT", "mediciones/f-001-s1")
 WORK = os.environ.get("F001_WORK", "/tmp/f001s1")
+QEMU_BASE = ("qemu-system-aarch64 -machine virt -cpu cortex-a57 -smp 2 -m 2048 "
+             "-nographic -no-reboot -nic none")
 log = []
 
 
@@ -75,7 +67,6 @@ def sh(cmd, t=1800, guardar=None):
 
 
 def kvm_tres_estados():
-    """El guard que el Doc de KVM ensena: tres estados, no uno."""
     p = "/dev/kvm"
     if not os.path.exists(p):
         return "NO_EXISTE", "el nodo no esta en el filesystem"
@@ -95,8 +86,8 @@ def main():
     arch = os.uname().machine
     w("== F-001-S1 paso 0: el arnes de QEMU ==")
     w("  fecha UTC", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-    w("  PREDICCION: aparece el banner de Linux y el kernel entra en panico por")
-    w("  falta de init. Ese panico es el VERDE del arnes.")
+    w("  PREDICCION: el control positivo FALLA, y el arranque real imprime el")
+    w("  banner de Linux y entra en panico por falta de init.")
     rc, o, _ = sh("uname -m; nproc; free -m | head -2; df -h / | tail -1")
     for l in o.splitlines():
         w("   |", l[:120])
@@ -106,99 +97,83 @@ def main():
     w("  === /dev/kvm, con los TRES estados separados ===")
     w("  estado: %s" % estado)
     w("  razon : %s" % razon)
-    w("  NOTA de diseno: el kernel de SIAO es aarch64 y KVM acelera solo si")
-    w("  huesped y anfitrion comparten ISA.")
     if arch == "x86_64":
-        w("  -> aca la ISA NO coincide (huesped arm64 sobre anfitrion x86_64):")
-        w("     KVM es IRRELEVANTE para este falsador, aunque este USABLE.")
+        w("  -> ISA NO coincide (huesped arm64 / anfitrion x86_64): KVM IRRELEVANTE aca.")
     else:
-        w("  -> aca la ISA coincide, pero sin /dev/kvm tampoco hay aceleracion.")
-    w("  CONCLUSION: F-001-S1 va por TCG (emulacion pura) en las dos maquinas.")
+        w("  -> ISA coincide, pero sin /dev/kvm tampoco hay aceleracion.")
+    w("  CONCLUSION: F-001-S1 va por TCG en las dos maquinas.")
 
     w("")
     w("  === herramientas ===")
-    for b in ("qemu-system-aarch64", "qemu-img", "unzip", "cpio", "zstd", "python3"):
+    for b in ("qemu-system-aarch64", "qemu-img", "unzip", "cpio", "zstd"):
         w("   %-22s %s" % (b, shutil.which(b) or "AUSENTE"))
-    rc, o, _ = sh("qemu-system-aarch64 --version 2>&1 | head -2")
+    rc, o, _ = sh("qemu-system-aarch64 --version 2>&1 | head -1")
     for l in o.splitlines():
         w("   |", l[:120])
 
     w("")
-    w("  === bajando el boot.img CERTIFICADO de Google y sacandole el Image ===")
+    w("  === CONTROL POSITIVO: QEMU con un -kernel que NO existe ===")
+    w("  si esto tambien diera verde, el instrumento seria un adorno.")
+    rcx, ox, ex = sh("timeout 30 %s -kernel /tmp/no-existe-este-kernel 2>&1 | head -5"
+                     % QEMU_BASE, 60)
+    for l in (ox + ex).splitlines()[:5]:
+        w("   C|", l[:150])
+    control_discrimina = rcx != 0 and not re.search(r"Linux version", ox + ex)
+    w("  el control DISCRIMINA (falla como debe): %s" % control_discrimina)
+
+    w("")
+    w("  === bajando el boot.img CERTIFICADO de Google ===")
     url = ("https://dl.google.com/android/gki/gki-certified-boot-android15-6.6"
            "-2025-01_r1.zip")
     z = WORK + "/gki.zip"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "siao-f001s1/1"})
-        d = urllib.request.urlopen(req, timeout=600).read()
-        open(z, "wb").write(d)
-        w("  bajado %d B" % len(d))
-    except Exception as e:
-        w("  NO MEDIDO: no pude bajar el zip: %s" % repr(e)[:140])
-        open(os.path.join(OUT, "f001s1-%s-bitacora.txt" % arch), "w").write("\n".join(log) + "\n")
-        return
-
+    if not os.path.isfile(z):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "siao-f001s1/1"})
+            open(z, "wb").write(urllib.request.urlopen(req, timeout=600).read())
+        except Exception as e:
+            w("  NO MEDIDO: no pude bajar el zip: %s" % repr(e)[:140])
+            open(os.path.join(OUT, "f001s1-%s-bitacora.txt" % arch), "w").write("\n".join(log) + "\n")
+            return
+    w("  zip: %d B" % os.path.getsize(z))
     zf = zipfile.ZipFile(z)
-    nombres = zf.namelist()
-    w("  entradas del zip: %s" % nombres)
-    # FIX: el zip trae 'boot-6.6.img', no 'boot.img'. Filtro por .img y lo digo.
-    cand = [n for n in nombres if n.endswith(".img")]
-    if not cand:
-        w("  ABORTO: no hay ninguna entrada .img en el zip")
-        open(os.path.join(OUT, "f001s1-%s-bitacora.txt" % arch), "w").write("\n".join(log) + "\n")
-        return
-    elegida = cand[0]
-    w("  entrada elegida: %s (de %d candidatas .img)" % (elegida, len(cand)))
-    raw = zf.read(elegida)
-    open(WORK + "/boot.img", "wb").write(raw)
-    w("  boot.img: %d B | magic %r" % (len(raw), raw[:8]))
+    cand = [n for n in zf.namelist() if n.endswith(".img")]
+    w("  entradas .img: %s -> elijo %s" % (cand, cand[0]))
+    raw = zf.read(cand[0])
     hdr_v = struct.unpack("<I", raw[40:44])[0]
     ksz = struct.unpack("<I", raw[8:12])[0]
-    w("  header_version=%d | kernel_size=%d" % (hdr_v, ksz))
+    w("  boot.img %d B | magic %r | header_version=%d | kernel_size=%d"
+      % (len(raw), raw[:8], hdr_v, ksz))
     img = raw[4096:4096 + ksz]
     open(WORK + "/Image", "wb").write(img)
-    w("  Image extraido: %d B | magic %r" % (len(img), img[:4]))
+    w("  Image: %d B | magic %r  (MZ = PE/EFI stub, normal en arm64)" % (len(img), img[:4]))
     k = WORK + "/Image"
-    if img[:2] == b"\x1f\x8b":
-        w("  el Image esta comprimido con gzip: lo descomprimo")
-        rc, o, _ = sh("cd %s && gzip -dc Image > Image.raw && ls -la Image.raw" % WORK)
-        for l in o.splitlines():
-            w("   |", l[:120])
-        if os.path.isfile(WORK + "/Image.raw"):
-            k = WORK + "/Image.raw"
 
     w("")
-    w("  === EL ARRANQUE: qemu-system-aarch64 SIN rootfs ===")
-    w("  un kernel sano imprime su banner y despues entra en panico por")
-    w("  'No working init found'. Ese panico ES el verde del arnes.")
-    cmd = ("timeout 240 qemu-system-aarch64 -machine virt -cpu cortex-a57 "
-           "-smp 2 -m 2048 -nographic -no-reboot "
-           "-kernel %s -append 'console=ttyAMA0 panic=1 earlycon' 2>&1 | head -200" % k)
+    w("  === EL ARRANQUE REAL: qemu-system-aarch64 SIN rootfs ===")
+    cmd = ("timeout 240 %s -kernel %s -append 'console=ttyAMA0 panic=1 earlycon' "
+           "2>&1 | head -200" % (QEMU_BASE, k))
     rc, o, e = sh(cmd, 320, guardar=os.path.join(OUT, "f001s1-%s-boot.txt" % arch))
     todo = o + e
     m = re.search(r"Linux version ([^\s]+)", todo)
-    hitos = {
-        "banner_linux": bool(m),
-        "version_leida": m.group(1) if m else None,
-        "memoria_ok": "Memory:" in todo,
-        "llego_a_init": ("No working init found" in todo
-                         or "Kernel panic" in todo
-                         or "Failed to execute" in todo),
-        "bytes_de_salida": len(todo),
-    }
+    hitos = {"control_discrimina": control_discrimina,
+             "banner_linux": bool(m),
+             "version_leida": m.group(1) if m else None,
+             "memoria_ok": "Memory:" in todo,
+             "llego_a_init": ("No working init found" in todo or "Kernel panic" in todo
+                              or "Failed to execute" in todo),
+             "bytes_de_salida": len(todo)}
     w("")
-    w("  === HITOS DEL ARRANQUE ===")
+    w("  === HITOS ===")
     for kk, vv in hitos.items():
-        w("   %-18s %s" % (kk, vv))
+        w("   %-20s %s" % (kk, vv))
     w("  --- salida del kernel, primeras 45 lineas ---")
     for l in todo.splitlines()[:45]:
         w("   B|", l[:170])
-    ver = ("ARNES VERDE: QEMU ejecuta un kernel arm64 REAL en esta maquina"
-           if hitos["banner_linux"] else
-           "ARNES ROJO o NO MEDIDO: no aparecio el banner de Linux")
+    ver = ("ARNES VERDE: QEMU ejecuta un kernel arm64 REAL, y el control discrimina"
+           if hitos["banner_linux"] and control_discrimina else
+           "ARNES ROJO o NO MEDIDO: ver los hitos")
     res = {"arch": arch, "kvm_estado": estado, "kvm_razon": razon,
-           "qemu": shutil.which("qemu-system-aarch64"), "entrada_zip": elegida,
-           "hitos": hitos, "rc_qemu": rc, "veredicto": ver,
+           "entrada_zip": cand[0], "hitos": hitos, "rc_qemu": rc, "veredicto": ver,
            "fecha_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     json.dump(res, open(os.path.join(OUT, "f001s1-%s.json" % arch), "w"),
               indent=2, ensure_ascii=False)
