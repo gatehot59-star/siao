@@ -2,7 +2,7 @@
 """
 F-004b-KABI - Se puede prender SYSVIPC SIN romper el KMI?
 
-PREDICCION DECLARADA ANTES DE CORRER (falsable, y firmada en el chat):
+PREDICCION DECLARADA ANTES DE CORRER (falsable, firmada en el chat):
   el reporte de stgdiff con --ignore linux_symbol_crc queda VACIO, y task_struct
   NO cambia de tamano. Si sale distinto, esta prediccion muere y se dice.
 
@@ -10,33 +10,39 @@ DE DONDE SALE, y es medicion y no aritmetica de servilleta:
   1) include/linux/sched.h de android15-6.6 deja SEIS slots libres dentro de
      struct task_struct:  ANDROID_KABI_RESERVE(3) .. (8), lineas 1527-1532.
   2) include/linux/android_kabi.h:76 dice que cada slot es
-        u64 android_kabi_reservedN      -> 8 B, alineado a 8
-     o sea 48 B libres.
+        u64 android_kabi_reservedN      -> 8 B, alineado a 8      => 48 B libres
   3) struct sysv_sem = un puntero          ->  8 B  (include/linux/sem.h:12)
      struct sysv_shm = un list_head       -> 16 B  (include/linux/shm.h:13)
      total a meter                        -> 24 B  <= 48 B
-  4) Y la confirmacion cruzada: el stgdiff de F-004 v3 midio que los offsets se
-     corren de 16960 a 17152 bits = 192 bits = 24 BYTES. Los dos caminos,
-     independientes, dan el mismo numero.
+  4) Confirmacion cruzada: el stgdiff de F-004 v3 midio que los offsets se corren
+     de 16960 a 17152 bits = 192 bits = 24 BYTES. Dos caminos, mismo numero.
 
 EL MECANISMO QUE HACE QUE EL CRC TAMPOCO CAMBIE, android_kabi.h:59-74 verbatim:
      #ifdef __GENKSYMS__
      #define _ANDROID_KABI_REPLACE(_orig, _new)   _orig
-  genksyms es el que calcula los CRC de Module.symvers, y ve el _orig, no el
-  _new. Asi que si el miembro entra por un slot reservado, el CRC NO se mueve.
+  genksyms es el que calcula los CRC de Module.symvers y ve el _orig, no el _new.
   Eso predice que los 10.867 CRC cambiados de F-004 v3 tambien desaparecen.
 
-POR QUE sysvshm NECESITA DOS SLOTS, y no es un capricho:
-  el guard __ANDROID_KABI_CHECK_SIZE_ALIGN (linea 42) tiene un _Static_assert:
+POR QUE sysvshm NECESITA DOS SLOTS:
+  el guard __ANDROID_KABI_CHECK_SIZE_ALIGN (linea 42) tiene un _Static_assert
      sizeof(struct{_new;}) <= sizeof(struct{_orig;})
   sysv_shm mide 16 B y un slot mide 8, asi que un ANDROID_KABI_USE simple NO
-  compila. Se replican DOS reservados juntos como _orig. **El compilador es el
-  testigo: si la cuenta esta mal, el _Static_assert lo dice y no hay veredicto.**
+  compila. Se replican DOS reservados juntos como _orig. El compilador es el
+  testigo: si la cuenta esta mal, el _Static_assert lo dice y no hay veredicto.
 
-GUARD QUE PUEDE MATAR TODO, y por eso se mide primero:
+DEFECTO MIO DEL PRIMER INTENTO, medido y corregido aca (run 34029658774, el brazo
+kabi murio en 5 min):
+     'ANDROID_KABI_RESERVE(3);' aparece TRES veces en sched.h -> lineas 571 y 594
+     (dentro de OTRAS structs) y 1527 (la de task_struct).
+  Mi guard pedia exactamente 1 y aborto, o sea que HIZO SU TRABAJO: se nego a
+  parchear la struct equivocada, que es justo el error E-01. La correccion es
+  anclar al TRIPLE 3+4+5, que aparece una sola vez porque las otras dos structs
+  solo llegan hasta el 4.
+
+GUARD QUE PUEDE MATAR TODO, y por eso se mide y no se asume:
   ANDROID_KABI_RESERVE(n) se expande a NADA si CONFIG_ANDROID_KABI_RESERVE esta
   apagado (android_kabi.h:100-107). Si en el gki_defconfig esta apagado, los
-  slots no existen y este falsador entero es NO MEDIDO. Se mide, no se asume.
+  slots no existen y este falsador entero es NO MEDIDO.
 
 MODO DE USO:  f004b_kabi.py build baseline|kabi
 """
@@ -68,27 +74,26 @@ ORIG = """#ifdef CONFIG_SYSVIPC
 	struct sysv_shm			sysvshm;
 #endif"""
 
-# Lo que queda en su lugar: los miembros se van a los slots reservados.
 NUEVO = """/* SIAO F-004b: sysvsem/sysvshm se movieron a los slots ANDROID_KABI_RESERVE
  * del final de esta struct, para que prender CONFIG_SYSVIPC no corra los
  * offsets de todo lo posterior ni cambie el tamano de task_struct.
  */"""
 
-RES3 = "\tANDROID_KABI_RESERVE(3);"
-RES4 = "\tANDROID_KABI_RESERVE(4);"
-RES5 = "\tANDROID_KABI_RESERVE(5);"
+# EL ANCLA UNICA: el triple 3+4+5. Las otras dos structs de este archivo que
+# usan reservados solo llegan hasta el (4), asi que este triple aparece 1 vez.
+TRIPLE = ("\tANDROID_KABI_RESERVE(3);\n"
+          "\tANDROID_KABI_RESERVE(4);\n"
+          "\tANDROID_KABI_RESERVE(5);")
 
-PATCH3 = """#ifdef CONFIG_SYSVIPC
+PATCH = """#ifdef CONFIG_SYSVIPC
+	/* SIAO F-004b: 8 B en el slot 3, y 16 B replicando los slots 4+5 juntos.
+	 * El _Static_assert de __ANDROID_KABI_CHECK_SIZE_ALIGN es el testigo.
+	 */
 	ANDROID_KABI_USE(3, struct sysv_sem sysvsem);
-#else
-	ANDROID_KABI_RESERVE(3);
-#endif"""
-
-# sysv_shm mide 16 B: entra replicando DOS reservados juntos como _orig.
-PATCH45 = """#ifdef CONFIG_SYSVIPC
 	_ANDROID_KABI_REPLACE(u64 android_kabi_reserved4; u64 android_kabi_reserved5,
 			      struct sysv_shm sysvshm);
 #else
+	ANDROID_KABI_RESERVE(3);
 	ANDROID_KABI_RESERVE(4);
 	ANDROID_KABI_RESERVE(5);
 #endif"""
@@ -135,8 +140,9 @@ def primer_error(path, n=40):
 
 
 def limpiar(cual):
-    b = [os.path.basename(p) for p in sorted(glob.glob(os.path.join(OUT, "*%s*" % cual)))]
-    for p in sorted(glob.glob(os.path.join(OUT, "*%s*" % cual))):
+    ps = sorted(glob.glob(os.path.join(OUT, "*%s*" % cual)))
+    b = [os.path.basename(p) for p in ps]
+    for p in ps:
         os.remove(p)
     say("  R-09 | archivos previos de '%s' borrados: %s" % (cual, b or "ninguno"))
 
@@ -168,19 +174,20 @@ def traer():
 
 
 def aplicar_parche(src):
-    """Devuelve True si el parche se aplico entero. Cada reemplazo se verifica."""
     p = src + "/include/linux/sched.h"
     s = open(p).read()
-    antes = len(s)
     say("  sched.h original: %d B | md5 %s"
-        % (antes, hashlib.md5(s.encode()).hexdigest()))
+        % (len(s), hashlib.md5(s.encode()).hexdigest()))
+    # Diagnostico que el primer intento no tenia: cuantas veces aparece cada cosa.
+    say("  ocurrencias de 'ANDROID_KABI_RESERVE(3);' en el archivo: %d  (por eso"
+        % s.count("\tANDROID_KABI_RESERVE(3);"))
+    say("     NO se puede anclar en ese solo: hay otras structs con reservados)")
     for viejo, nuevo, nombre in ((ORIG, NUEVO, "bloque sysvsem/sysvshm"),
-                                 (RES3, PATCH3, "RESERVE(3) -> sysvsem"),
-                                 (RES4 + "\n" + RES5, PATCH45, "RESERVE(4)+(5) -> sysvshm")):
+                                 (TRIPLE, PATCH, "TRIPLE 3+4+5 de task_struct")):
         c = s.count(viejo)
-        say("  %-28s ocurrencias del original: %d" % (nombre, c))
+        say("  %-30s ocurrencias: %d" % (nombre, c))
         if c != 1:
-            say("  ABORTO: esperaba exactamente 1. El arbol cambio o mi patron esta mal.")
+            say("  ABORTO: esperaba exactamente 1. El arbol cambio o el patron esta mal.")
             return False
         s = s.replace(viejo, nuevo)
     open(p, "w").write(s)
@@ -188,10 +195,13 @@ def aplicar_parche(src):
         % (len(s), hashlib.md5(s.encode()).hexdigest()))
     say("  --- el parche, verbatim, tal como quedo en el archivo ---")
     ls = s.splitlines()
+    marcas = ("SIAO F-004b", "ANDROID_KABI_USE(3", "_ANDROID_KABI_REPLACE(u64",
+              "struct sysv_shm sysvshm")
+    vistas = set()
     for i, l in enumerate(ls, 1):
-        if ("SIAO F-004b" in l or "ANDROID_KABI_USE(3" in l or "_ANDROID_KABI_REPLACE(u64" in l
-                or "android_kabi_reserved5," in l or "struct sysv_shm sysvshm" in l):
-            for j in range(max(0, i - 3), min(len(ls), i + 4)):
+        if any(m in l for m in marcas) and i not in vistas:
+            for j in range(max(0, i - 4), min(len(ls), i + 6)):
+                vistas.add(j + 1)
                 say("   %5d| %s" % (j + 1, ls[j][:150]))
             say("   ---")
     return True
@@ -203,7 +213,8 @@ def build(cual):
     say("  PREDICCION DECLARADA: con el parche, el reporte sin CRC queda VACIO")
     say("  y task_struct no cambia de tamano. Falsable.")
     limpiar(cual)
-    rc, o, _ = sh("nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1; openssl version")
+    rc, o, _ = sh("nproc; free -m | head -2; df -h / | tail -1; "
+                  "clang --version | head -1; openssl version")
     for l in o.splitlines():
         say("   |", l[:130])
     src = traer()
@@ -235,14 +246,12 @@ def build(cual):
         sh("%s olddefconfig" % mk, 900)
 
     cfg = open(obj + "/.config").read()
-    # EL GUARD QUE PUEDE MATAR TODO: si esto esta apagado, los slots no existen.
     kabi_on = bool(re.search(r"^CONFIG_ANDROID_KABI_RESERVE=y$", cfg, re.M))
     say("  GUARD | CONFIG_ANDROID_KABI_RESERVE=y ? -> %s" % kabi_on)
     if not kabi_on:
         m = re.search(r"^.*ANDROID_KABI_RESERVE.*$", cfg, re.M)
-        say("  linea encontrada en el .config: %s" % (m.group(0) if m else "NINGUNA"))
-        say("  Si esta apagado, los slots reservados NO EXISTEN y el falsador")
-        say("  entero queda NO MEDIDO. Se declara, no se maquilla.")
+        say("  linea en el .config: %s" % (m.group(0) if m else "NINGUNA"))
+        say("  Si esta apagado, los slots NO EXISTEN y el falsador es NO MEDIDO.")
     estado = {}
     for s_ in [l.split("=")[0] for l in FRAGMENTO.splitlines() if l.startswith("CONFIG_")]:
         m = re.search(r"^%s=(.*)$" % re.escape(s_), cfg, re.M)
