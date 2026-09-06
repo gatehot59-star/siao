@@ -1,7 +1,7 @@
 {
   "falsador": "F-004",
   "rama": "android15-6.6",
-  "fecha_utc": "2026-09-06T02:50:19Z",
+  "fecha_utc": "2026-09-06T03:02:17Z",
   "por_que_no_stgdiff": "medido en el pre-vuelo: el .stg de referencia existe (8.014.732 B) pero stgdiff no lo consegui por ninguna de las 5 vias probadas (google/stg 404, /tags 404, prebuilts 404 x2, paquete stg ausente en ubuntu-ports arm64). stgdiff queda NO MEDIDO por falta de instrumento.",
   "por_que_module_symvers": "CONFIG_MODVERSIONS=y esta medido en el .config del GKI: con eso, un cambio de layout no da un diff, da un modulo que no carga porque el CRC no coincide. Los CRC viven en Module.symvers, y esa es la misma pregunta.",
   "caveat": "los dos brazos usan el MISMO compilador del runner, no el de Google. Comparar baseline vs fragmento es valido porque el compilador es constante; comparar contra el .stg de Google NO lo seria.",
