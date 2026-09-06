@@ -1,0 +1,116 @@
+### fecha 2026-09-06T13:30:14Z | maquina x86_64
+### fuente: mediciones/f-004-v3/config-baseline.txt (gki_defconfig PURO del baseline)
+
+=== 1) CGROUP_DEVICE y sus alternativas en el baseline ===
+# CONFIG_BLK_CGROUP_IOLATENCY is not set
+# CONFIG_CGROUP_DEBUG is not set
+# CONFIG_CGROUP_DEVICE is not set
+# CONFIG_CGROUP_FAVOR_DYNMODS is not set
+# CONFIG_CGROUP_MISC is not set
+# CONFIG_CGROUP_NET_CLASSID is not set
+# CONFIG_CGROUP_PERF is not set
+# CONFIG_CGROUP_PIDS is not set
+# CONFIG_CGROUP_RDMA is not set
+CONFIG_BLK_CGROUP=y
+CONFIG_BLK_CGROUP_IOCOST=y
+CONFIG_BLK_CGROUP_IOPRIO=y
+CONFIG_BLK_CGROUP_RWSTAT=y
+CONFIG_CGROUP_BPF=y
+CONFIG_CGROUP_CPUACCT=y
+CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUP_NET_PRIO=y
+CONFIG_CGROUP_SCHED=y
+CONFIG_CGROUP_WRITEBACK=y
+CONFIG_MEMCG=y
+CONFIG_MEMCG_KMEM=y
+
+--- cuantos subsistemas de cgroup estan en =y (dimensionan subsys[]) ---
+6
+
+=== 2) el enforcer del KMI y la whitelist ===
+# CONFIG_MODULE_SIG_FORCE is not set
+# CONFIG_MODULE_SIG_KEY_TYPE_ECDSA is not set
+# CONFIG_MODULE_SIG_SHA224 is not set
+# CONFIG_MODULE_SIG_SHA256 is not set
+# CONFIG_MODULE_SIG_SHA384 is not set
+# CONFIG_MODULE_SIG_SHA512 is not set
+# CONFIG_TRIM_UNUSED_KSYMS is not set
+CONFIG_ANDROID_KABI_RESERVE=y
+CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_ALL=y
+CONFIG_MODULE_SIG_FORMAT=y
+CONFIG_MODULE_SIG_HASH="sha1"
+CONFIG_MODULE_SIG_KEY="certs/signing_key.pem"
+CONFIG_MODULE_SIG_KEY_TYPE_RSA=y
+CONFIG_MODULE_SIG_PROTECT=y
+CONFIG_MODULE_SIG_SHA1=y
+CONFIG_MODVERSIONS=y
+
+=== 3) listas de simbolos KMI que Google publica ===
+abi_gki_aarch64
+abi_gki_aarch64.stg
+abi_gki_aarch64.stg.allowed_breaks
+abi_gki_aarch64_amlogic
+abi_gki_aarch64_asr
+abi_gki_aarch64_asus
+abi_gki_aarch64_db845c
+abi_gki_aarch64_exynos
+abi_gki_aarch64_exynosauto
+abi_gki_aarch64_fips140
+abi_gki_aarch64_galaxy
+abi_gki_aarch64_honor
+abi_gki_aarch64_imx
+abi_gki_aarch64_kunit
+abi_gki_aarch64_lenovo
+abi_gki_aarch64_moto
+abi_gki_aarch64_mtk
+abi_gki_aarch64_mtktv
+abi_gki_aarch64_nothing
+abi_gki_aarch64_nvidia
+abi_gki_aarch64_oplus
+abi_gki_aarch64_paragon
+abi_gki_aarch64_pixel
+abi_gki_aarch64_pixel_watch
+abi_gki_aarch64_qcom
+abi_gki_aarch64_siengine
+abi_gki_aarch64_sunxi
+abi_gki_aarch64_tcl
+abi_gki_aarch64_transsion
+abi_gki_aarch64_tuxera
+abi_gki_aarch64_type_visibility
+abi_gki_aarch64_unisoc
+abi_gki_aarch64_virtual_device
+abi_gki_aarch64_vivo
+abi_gki_aarch64_wonder
+abi_gki_aarch64_xiaomi
+abi_gki_aarch64_xiaomi_wear
+abi_gki_aarch64_xiaomi_xring
+abi_gki_protected_exports_aarch64
+gki
+
+--- tamano de la lista generica y su FORMATO real ---
+5 /tmp/prot.txt
+[abi_symbol_list]
+# commonly used symbols
+  module_layout
+  __put_task_struct
+  utf8_data_table
+
+=== 4) licencia de vendor_lindroid, rama lindroid-22.1 ===
+  LICENSE -> HTTP 404
+  LICENSE.txt -> HTTP 404
+  COPYING -> HTTP 404
+  NOTICE -> HTTP 404
+  MODULE_LICENSE_APACHE2 -> HTTP 404
+  Android.bp -> HTTP 404
+--- cabecera de lindroid.mk, donde AOSP pone la licencia ---
+# LXC Tools
+PRODUCT_PACKAGES += \
+    lxc_attach \
+    lxc_autostart \
+    lxc_cgroup \
+    lxc_checkpoint \
+    lxc_config \
+    lxc_console \
+    lxc_copy \
+    lxc_create \
