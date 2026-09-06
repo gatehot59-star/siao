@@ -6,20 +6,22 @@ name: falsador-kvm-usermod
 # Por que importa: si se destraba, Actions x64 revive como opcion para el AVD del
 # Agent Bridge, y no hay que tocar la VM que sirve el corpus en produccion.
 #
-# TRES VIAS, y cada una con su medicion propia. No alcanza con "el comando no
+# TRES VIAS, cada una con su medicion propia. No alcanza con "el comando no
 # fallo": hay que abrir el device y correr el ioctl.
-#   V1. usermod -aG kvm + sg kvm  (el grupo nuevo NO aplica a la sesion actual,
-#       por eso hace falta sg o newgrp para re-evaluar los grupos)
-#   V2. chmod 666 /dev/kvm        (mas bruto: no depende del grupo)
-#   V3. sudo directo              (si ni root puede, el modulo no esta cargado y
-#       ninguna via de permisos va a servir)
-#
-# V3 es el DISCRIMINADOR: separa "problema de permisos" (arreglable) de "KVM no
-# esta ahi" (irreparable). Sin V3, un fallo de V1 y V2 no dice cual de las dos.
+#   V3. sudo directo   -> va PRIMERO porque es el DISCRIMINADOR: separa
+#       "problema de permisos" (arreglable) de "KVM no esta ahi" (irreparable).
+#   V1. usermod -aG kvm + sg kvm  (el grupo nuevo NO aplica a la sesion actual)
+#   V2. chmod 666 /dev/kvm        (no depende del grupo)
 #
 # Y el CREATE_VM importa mas que el api_version: en la VM de Abraham el api dio
 # 12 y crear la VM tambien funciono. Un api_version sin CREATE_VM seria KVM a
 # medias.
+#
+# DEFECTO PROPIO CAZADO ANTES DE CORRER: la v1 de este workflow metia un heredoc
+# `<<PY` DENTRO de `sg kvm -c '...'`. El validador (instrumentos/validar_workflow.py
+# del repo del corpus) lo marco ROJO: "heredoc sin cierre PY". Un heredoc anidado
+# dentro de comillas simples no se cierra. Ahora el probe se escribe a un archivo
+# y `sg` solo lo ejecuta, que ademas hace el probe reutilizable por las tres vias.
 
 on:
   workflow_dispatch:
@@ -44,77 +46,22 @@ jobs:
           echo "--- sudo sin password? ---"
           sudo -n true && echo SUDO_SIN_PASSWORD || echo SUDO_PIDE_PASSWORD
 
-      - name: V3 primero, el discriminador
+      - name: escribir el probe UNA vez
         run: |
           set -uo pipefail
-          # Va PRIMERO a proposito: si root no puede, V1 y V2 no tienen sentido
-          # y el resultado de esas dos seria un rojo sin causa.
-          sudo python3 - <<'PY'
-          import fcntl, os, json
-          res = {"via": "V3-sudo-directo"}
-          try:
-              f = os.open("/dev/kvm", os.O_RDWR)
-              res["abre_rdwr"] = True
-              for nombre, num in (("api_version", 0xAE00), ("create_vm", 0xAE01)):
-                  try:
-                      v = fcntl.ioctl(f, num, 0)
-                      res[nombre] = v
-                      if nombre == "create_vm":
-                          os.close(v)
-                  except Exception as e:
-                      res[nombre] = "ERR:" + type(e).__name__ + ":" + str(e)[:70]
-              os.close(f)
-          except Exception as e:
-              res["abre_rdwr"] = "ERR:" + type(e).__name__ + ":" + str(e)[:70]
-          res["VEREDICTO"] = ("KVM_USABLE_COMO_ROOT"
-                              if res.get("api_version") == 12 and isinstance(res.get("create_vm"), int)
-                              else "KVM_NO_FUNCIONA_NI_COMO_ROOT")
-          print(json.dumps(res, indent=1))
-          PY
-
-      - name: V1 usermod + sg
-        run: |
-          set -uo pipefail
-          sudo usermod -aG kvm "$(id -un)" && echo "usermod rc=0"
-          echo "grupos declarados AHORA: $(id -Gn)"
-          echo "grupos del usuario en /etc/group: $(id -Gn "$(id -un)")"
-          # el grupo nuevo no aplica a esta sesion: sg re-evalua
-          sg kvm -c 'python3 - <<PY
-          import fcntl, os, json
-          res = {"via": "V1-usermod-sg", "grupos": os.getgroups()}
+          cat > /tmp/probe_kvm.py <<'PY'
+          import fcntl, json, os, sys
+          res = {"via": sys.argv[1] if len(sys.argv) > 1 else "?",
+                 "uid": os.getuid(), "grupos": sorted(os.getgroups()),
+                 "existe": os.path.exists("/dev/kvm"),
+                 "escribible": os.access("/dev/kvm", os.W_OK)}
           try:
               f = os.open("/dev/kvm", os.O_RDWR)
               res["abre_rdwr"] = True
               try:
                   res["api_version"] = fcntl.ioctl(f, 0xAE00, 0)
               except Exception as e:
-                  res["api_version"] = "ERR:" + type(e).__name__
-              try:
-                  vm = fcntl.ioctl(f, 0xAE01, 0); res["create_vm"] = vm; os.close(vm)
-              except Exception as e:
-                  res["create_vm"] = "ERR:" + type(e).__name__
-              os.close(f)
-          except Exception as e:
-              res["abre_rdwr"] = "ERR:" + type(e).__name__ + ":" + str(e)[:70]
-          res["VEREDICTO"] = ("DESTRABADO" if isinstance(res.get("create_vm"), int) else "SIGUE_TRABADO")
-          print(json.dumps(res, indent=1))
-          PY'
-
-      - name: V2 chmod 666
-        run: |
-          set -uo pipefail
-          sudo chmod 666 /dev/kvm && echo "chmod rc=0"
-          ls -la /dev/kvm
-          python3 - <<'PY'
-          import fcntl, os, json
-          res = {"via": "V2-chmod-666", "escribible": os.access("/dev/kvm", os.W_OK)}
-          try:
-              f = os.open("/dev/kvm", os.O_RDWR)
-              res["abre_rdwr"] = True
-              try:
-                  res["api_version"] = fcntl.ioctl(f, 0xAE00, 0)
-              except Exception as e:
-                  res["api_version"] = "ERR:" + type(e).__name__
+                  res["api_version"] = "ERR:" + type(e).__name__ + ":" + str(e)[:70]
               try:
                   vm = fcntl.ioctl(f, 0xAE01, 0)
                   res["create_vm"] = vm
@@ -124,26 +71,54 @@ jobs:
               os.close(f)
           except Exception as e:
               res["abre_rdwr"] = "ERR:" + type(e).__name__ + ":" + str(e)[:70]
-          res["VEREDICTO"] = ("DESTRABADO" if isinstance(res.get("create_vm"), int) else "SIGUE_TRABADO")
+          res["VEREDICTO"] = ("KVM_USABLE"
+                              if res.get("api_version") == 12 and isinstance(res.get("create_vm"), int)
+                              else "KVM_PARCIAL" if isinstance(res.get("api_version"), int)
+                              else "TRABADO")
           print(json.dumps(res, indent=1))
-          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as fh:
-              fh.write("### V2 chmod 666" + chr(10) + "```json" + chr(10) +
-                       json.dumps(res, indent=1) + chr(10) + "```" + chr(10))
+          resumen = os.environ.get("GITHUB_STEP_SUMMARY")
+          if resumen:
+              with open(resumen, "a") as fh:
+                  fh.write("### " + res["via"] + chr(10) + "```json" + chr(10) +
+                           json.dumps(res, indent=1) + chr(10) + "```" + chr(10))
           PY
+          chmod +x /tmp/probe_kvm.py
+          python3 -c "import ast;ast.parse(open('/tmp/probe_kvm.py').read());print('PROBE_SINTAXIS_OK')"
 
-      - name: prueba de uso REAL, no de permisos
+      - name: V3 sudo directo, el discriminador
+        run: |
+          set -uo pipefail
+          # Si root NO puede, V1 y V2 no tienen sentido y su rojo no tendria causa.
+          sudo python3 /tmp/probe_kvm.py V3-sudo-directo
+
+      - name: V1 usermod + sg
+        run: |
+          set -uo pipefail
+          sudo usermod -aG kvm "$(id -un)" && echo "usermod rc=0"
+          echo "grupos de ESTA sesion : $(id -Gn)"
+          echo "grupos en /etc/group  : $(id -Gn "$(id -un)")"
+          # el grupo nuevo no aplica a la sesion actual: sg lo re-evalua
+          sg kvm -c 'python3 /tmp/probe_kvm.py V1-usermod-sg'
+
+      - name: V2 chmod 666
+        run: |
+          set -uo pipefail
+          sudo chmod 666 /dev/kvm && echo "chmod rc=0"
+          ls -la /dev/kvm
+          python3 /tmp/probe_kvm.py V2-chmod-666
+
+      - name: prueba de USO REAL, no de permisos
         run: |
           set -uo pipefail
           # El ioctl prueba que KVM responde. Esto prueba que SIRVE: el emulador
-          # de Android es el consumidor real, y su propio comando de diagnostico
-          # es la unica medicion que importa para SIAO.
+          # de Android es el consumidor real y su propio diagnostico es la unica
+          # medicion que importa para SIAO.
           echo "ANDROID_HOME=${ANDROID_HOME:-vacio}"
           EMU="${ANDROID_HOME:-/usr/local/lib/android/sdk}/emulator/emulator"
           if [ -x "${EMU}" ]; then
             echo "--- emulator -accel-check ---"
-            "${EMU}" -accel-check 2>&1 | head -5 || true
-            echo "rc=$?"
+            "${EMU}" -accel-check 2>&1 | head -6 || true
           else
-            echo "emulator AUSENTE en ${EMU}: se mide con sdkmanager aparte"
-            ls "${ANDROID_HOME:-/usr/local/lib/android/sdk}" 2>&1 | head -10
+            echo "emulator AUSENTE en ${EMU}"
+            ls "${ANDROID_HOME:-/usr/local/lib/android/sdk}" 2>&1 | head -12
           fi
