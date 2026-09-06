@@ -1,11 +1,11 @@
-name: F-002 v5 main + overlay SIAO
+name: F-002 v6 overlay no flat
 
 on:
   push:
     branches:
       - 'titan/f-002-rootfs'
     paths:
-      - 'tools/f002_v5.py'
+      - 'tools/f002_v6_nonflat.py'
       - '.github/workflows/f-002-rootfs.yml'
   workflow_dispatch:
 
@@ -30,7 +30,7 @@ jobs:
           id
 
       - name: md5 del instrumento
-        run: md5sum tools/f002_v5.py
+        run: md5sum tools/f002_v6_nonflat.py
 
       - name: Herramientas
         run: |
@@ -40,11 +40,11 @@ jobs:
           mmdebstrap --version | head -2
           dpkg-deb --version | head -1
 
-      - name: Correr F-002 v5
+      - name: Correr F-002 v6
         env:
           F002_OUT: mediciones/f-002
-          F002_WORK: /tmp/f002v5
-        run: sudo -E python3 tools/f002_v5.py
+          F002_WORK: /tmp/f002v6
+        run: sudo -E python3 tools/f002_v6_nonflat.py
 
       - name: Commitear la salida cruda
         if: always()
@@ -54,7 +54,7 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" mediciones || true
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(f-002 v5): salida cruda en arm64 (run ${{ github.run_id }})"
+          git commit -m "evidencia(f-002 v6): salida cruda en arm64 (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin "${{ github.ref_name }}" && \
             git push origin HEAD:"${{ github.ref_name }}" && exit 0
@@ -64,4 +64,4 @@ jobs:
 
       - name: Resumen
         if: always()
-        run: cat mediciones/f-002/F-002-v5.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
+        run: cat mediciones/f-002/F-002-v6.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
