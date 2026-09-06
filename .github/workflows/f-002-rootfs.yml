@@ -1,11 +1,11 @@
-name: F-002 v8 overlay minimo medido
+name: F-002 v9 copy vs file
 
 on:
   push:
     branches:
       - 'titan/f-002-rootfs'
     paths:
-      - 'tools/f002_v8.py'
+      - 'tools/f002_v9_copy.py'
       - '.github/workflows/f-002-rootfs.yml'
   workflow_dispatch:
 
@@ -30,7 +30,7 @@ jobs:
           id
 
       - name: md5 del instrumento
-        run: md5sum tools/f002_v8.py
+        run: md5sum tools/f002_v9_copy.py
 
       - name: Herramientas
         run: |
@@ -38,13 +38,12 @@ jobs:
           sudo apt-get install -y -qq --no-install-recommends \
             mmdebstrap dpkg-dev zstd apt-utils
           mmdebstrap --version | head -2
-          dpkg-deb --version | head -1
 
-      - name: Correr F-002 v8
+      - name: Correr F-002 v9
         env:
           F002_OUT: mediciones/f-002
-          F002_WORK: /tmp/f002v8
-        run: sudo -E python3 tools/f002_v8.py
+          F002_WORK: /tmp/f002v9
+        run: sudo -E python3 tools/f002_v9_copy.py
 
       - name: Commitear la salida cruda
         if: always()
@@ -54,7 +53,7 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" mediciones || true
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(f-002 v8): salidas COMPLETAS en arm64 (run ${{ github.run_id }})"
+          git commit -m "evidencia(f-002 v9): salidas COMPLETAS en arm64 (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin "${{ github.ref_name }}" && \
             git push origin HEAD:"${{ github.ref_name }}" && exit 0
@@ -64,4 +63,4 @@ jobs:
 
       - name: Resumen
         if: always()
-        run: cat mediciones/f-002/F-002-v8.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
+        run: cat mediciones/f-002/F-002-v9.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"
