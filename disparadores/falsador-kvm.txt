@@ -1,0 +1,17 @@
+falsador de KVM en los runners de GitHub Actions
+disparo: 2026-09-06T15:02Z
+
+LA PREGUNTA: el runner ubuntu-24.04-arm expone /dev/kvm USABLE?
+
+Por que decide: SIAO es arm64. La VM del corpus tiene KVM (ioctl API 12 medido)
+pero es x86_64, asi que no acelera arm64 y encima comparte 2 nucleos con el
+buscador en produccion. brain-env NO tiene /dev/kvm (medido: no such file) y es
+un Celeron N4020 a 1,10 GHz.
+
+Si el runner arm64 expone KVM usable, Actions gana en las DOS dimensiones a la
+vez (arm64 nativo Y acelerado) y no hay que instalar nada en la VM.
+
+El job x64 es el control de instrumento: si el script falla en los dos, no se
+puede distinguir "no hay KVM" de "mi script esta roto".
+
+Validado antes de disparar: YAML OK, 1 bloque python, 0 rojos.
