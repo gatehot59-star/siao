@@ -1,0 +1,50 @@
+### comando
+bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 -j$(nproc) Image modules 2>&1 | tail -40
+
+### rc=0
+
+### stdout (ultimos 200k)
+  CC      kernel/uid16.o
+  CC      kernel/module_signature.o
+  CC      kernel/kallsyms.o
+  CC      kernel/compat.o
+  CC      kernel/utsname.o
+  UPD     kernel/config_data
+  CC      kernel/stop_machine.o
+  CC      kernel/audit.o
+  CC      kernel/auditfilter.o
+  CC      kernel/auditsc.o
+  CC      kernel/audit_watch.o
+  CC      kernel/audit_fsnotify.o
+  CC      kernel/audit_tree.o
+  CC      kernel/kprobes.o
+  CC      kernel/hung_task.o
+  CC      kernel/watchdog.o
+  CC      kernel/seccomp.o
+  CC      kernel/utsname_sysctl.o
+  CC      kernel/delayacct.o
+  CC      kernel/taskstats.o
+  CC      kernel/tsacct.o
+  CC      kernel/tracepoint.o
+  CC      kernel/irq_work.o
+  CC      kernel/cpu_pm.o
+  CC      kernel/scs.o
+  CC      kernel/cfi.o
+  CC      kernel/jump_label.o
+  CC      kernel/context_tracking.o
+  CC      kernel/iomem.o
+  CHK     kernel/kheaders_data.tar.xz
+  GEN     kernel/kheaders_data.tar.xz
+  GZIP    kernel/config_data.gz
+  CC      kernel/configs.o
+  AR      kernel/built-in.a
+  CC [M]  kernel/kheaders.o
+make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+make[1]: *** [/tmp/f004/ack/Makefile:252: __sub-make] Error 2
+make[1]: Leaving directory '/tmp/f004/out-baseline'
+make: *** [Makefile:252: __sub-make] Error 2
+make: Leaving directory '/tmp/f004/ack'
+
+
+### stderr (ultimos 200k)
+
