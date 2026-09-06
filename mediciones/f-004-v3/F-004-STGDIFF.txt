@@ -1,36 +1,225 @@
 == F-004 v3 etapa x86: stg + stgdiff ==
-maquina: x86_64 | fecha UTC 2026-09-06T04:07:44Z
-  /tmp/stg/stg | 4944792 B | sha256 b8cf4364c4e7da8b57362afd817e697611cb7d9bdf8d9fdb6e3f2e8a2ece3adb
-  /tmp/stg/stgdiff | 5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f818970bdac8d3e4a323448918d742ee8cb
+maquina: x86_64 | fecha UTC 2026-09-06T04:09:51Z
+  el instrumento y SU libreria salen del mismo prebuilt de Google:
+  bajado bin/stg                -> /tmp/stg/stg                4944792 B | sha256 b8cf4364c4e7da8b57362afd817e6976
+  bajado bin/stgdiff            -> /tmp/stg/stgdiff            5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f81
+  bajado lib64/libc++.so        -> /tmp/stg/lib64/libc++.so    1306352 B | sha256 7b91de1cba2ad902aad871b77e58af40
+  LD_LIBRARY_PATH = /tmp/stg/lib64:
+$ ldd /tmp/stg/stg
+  rc=0 en 0.0 s
+   | 	linux-vdso.so.1 (0x00007fd251100000)
+   | 	libc++.so => /tmp/stg/lib64/libc++.so (0x00007fd2508ba000)
+   | 	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fd2510e9000)
+   | 	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fd2510e4000)
+   | 	libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fd2507d1000)
+   | 	librt.so.1 => /lib/x86_64-linux-gnu/librt.so.1 (0x00007fd2510df000)
+   | 	libgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fd2510af000)
+   | 	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fd250400000)
+   | 	/lib64/ld-linux-x86-64.so.2 (0x00007fd251102000)
 $ /tmp/stg/stg --help
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+  rc=1 en 0.0 s
+   | /tmp/stg/stg: unrecognized option '--help'
+   | usage: /tmp/stg/stg
+   |   [-m|--metrics]
+   |   [-d|--keep-duplicates]
+   |   [-t|--types]
+   |   [-F|--files|--file-filter <filter>]
+   |   [-S|--symbols|--symbol-filter <filter>]
+   |   [-a|--abi|-b|--btf|-e|--elf|-s|--stg] [file] ...
+   |   [{-o|--output} {filename|-}] ...
+   |   [-A|--annotate]
+   | implicit defaults: --abi
+   | filter syntax:
+   |   <filter>   ::= <term>          |  <expression> '|' <term>
+   |   <term>     ::= <factor>        |  <term> '&' <factor>
+   |   <factor>   ::= <atom>          |  '!' <factor>
+   |   <atom>     ::= ':' <filename>  |  <glob>  |  '(' <expression> ')'
+   |   <filename> ::= <string>
+   |   <glob>     ::= <string>
 $ /tmp/stg/stgdiff --help
-  rc=127 en 0.0 s
-   | /tmp/stg/stgdiff: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
+  rc=1 en 0.0 s
+   | /tmp/stg/stgdiff: unrecognized option '--help'
+   | usage: /tmp/stg/stgdiff
+   |   [-m|--metrics]
+   |   [-a|--abi|-b|--btf|-e|--elf|-s|--stg] file1
+   |   [-a|--abi|-b|--btf|-e|--elf|-s|--stg] file2
+   |   [-x|--exact]
+   |   [-t|--types]
+   |   [{-i|--ignore} <ignore-option>] ...
+   |   [{-f|--format} <output-format>] ...
+   |   [{-o|--output} {filename|-}] ...
+   |   [{-F|--fidelity} {filename|-}]
+   | implicit defaults: --abi --format small
+   | --exact (node equality) cannot be combined with --output
+   | output formats: plain flat small short viz
+   | ignore options: type_declaration_status symbol_type_presence primitive_type_encoding member_size enum_underlying_type qualifier linux_symbol_crc interface_addition type_definition_addition
 === brazo baseline ===
   vmlinux 173481992 B | modulos 97
 $ /tmp/stg/stg -o /tmp/baseline.stg --elf /tmp/k/baseline/vmlinux /tmp/k/baseline/arch/arm64/geniezone/gzvm.ko /tmp/k/baseline/drivers/base/regmap/regmap-kunit.ko /tmp/k/baseline/drivers/base/regmap/regmap-ram.ko /tmp/k/baseline/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/baseline/drivers/block/virtio_blk.ko /tmp/k/baseline/drivers/block/zram/zram.ko /tmp/k/baseline/drivers/bluetooth/btbcm.ko /tmp/
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-$ /tmp/stg/stg --output /tmp/baseline.stg --elf /tmp/k/baseline/vmlinux
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-$ /tmp/stg/stg -o /tmp/baseline.stg /tmp/k/baseline/vmlinux
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-  NO MEDIDO: stg no produjo .stg para baseline
+  rc=0 en 19.1 s
+  baseline.stg -> 11317742 B | sha256 440f48ed6759f80e7f97eabcc09efc6f
 === brazo siao ===
   vmlinux 174758944 B | modulos 97
 $ /tmp/stg/stg -o /tmp/siao.stg --elf /tmp/k/siao/vmlinux /tmp/k/siao/arch/arm64/geniezone/gzvm.ko /tmp/k/siao/drivers/base/regmap/regmap-kunit.ko /tmp/k/siao/drivers/base/regmap/regmap-ram.ko /tmp/k/siao/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/siao/drivers/block/virtio_blk.ko /tmp/k/siao/drivers/block/zram/zram.ko /tmp/k/siao/drivers/bluetooth/btbcm.ko /tmp/k/siao/drivers/bluetooth/btqca.ko /t
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-$ /tmp/stg/stg --output /tmp/siao.stg --elf /tmp/k/siao/vmlinux
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-$ /tmp/stg/stg -o /tmp/siao.stg /tmp/k/siao/vmlinux
-  rc=127 en 0.0 s
-   | /tmp/stg/stg: error while loading shared libraries: libc++.so: cannot open shared object file: No such file or directory
-  NO MEDIDO: stg no produjo .stg para siao
+  rc=0 en 19.2 s
+  siao.stg -> 11319347 B | sha256 7d91aa2b9f9dc46224958b238be943b7
 === stgdiff baseline vs siao (unica variable: el fragmento) ===
-  NO MEDIDO: falta al menos un .stg, brazos con stg = []
+$ /tmp/stg/stgdiff --stg /tmp/baseline.stg /tmp/siao.stg --format small --output mediciones/f-004-v3/F-004-abi.report
+  rc=4 en 0.6 s
+  stgdiff rc=4
+  interpretacion declarada ANTES de leer: rc=0 significa ABI equivalente;
+  rc distinto de 0 con reporte significa que HAY diferencias de ABI.
+  reporte: 1521915 B
+   R| variable symbol 'struct static_key_true pids_cgrp_subsys_enabled_key' was added
+   R| 
+   R| variable symbol 'struct static_key_true pids_cgrp_subsys_on_dfl_key' was added
+   R| 
+   R| function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   R| 
+   R| variable symbol 'const struct dwc3* const ANDROID_GKI_struct_dwc3' changed
+   R|   CRC changed from 0xd68c3bec to 0xd01618d8
+   R| 
+   R| function symbol 'struct block_device* I_BDEV(struct inode*)' changed
+   R|   CRC changed from 0x974b1685 to 0xbc6c065
+   R| 
+   R| function symbol 'void __ClearPageMovable(struct page*)' changed
+   R|   CRC changed from 0xd52f347f to 0x99c35be9
+   R| 
+   R| function symbol 'void __SetPageMovable(struct page*, const struct movable_operations*)' changed
+   R|   CRC changed from 0x69d31e82 to 0xdc223d96
+   R| 
+   R| function symbol 'int ___pskb_trim(struct sk_buff*, unsigned int)' changed
+   R|   CRC changed from 0x84efba44 to 0x5139b7ff
+   R| 
+   R| function symbol 'int __account_locked_vm(struct mm_struct*, unsigned long, bool, struct task_struct*, bool)' changed
+   R|   CRC changed from 0x91574f5 to 0x4a641ea7
+   R| 
+   R| function symbol 'struct page* __alloc_pages(gfp_t, unsigned int, int, nodemask_t*)' changed
+   R|   CRC changed from 0xa184bb4e to 0x817a2480
+   R| 
+   R| function symbol 'unsigned long __alloc_pages_bulk(gfp_t, int, nodemask_t*, int, struct list_head*, struct page**)' changed
+   R|   CRC changed from 0x2ecbbb9d to 0xac528a8d
+   R| 
+   R| function symbol 'struct sk_buff* __alloc_skb(unsigned int, gfp_t, int, int)' changed
+   R|   CRC changed from 0x41ded6bf to 0xc936134d
+   R| 
+   R| function symbol 'void __audit_inode_child(struct inode*, const struct dentry*, unsigned char)' changed
+   R|   CRC changed from 0x9e13972f to 0x8d67bc74
+   R| 
+   R| function symbol 'int __auxiliary_device_add(struct auxiliary_device*, const char*)' changed
+   R|   CRC changed from 0x12ed5846 to 0x91dbeadc
+   R| 
+   R| function symbol 'int __auxiliary_driver_register(struct auxiliary_driver*, struct module*, const char*)' changed
+   R|   CRC changed from 0xc2be19d5 to 0xd6623196
+   R| 
+   R| function symbol 'void __balance_callbacks(struct rq*)' changed
+   R|   CRC changed from 0xe740acf6 to 0x10d5eeac
+   R| 
+   R| function symbol 'void __bforget(struct buffer_head*)' changed
+   R|   CRC changed from 0x5e568d9b to 0x37385293
+   R| 
+   R| function symbol 'int __bh_read(struct buffer_head*, blk_opf_t, bool)' changed
+   R|   CRC changed from 0xfd3c214a to 0x5836403c
+   R| 
+   R| function symbol 'void __bh_read_batch(int, struct buffer_head**, blk_opf_t, bool)' changed
+   R|   CRC changed from 0x6800dc53 to 0x82329477
+   R| 
+   R| function symbol 'void __bio_add_page(struct bio*, struct page*, unsigned int, unsigned int)' changed
+   R|   CRC changed from 0x8f8718e0 to 0x53b93c7
+   R| 
+   R| function symbol 'void __bio_advance(struct bio*, unsigned int)' changed
+   R|   CRC changed from 0x853440fb to 0x67949e90
+   R| 
+   R| function symbol 'void __bio_release_pages(struct bio*, bool)' changed
+   R|   CRC changed from 0x8e5f73ce to 0xf192b457
+   R| 
+   R| function symbol 'struct gendisk* __blk_alloc_disk(int, struct lock_class_key*)' changed
+   R|   CRC changed from 0xe3d059e4 to 0x849de513
+   R| 
+   R| function symbol 'struct gendisk* __blk_mq_alloc_disk(struct blk_mq_tag_set*, void*, struct lock_class_key*)' changed
+   R|   CRC changed from 0xa1ec36bc to 0x8afeac48
+   R| 
+   R| function symbol 'int __blk_mq_debugfs_rq_show(struct seq_file*, struct request*)' changed
+   R|   CRC changed from 0xe27c9568 to 0x49f2da48
+   R| 
+   R| function symbol 'void __blk_mq_end_request(struct request*, blk_status_t)' changed
+   R|   CRC changed from 0xa0f93117 to 0x43e03ea3
+   R| 
+   R| function symbol 'void __blk_req_zone_write_lock(struct request*)' changed
+   R|   CRC changed from 0x82753f9c to 0x8292c1b8
+   R| 
+   R| function symbol 'void __blk_req_zone_write_unlock(struct request*)' changed
+   R|   CRC changed from 0x2667cffa to 0xf4f3f04a
+   R| 
+   R| function symbol 'int __blk_rq_map_sg(struct request_queue*, struct request*, struct scatterlist*, struct scatterlist**)' changed
+   R|   CRC changed from 0x7f27f068 to 0x5ad06a2d
+   R| 
+   R| function symbol 'int __blkdev_issue_discard(struct block_device*, sector_t, sector_t, gfp_t, struct bio**)' changed
+   R|   CRC changed from 0xeac8caa1 to 0xbf41daa
+   R| 
+   R| function symbol 'int __blkdev_issue_zeroout(struct block_device*, sector_t, sector_t, gfp_t, struct bio**, unsigned int)' changed
+   R|   CRC changed from 0x39d535e7 to 0xf77c63f9
+   R| 
+   R| function symbol 'u64 __blkg_prfill_rwstat(struct seq_file*, struct blkg_policy_data*, const struct blkg_rwstat_sample*)' changed
+   R|   CRC changed from 0x698cd264 to 0x4a5ed8eb
+   R| 
+   R| function symbol 'u64 __blkg_prfill_u64(struct seq_file*, struct blkg_policy_data*, u64)' changed
+   R|   CRC changed from 0xd723e6b1 to 0xb0d0d83b
+   R| 
+   R| function symbol 'int __block_write_begin(struct page*, loff_t, unsigned int, get_block_t*)' changed
+   R|   CRC changed from 0x134bda42 to 0x7e4fb94c
+   R| 
+   R| function symbol 'int __block_write_full_folio(struct inode*, struct folio*, get_block_t*, struct writeback_control*, bh_end_io_t*)' changed
+   R|   CRC changed from 0x615eaae1 to 0x89958c
+   R| 
+   R| function symbol 'ssize_t __blockdev_direct_IO(struct kiocb*, struct inode*, struct block_device*, struct iov_iter*, get_block_t*, dio_iodone_t*, int)' changed
+   R|   CRC changed from 0x8625a3f1 to 0xcb8ecbcd
+   R| 
+   R| function symbol 'struct buffer_head* __bread_gfp(struct block_device*, sector_t, unsigned int, gfp_t)' changed
+   R|   CRC changed from 0x7a29d8a9 to 0xff7c7081
+   R| 
+   R| function symbol 'void __breadahead(struct block_device*, sector_t, unsigned int)' changed
+   R|   CRC changed from 0x84978ae5 to 0xc3889b82
+   R| 
+   R| function symbol 'int __break_lease(struct inode*, unsigned int, unsigned int)' changed
+   R|   CRC changed from 0x82a95cd5 to 0x4443b7eb
+   R| 
+   R| function symbol 'void __brelse(struct buffer_head*)' changed
+   R|   CRC changed from 0x6a8d2def to 0x760e5098
+   R| 
+   R| function symbol 'int __cgroup_bpf_run_filter_sk(struct sock*, enum cgroup_bpf_attach_type)' changed
+   R|   CRC changed from 0xc1669575 to 0x51d1abf7
+   R| 
+   R| function symbol 'int __cgroup_bpf_run_filter_skb(struct sock*, struct sk_buff*, enum cgroup_bpf_attach_type)' changed
+   R|   CRC changed from 0xfc0eb20f to 0x486815cd
+   R| 
+   R| function symbol 'int __cgroup_bpf_run_filter_sock_addr(struct sock*, struct sockaddr*, int*, enum cgroup_bpf_attach_type, void*, u32*)' changed
+   R|   CRC changed from 0x95787454 to 0xc799b738
+   R| 
+   R| function symbol 'int __cgroup_bpf_run_filter_sock_ops(struct sock*, struct bpf_sock_ops_kern*, enum cgroup_bpf_attach_type)' changed
+   R|   CRC changed from 0xbff880b8 to 0xeb590c2c
+   R| 
+   R| function symbol 'int __check_sticky(struct mnt_idmap*, struct inode*, struct inode*)' changed
+   R|   CRC changed from 0x1db143f6 to 0x724e022d
+   R| 
+   R| function symbol 'int __cleancache_get_page(struct page*)' changed
+   R|   CRC changed from 0x83612d56 to 0x4c61e41c
+   R| 
+   R| function symbol 'void __cleancache_init_fs(struct super_block*)' changed
+   R|   CRC changed from 0x413e5e4b to 0xcfeb4a9b
+   R| 
+   R| function symbol 'void __cleancache_init_shared_fs(struct super_block*)' changed
+   R|   CRC changed from 0x80a75256 to 0x109c0402
+   R| 
+   R| function symbol 'void __cleancache_invalidate_fs(struct super_block*)' changed
+   R|   CRC changed from 0x742dee67 to 0x3b431281
+   R| 
+   R| function symbol 'void __cleancache_invalidate_inode(struct address_space*)' changed
+   R|   CRC changed from 0xc8e46a72 to 0xd146e16d
+   R| 
+   R| function symbol 'void __cleancache_invalidate_page(struct address_space*, struct page*)' changed
+   R|   CRC changed from 0x60b39fa9 to 0x457ab489
+   R| 
+   ... (resumen cortado; el reporte va commiteado ENTERO)
+  baseline.stg commiteado en mediciones/f-004-v3
+  siao.stg commiteado en mediciones/f-004-v3
