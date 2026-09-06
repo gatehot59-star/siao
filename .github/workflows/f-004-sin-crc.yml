@@ -1,0 +1,44 @@
+name: F-004 v3 stgdiff sin CRC
+
+# Barata: NO compila y NO baja artifacts. Los dos .stg (11,3 MB cada uno) ya estan
+# commiteados en la rama por la pasada anterior, asi que esto solo corre stgdiff
+# con --ignore linux_symbol_crc para separar la cascada de CRC de un cambio de tipos.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths:
+      - 'tools/f004_stg_x86_ignora_crc.py'
+      - '.github/workflows/f-004-sin-crc.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sin-crc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: titan/f-004-kmi
+      - name: Que hay en mediciones
+        run: ls -la mediciones/f-004-v3/ | head -30
+      - name: Correr
+        run: python3 tools/f004_stg_x86_ignora_crc.py
+      - name: Commitear
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(f-004 v3): stgdiff sin CRC (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 6))
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: head -60 mediciones/f-004-v3/F-004-SIN-CRC.txt >> "$GITHUB_STEP_SUMMARY" || true
