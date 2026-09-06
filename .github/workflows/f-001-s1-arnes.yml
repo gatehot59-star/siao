@@ -3,8 +3,15 @@ name: F-001-S1 arnes QEMU
 # Corre en las DOS arquitecturas a proposito: el Doc de KVM midio que x64 tiene
 # /dev/kvm usable y arm64 no lo tiene. Este falsador lo comprueba de forma
 # independiente Y saca la consecuencia que importa: el huesped es aarch64, asi que
-# KVM solo serviria si anfitrion y huesped comparten ISA. Los dos brazos dan el
-# control cruzado.
+# KVM solo serviria si anfitrion y huesped comparten ISA.
+#
+# DEFECTO MIO, medido en el run de las 15:23 UTC, los DOS brazos:
+#     qemu-system-aarch64: failed to find romfile "efi-virtio.rom"   (rc=1 en 0,1 s)
+#   NO era el kernel ni QEMU: la maquina 'virt' agrega una NIC virtio por defecto
+#   y su ROM de arranque PXE viene en el paquete 'ipxe-qemu', que no instale.
+#   Se arregla de dos formas y aplico las dos: instalar ipxe-qemu Y pedir -nic none,
+#   porque para un arranque sin rootfs la red no hace falta.
+#   Costo: 0,1 s por brazo. Lo que lo delato fue la salida cruda de 61 bytes.
 on:
   push:
     branches: ['titan/f-004-kmi']
@@ -53,11 +60,14 @@ jobs:
           else
             echo 'no hay /dev/kvm en esta arquitectura: nada que destrabar'
           fi
-      - name: Instalar QEMU
+      - name: Instalar QEMU y las ROM que la maquina virt pide
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends qemu-system-arm qemu-utils
+          sudo apt-get install -y -qq --no-install-recommends qemu-system-arm qemu-utils ipxe-qemu
           qemu-system-aarch64 --version | head -2
+          echo '--- romfiles disponibles ---'
+          ls -la /usr/share/qemu/ 2>/dev/null | head -20 || true
+          find / -name 'efi-virtio.rom' 2>/dev/null | head -3 || echo 'sin efi-virtio.rom'
       - name: Correr el arnes
         env:
           F001_OUT: mediciones/f-001-s1
@@ -86,4 +96,4 @@ jobs:
           exit 1
       - name: Resumen
         if: always()
-        run: tail -50 mediciones/f-001-s1/f001s1-*-bitacora.txt >> "$GITHUB_STEP_SUMMARY" || true
+        run: tail -60 mediciones/f-001-s1/f001s1-*-bitacora.txt >> "$GITHUB_STEP_SUMMARY" || true
