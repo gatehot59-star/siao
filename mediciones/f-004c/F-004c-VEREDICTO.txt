@@ -1,0 +1,14 @@
+== F-004c: stgdiff del fragmento SIN CGROUP_PIDS ==
+maquina: x86_64 | fecha UTC 2026-09-06T12:38:13Z
+PREDICCION: 0 'byte size changed' y 0 'offset changed' en el reporte sin CRC.
+  bajado bin/stg                 4944792 B | sha256 b8cf4364c4e7da8b57362afd817e6976
+  bajado bin/stgdiff             5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f81
+  bajado lib64/libc++.so         1306352 B | sha256 7b91de1cba2ad902aad871b77e58af40
+=== brazo baseline ===
+  NO MEDIDO: no llego el vmlinux de este brazo
+=== brazo kabi ===
+  vmlinux 174811088 B | modulos 97
+$ /tmp/stg/stg -o /tmp/kabi.stg --elf /tmp/k/kabi/vmlinux /tmp/k/kabi/arch/arm64/geniezone/gzvm.ko /tmp/k/kabi/drivers/base/regmap/regmap-kunit.ko /tmp/k/kabi/drivers/base/regmap/regmap-ram.ko /tmp/k/kabi/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/kabi/drivers/block/virtio_blk.ko /tmp/k/kabi/drivers/block/zram/zram.ko /tmp/k/kabi/drivers/bluetooth/btbcm.ko /tmp/k/kabi/drivers/b
+  rc=0 en 20.9 s
+  kabi.stg 11319319 B | sha256 c66fd3fcb6c6f8078ffa35ef729e2b7c
+  NO MEDIDO: falta al menos un .stg, brazos con stg = ['kabi']
