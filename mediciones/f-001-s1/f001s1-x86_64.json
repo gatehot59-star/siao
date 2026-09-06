@@ -1,0 +1,17 @@
+{
+  "arch": "x86_64",
+  "kvm_estado": "USABLE",
+  "kvm_razon": "abre O_RDWR sin error",
+  "qemu": "/usr/bin/qemu-system-aarch64",
+  "entrada_zip": "boot-6.6.img",
+  "hitos": {
+    "banner_linux": false,
+    "version_leida": null,
+    "memoria_ok": false,
+    "llego_a_init": false,
+    "bytes_de_salida": 61
+  },
+  "rc_qemu": 1,
+  "veredicto": "ARNES ROJO o NO MEDIDO: no aparecio el banner de Linux",
+  "fecha_utc": "2026-09-06T15:23:47Z"
+}

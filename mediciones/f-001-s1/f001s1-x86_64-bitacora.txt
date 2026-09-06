@@ -1,23 +1,23 @@
 == F-001-S1 paso 0: el arnes de QEMU ==
-  fecha UTC 2026-09-06T15:17:29Z
+  fecha UTC 2026-09-06T15:23:46Z
   PREDICCION: aparece el banner de Linux y el kernel entra en panico por
   falta de init. Ese panico es el VERDE del arnes.
 $ uname -m; nproc; free -m | head -2; df -h / | tail -1
-  rc=0 en 0.0 s | out 211 B | err 0 B
+  rc=0 en 0.1 s | out 211 B | err 0 B
    | x86_64
    | 2
    |                total        used        free      shared  buff/cache   available
-   | Mem:            7938        1052        4168          43        3054        6886
+   | Mem:            7937         995        4191          46        3090        6941
    | /dev/root        72G   59G   14G  82% /
 
   === /dev/kvm, con los TRES estados separados ===
   estado: USABLE
   razon : abre O_RDWR sin error
-  NOTA de diseno, y es la que el Doc no saca: el kernel de SIAO es aarch64.
-  KVM acelera solo si huesped e anfitrion comparten ISA.
+  NOTA de diseno: el kernel de SIAO es aarch64 y KVM acelera solo si
+  huesped y anfitrion comparten ISA.
   -> aca la ISA NO coincide (huesped arm64 sobre anfitrion x86_64):
      KVM es IRRELEVANTE para este falsador, aunque este USABLE.
-  CONCLUSION del arnes: F-001-S1 va por TCG (emulacion pura) en las dos maquinas.
+  CONCLUSION: F-001-S1 va por TCG (emulacion pura) en las dos maquinas.
 
   === herramientas ===
    qemu-system-aarch64    /usr/bin/qemu-system-aarch64
@@ -32,5 +32,27 @@ $ qemu-system-aarch64 --version 2>&1 | head -2
    | Copyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers
 
   === bajando el boot.img CERTIFICADO de Google y sacandole el Image ===
-  bajado 14525091 B de https://dl.google.com/android/gki/gki-certified-boot-android15-6.6-2025-01_r1.zip
+  bajado 14525091 B
   entradas del zip: ['boot-6.6.img']
+  entrada elegida: boot-6.6.img (de 1 candidatas .img)
+  boot.img: 67108864 B | magic b'ANDROID!'
+  header_version=4 | kernel_size=36317696
+  Image extraido: 36317696 B | magic b'MZ@\xfa'
+
+  === EL ARRANQUE: qemu-system-aarch64 SIN rootfs ===
+  un kernel sano imprime su banner y despues entra en panico por
+  'No working init found'. Ese panico ES el verde del arnes.
+$ timeout 240 qemu-system-aarch64 -machine virt -cpu cortex-a57 -smp 2 -m 2048 -nographic -no-reboot -kernel /tmp/f001s1/Image -append 'console=ttyAMA0 panic=1 earlycon' 2>&1 | head -200
+  rc=1 en 0.0 s | out 61 B | err 0 B
+  guardado entero en <out>/f001s1-x86_64-boot.txt
+
+  === HITOS DEL ARRANQUE ===
+   banner_linux       False
+   version_leida      None
+   memoria_ok         False
+   llego_a_init       False
+   bytes_de_salida    61
+  --- salida del kernel, primeras 45 lineas ---
+   B| qemu-system-aarch64: failed to find romfile "efi-virtio.rom"
+
+  VEREDICTO: ARNES ROJO o NO MEDIDO: no aparecio el banner de Linux

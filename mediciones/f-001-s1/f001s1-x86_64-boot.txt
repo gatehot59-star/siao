@@ -1,0 +1,12 @@
+### comando
+timeout 240 qemu-system-aarch64 -machine virt -cpu cortex-a57 -smp 2 -m 2048 -nographic -no-reboot -kernel /tmp/f001s1/Image -append 'console=ttyAMA0 panic=1 earlycon' 2>&1 | head -200
+
+### rc
+1
+
+### stdout ENTERO
+qemu-system-aarch64: failed to find romfile "efi-virtio.rom"
+
+
+### stderr ENTERO
+
