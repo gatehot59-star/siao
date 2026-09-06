@@ -1,0 +1,9 @@
+function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+
+type 'struct task_struct' changed
+  member 'u64 android_kabi_reserved3' was removed
+  member 'u64 android_kabi_reserved4' was removed
+  member 'u64 android_kabi_reserved5' was removed
+  member 'union { struct sysv_sem sysvsem; struct { u64 android_kabi_reserved3; }; union { }; }' was added
+  member 'union { struct sysv_shm sysvshm; struct { u64 android_kabi_reserved4; u64 android_kabi_reserved5; }; union { }; }' was added
+

@@ -1,0 +1,59 @@
+== F-004c: mismo arnes que F-004b, UNA variable menos ==
+  instrumento reusado: tools/f004b_kabi.py (sin tocar)
+  variable retirada:   CONFIG_CGROUP_PIDS=y
+  parche KABI:         IGUAL que en F-004b
+  PREDICCION: reporte sin CRC con SOLO la union de task_struct y los
+  simbolos aditivos; CERO 'byte size changed' y CERO 'offset changed'.
+  --- el fragmento de este falsador, verbatim ---
+   | # siao-A: HOST, para que systemd de openKylin arranque
+   | CONFIG_DEVTMPFS=y
+   | CONFIG_DEVTMPFS_MOUNT=y
+   | CONFIG_FHANDLE=y
+   | CONFIG_SYSVIPC=y
+   | CONFIG_POSIX_MQUEUE=y
+   | CONFIG_TMPFS_XATTR=y
+   | CONFIG_AUTOFS_FS=y
+   | # siao-B: CONTENEDOR DE APPS (LXC privilegiado, estilo Waydroid)
+   | CONFIG_PID_NS=y
+   | CONFIG_IPC_NS=y
+  simbolos en el fragmento: 9 (eran 10 en F-004b)
+== F-004b build: baseline | rama android15-6.6 ==
+  PREDICCION DECLARADA: con el parche, el reporte sin CRC queda VACIO
+  y task_struct no cambia de tamano. Falsable.
+  R-09 | archivos previos de 'baseline' borrados: ninguno
+$ nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1; openssl version
+  rc=0 en 0.0 s | out 308 B | err 0 B
+   | 2
+   |                total        used        free      shared  buff/cache   available
+   | Mem:            7911        1185        5137          44        1830        6726
+   | /dev/root        72G   31G   42G  43% /
+   | Ubuntu clang version 18.1.3 (1ubuntu1)
+   | OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)
+  bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android15-6.6.tar.gz
+  bajado 238726574 B en 87.7 s | sha256 a5e654aa93cd919f13c12cdd7ae0ae9e60eadb0a698baef76aca4c07cb076bcb
+$ tar -xzf /tmp/f004c/ack.tar.gz -C /tmp/f004c/ack
+  rc=0 en 7.9 s | out 0 B | err 0 B
+$ make -C /tmp/f004c/ack O=/tmp/f004c/out-baseline LLVM=1 ARCH=arm64 gki_defconfig
+  rc=0 en 5.5 s | out 710 B | err 0 B
+  guardado entero en <out>/f004b-baseline-defconfig.txt
+  GUARD | CONFIG_ANDROID_KABI_RESERVE=y ? -> True
+  estado de los 10 simbolos del fragmento:
+      CONFIG_DEVTMPFS            APAGADO
+      CONFIG_DEVTMPFS_MOUNT      AUSENTE
+      CONFIG_FHANDLE             APAGADO
+      CONFIG_SYSVIPC             APAGADO
+      CONFIG_POSIX_MQUEUE        APAGADO
+      CONFIG_TMPFS_XATTR         APAGADO
+      CONFIG_AUTOFS_FS           APAGADO
+      CONFIG_PID_NS              APAGADO
+      CONFIG_IPC_NS              AUSENTE
+$ make -C /tmp/f004c/ack O=/tmp/f004c/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j$(nproc) Image modules
+  rc=2 en 0.7 s | out 278 B | err 432 B
+  guardado entero en <out>/f004b-baseline-build.txt
+  --- resumen leido DEL ARCHIVO (R-08) ---
+  lineas con pinta de error: 4
+   E19    | make[3]: *** [/tmp/f004c/ack/scripts/Makefile.host:114: arch/arm64/tools/gen-hyprel] Error 126
+   E21    | make[2]: *** [/tmp/f004c/ack/arch/arm64/Makefile:190: archscripts] Error 2
+   E23    | make[1]: *** [/tmp/f004c/ack/Makefile:252: __sub-make] Error 2
+   E24    | make: *** [Makefile:252: __sub-make] Error 2
+  Module.symvers presente: False
