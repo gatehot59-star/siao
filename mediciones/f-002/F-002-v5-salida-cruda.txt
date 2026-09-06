@@ -1,0 +1,107 @@
+== F-002 v5 ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_arch": "ARM64", "run_id": "34004759364"}
+PREDICCION del auditor: ROJO por dependencias: libcryptsetup12 2.8.4 de main probablemente arrastra algo mas que libdevmapper
+PREDICCION mia: VERDE: el unico Depends de libcryptsetup12 que main no satisface es libdevmapper1.02.1
+PRE-VUELO (R-05) en brain-env: apt-get install -s rc=0, 68 paquetes, y del overlay solo libdevmapper1.02.1. Ya refuto la prediccion del auditor antes de gastar runner (R-05).
+
+--- overlay SIAO en /tmp/f002v5/overlay (Release: True) ---
+  libdevmapper1.02.1         2:1.02.205-ok1     127826 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay/pool/libdevmapper1.02.1_1.02.205-ok1_arm64.deb
+  dmsetup                    2:1.02.205-ok1      73304 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay/pool/dmsetup_1.02.205-ok1_arm64.deb
+  libdevmapper-event1.02.1   2:1.02.205-ok1      11934 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay/pool/libdevmapper-event1.02.1_1.02.205-ok1_arm64.deb
+  Packages con dpkg-deb -f: 3 paquetes, 3355 B
+  Release, verbatim:
+     | Origin: SIAO
+     | Label: SIAO overlay
+     | Suite: huanghe
+     | Codename: huanghe
+     | Version: 3.0
+     | Architectures: arm64
+     | Components: main
+     | Description: overlay SIAO para siao-base-s1
+     | Date: Sun, 06 Sep 2026 01:47:00 GMT
+     | SHA256:
+     |  fd47516146cbea4896c899ce6869004243cfe825db275477ed9f05ec9afd2bab 3355 Packages
+     |  20a1d7b29480be622e968ac563907c38eafbb9cea8ec2e54d84c55ee46d121b5 1015 Packages.gz
+
+--- overlay SIAO en /tmp/f002v5/overlay-sin-release (Release: False) ---
+  libdevmapper1.02.1         2:1.02.205-ok1     127826 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay-sin-release/pool/libdevmapper1.02.1_1.02.205-ok1_arm64.deb
+  dmsetup                    2:1.02.205-ok1      73304 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay-sin-release/pool/dmsetup_1.02.205-ok1_arm64.deb
+  libdevmapper-event1.02.1   2:1.02.205-ok1      11934 B sha256_ok=True
+$ dpkg-deb -f /tmp/f002v5/overlay-sin-release/pool/libdevmapper-event1.02.1_1.02.205-ok1_arm64.deb
+  Packages con dpkg-deb -f: 3 paquetes, 3355 B
+  SIN Release a proposito: es el control N2
+
+==============================================================================
+>>> N1 solo main
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+$ bash -c rm -rf /tmp/f002v5/n1 && mkdir -p /tmp/f002v5/n1
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose huanghe /tmp/f002v5/n1 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+  mmdebstrap rc=25
+  MM | The following packages have unmet dependencies:
+  MM |  libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?arc
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  systemd presente: False
+  N1: correcto
+
+==============================================================================
+>>> N2 overlay SIN Release
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v5/overlay-sin-release ./
+$ bash -c rm -rf /tmp/f002v5/n2 && mkdir -p /tmp/f002v5/n2
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose huanghe /tmp/f002v5/n2 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f002v5/
+  mmdebstrap rc=25
+  MM | The following packages have unmet dependencies:
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?arc
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  systemd presente: False
+  N2: correcto
+
+==============================================================================
+>>> SUJETO main + overlay con Release
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v5/overlay ./
+$ bash -c rm -rf /tmp/f002v5/rootfs && mkdir -p /tmp/f002v5/rootfs
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose huanghe /tmp/f002v5/rootfs deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f00
+  mmdebstrap rc=25
+  MM | The following packages have unmet dependencies:
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?arc
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  systemd presente: False
+
+--- CRITERIO (c): firmas ---
+  keyring encontrado: openkylin-keyring (6288 B) sha256_ok=True
+$ bash -c dpkg-deb -c /tmp/f002v5/keyring.deb | head -20
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/apt/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/apt/trusted.gpg.d/
+   | -rw-r--r-- root/root      2290 2026-03-30 08:19 ./etc/apt/trusted.gpg.d/openkylin-archive-keyring.gpg
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/doc/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/
+   | -rw-r--r-- root/root       365 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/changelog.Debian.gz
+   | -rw-r--r-- root/root       192 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/copyright
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/keyrings/
+   | drwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/keyrings/deb-sign/
+   | -rw-r--r-- root/root      2262 2026-03-30 08:19 ./usr/share/keyrings/deb-sign/openkylin.gpg
+   | -rw-r--r-- root/root      2290 2026-03-30 08:19 ./usr/share/keyrings/openkylin-archive-keyring.gpg
+  (c) PARCIAL: keyring obtenido y su sha256 verificado contra el indice, pero el indice mismo se bajo sin firma verificada: es circular. Cerrar (c) exige el fingerprint desde fuente primaria fuera del mirror.
+
+VEREDICTO F-002 v5: (a)=ROJO (b)=NO MEDIDO (c)=PARCIAL
+La prediccion del auditor ACERTO
