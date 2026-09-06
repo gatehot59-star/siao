@@ -1,0 +1,53 @@
+name: F-004 primer error real
+
+# No compila nada: lee el log YA COMMITEADO de 106 KB y extrae la primera linea
+# de error real, que es lo que el resumen con tail se comio.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths: ['.github/workflows/f-004-primer-error.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extraer:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extraer, verbatim
+        run: |
+          set -x
+          out=mediciones/f-004/F-004-PRIMER-ERROR.txt
+          : > "$out"
+          for f in mediciones/f-004/f004-baseline-build.txt mediciones/f-004/f004-siao-build.txt; do
+            echo "===== $f =====" >> "$out"
+            wc -c "$f" >> "$out"
+            echo '--- primeras 60 lineas que matchean error/fatal/No such/Killed/space ---' >> "$out"
+            grep -nE 'error:|error!|fatal|No such file|Killed|No space|cannot|Permission denied|not found|undefined|Error [0-9]+' "$f" | head -60 >> "$out" || echo '(sin match)' >> "$out"
+            echo '--- contexto de la PRIMERA linea de make Error ---' >> "$out"
+            n=$(grep -nE 'Error [0-9]+' "$f" | head -1 | cut -d: -f1 || true)
+            if [ -n "$n" ]; then
+              a=$(( n > 60 ? n - 60 : 1 ))
+              sed -n "${a},${n}p" "$f" >> "$out"
+            else
+              echo '(no hay linea de make Error)' >> "$out"
+            fi
+            echo '' >> "$out"
+          done
+          cat "$out"
+      - name: Commitear
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && exit 0
+          git commit -m "medicion(f-004): primer error real del log ARM64 (run ${{ github.run_id }})"
+          git pull --rebase --autostash origin "${{ github.ref_name }}"
+          git push origin HEAD:"${{ github.ref_name }}"
+      - name: Resumen
+        if: always()
+        run: cat mediciones/f-004/F-004-PRIMER-ERROR.txt >> "$GITHUB_STEP_SUMMARY" || true
