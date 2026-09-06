@@ -1,0 +1,35 @@
+== F-001-S1 paso 0: el arnes de QEMU ==
+  fecha UTC 2026-09-06T15:17:35Z
+  PREDICCION: aparece el banner de Linux y el kernel entra en panico por
+  falta de init. Ese panico es el VERDE del arnes.
+$ uname -m; nproc; free -m | head -2; df -h / | tail -1
+  rc=0 en 0.0 s | out 212 B | err 0 B
+   | aarch64
+   | 2
+   |                total        used        free      shared  buff/cache   available
+   | Mem:            7911        1284        5029          45        1841        6627
+   | /dev/root        72G   37G   36G  51% /
+
+  === /dev/kvm, con los TRES estados separados ===
+  estado: NO_EXISTE
+  razon : el nodo no esta en el filesystem
+  NOTA de diseno, y es la que el Doc no saca: el kernel de SIAO es aarch64.
+  KVM acelera solo si huesped e anfitrion comparten ISA.
+  -> aca la ISA coincide, pero si /dev/kvm no existe tampoco hay aceleracion.
+  CONCLUSION del arnes: F-001-S1 va por TCG (emulacion pura) en las dos maquinas.
+
+  === herramientas ===
+   qemu-system-aarch64    /usr/bin/qemu-system-aarch64
+   qemu-img               /usr/bin/qemu-img
+   unzip                  /usr/bin/unzip
+   cpio                   /usr/bin/cpio
+   zstd                   /usr/local/bin/zstd
+   python3                /usr/bin/python3
+$ qemu-system-aarch64 --version 2>&1 | head -2
+  rc=0 en 0.0 s | out 132 B | err 0 B
+   | QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
+   | Copyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers
+
+  === bajando el boot.img CERTIFICADO de Google y sacandole el Image ===
+  bajado 14525091 B de https://dl.google.com/android/gki/gki-certified-boot-android15-6.6-2025-01_r1.zip
+  entradas del zip: ['boot-6.6.img']
