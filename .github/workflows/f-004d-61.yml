@@ -1,30 +1,14 @@
 name: F-004d en android14-6.1
 
-# VERSION 2. El v1 (run 34049301780) cerro NO MEDIDO por DOS causas de arnes,
-# ninguna del fragmento, y las tres correcciones estan aca:
+# VERSION 3. La v2 (run 34126598730) probo el paso serial, pero mi arreglo estaba
+# incompleto: archscripts corrio SIN HOSTCFLAGS, tardo 0,0 s y no hizo trabajo;
+# despues el build con HOSTCFLAGS invalido fixdep y lo recompilo en paralelo.
+# Esta v3 unifica HOSTCFLAGS en los TRES pasos, y guarda segundos + presencia de
+# HOSTCC para probar que el paso realmente mitigo algo.
 #
-#   1. pahole AUSENTE -> el brazo de ocho compilo 1.429,7 s y murio al linkear:
-#        BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
-#      android14-6.1 trae CONFIG_DEBUG_INFO_BTF=y; android15-6.6 no lo exigia con
-#      el mismo apt-get. Diferencia de herramientas ENTRE generaciones (R-17).
-#      Fix: instalar 'dwarves', que provee pahole, Y VERIFICARLO en el PATH.
-#      Nota medida: el pahole del prebuilt de Google es linux-x86 y este build es
-#      arm64, asi que ahi NO servia. El binario tiene que ser del anfitrion.
-#
-#   2. 'fixdep: Permission denied' (Error 126), TRES veces, siempre en el brazo
-#      baseline y siempre en menos de 1 s. El instrumento ahora corre
-#      'make -j1 archscripts' antes del build paralelo: sortea la carrera Y la
-#      pone a prueba, porque si el 126 aparece igual en serie la hipotesis muere.
-#
-#   3. Mi guard roto: el v1 empaqueto un tarball de 20 MB SIN vmlinux adentro y
-#      siguio. Ahora se aborta si falta vmlinux, y despues del tar se verifica
-#      que vmlinux este listado DENTRO del tarball.
-#
-# Y un cambio de metodo: los DOS brazos salen del MISMO instrumento
-# (tools/f004d61_build.py). En el v1 el baseline usaba f004b_kabi.py y el otro
-# f004d_sin_sysvipc.py: dos codigos para dos brazos que se comparan entre si.
-#
-# R-17: baseline PROPIO de 6.1. El .stg de 6.6 no es transferible.
+# v1: pahole faltaba, fixdep 126, tar sin vmlinux.
+# v2: pahole resuelto, guard de tar resuelto, pero HOSTCFLAGS no unificado.
+# v3: la firma definitiva de host esta en gki_defconfig, archscripts y build.
 on:
   push:
     branches: ['titan/f-004-kmi']
@@ -32,13 +16,11 @@ on:
       - '.github/workflows/f-004d-61.yml'
       - 'tools/f004d61_build.py'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   build:
-    name: f004d61v2-${{ matrix.brazo }}
+    name: f004d61v3-${{ matrix.brazo }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 350
     strategy:
@@ -56,39 +38,46 @@ jobs:
           df -h /
       - name: md5 del instrumento unico
         run: md5sum tools/f004d61_build.py
-      - name: Herramientas de kernel, con dwarves para pahole
+      - name: Herramientas de kernel con pahole
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends clang lld llvm bc bison flex libssl-dev libelf-dev python3 rsync kmod cpio zstd dwarves
-          echo '--- versiones, verbatim ---'
-          clang --version | head -1
           echo "pahole -> $(command -v pahole || echo AUSENTE)"
-          pahole --version 2>&1 | head -1 || echo 'pahole no responde --version'
+          pahole --version 2>&1 | head -1 || true
       - name: Liberar disco
         run: |
           df -h /
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
           df -h /
-      - name: Compilar el brazo ${{ matrix.brazo }} en 6.1
+      - name: Compilar brazo
         env:
           F004_OUT: mediciones/f-004d-61
           F004_WORK: /tmp/f004d61
           F004_RAMA: android14-6.1
         run: python3 tools/f004d61_build.py ${{ matrix.brazo }}
-      - name: Que quedo en mediciones, antes de subir
-        if: always()
-        run: ls -la mediciones/f-004d-61/ || true
-      - name: Subir todo, R-11
+      - name: Subir evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: f004d61v2-${{ matrix.brazo }}
+          name: f004d61v3-${{ matrix.brazo }}
           path: mediciones/f-004d-61/
           retention-days: 5
           if-no-files-found: warn
-
+      - name: Commitear evidencia del brazo
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones/f-004d-61
+          git diff --cached --quiet && exit 0
+          git commit -m "evidencia(F-004d@6.1 v3): brazo ${{ matrix.brazo }} (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 8))
+          done
+          exit 1
   comparar:
-    name: f004d61v2-stgdiff-x86
+    name: f004d61v3-stgdiff-x86
     needs: build
     if: always()
     runs-on: ubuntu-24.04
@@ -99,29 +88,29 @@ jobs:
           ref: titan/f-004-kmi
       - uses: actions/download-artifact@v4
         with:
-          pattern: 'f004d61v2-*'
+          pattern: 'f004d61v3-*'
           path: /tmp/art
-      - name: R-11, copiar todo antes de analizar
+      - name: R-11, copiar solo la evidencia de cada brazo
         run: |
           set -x
           mkdir -p mediciones/f-004d-61
           find /tmp/art -type f | sort
-          cp -rv /tmp/art/f004d61v2-baseline/* mediciones/f-004d-61/ 2>/dev/null || true
-          cp -rv /tmp/art/f004d61v2-ocho/* mediciones/f-004d-61/ 2>/dev/null || true
+          # cada artifact tiene una copia del mismo OUT; no pisar con glob ciego
+          cp -rv /tmp/art/f004d61v3-baseline/* mediciones/f-004d-61/ 2>/dev/null || true
+          cp -rv /tmp/art/f004d61v3-ocho/* mediciones/f-004d-61/ 2>/dev/null || true
           ls -la mediciones/f-004d-61/
-      - name: Desempaquetar y VERIFICAR que cada tarball tenga vmlinux
+      - name: Desempaquetar y verificar vmlinux adentro
         run: |
           set -x
           for b in baseline ocho; do
             mkdir -p /tmp/k/$b
-            f=$(find /tmp/art mediciones/f-004d-61 -name "elf-$b-android14-6.1.tar.zst" | head -1)
-            if [ -z "$f" ]; then echo "NO llego el tarball de $b"; continue; fi
-            echo "--- contenido de $b, primeras 3 entradas ---"
+            f=$(find /tmp/art -name "elf-$b-android14-6.1.tar.zst" | head -1)
+            if [ -z "$f" ]; then echo "NO llego tarball $b"; continue; fi
             tar -t --zstd -f "$f" | head -3
             tar -x --zstd -f "$f" -C /tmp/k/$b || true
-            ls -la /tmp/k/$b/vmlinux 2>/dev/null || echo "SIN vmlinux en $b"
+            test -f /tmp/k/$b/vmlinux || echo "SIN vmlinux $b"
           done
-      - name: stg y stgdiff de la generacion 6.1
+      - name: stg y stgdiff
         env:
           F004_OUT: mediciones/f-004d-61
           F004_RAMA: android14-6.1
@@ -132,9 +121,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           rm -f mediciones/f-004d-61/elf-*.tar.zst
-          git add -A mediciones
-          git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(F-004d@6.1 v2): con dwarves y archscripts serial (run ${{ github.run_id }})"
+          git add -A mediciones/f-004d-61
+          git diff --cached --quiet && exit 0
+          git commit -m "evidencia(F-004d@6.1 v3): stgdiff (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
             sleep $((i * 8))
@@ -142,4 +131,4 @@ jobs:
           exit 1
       - name: Resumen
         if: always()
-        run: tail -45 mediciones/f-004d-61/F-004d-61-VEREDICTO.txt >> "$GITHUB_STEP_SUMMARY" || true
+        run: tail -60 mediciones/f-004d-61/F-004d-61-VEREDICTO.txt >> "$GITHUB_STEP_SUMMARY" || true
