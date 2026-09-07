@@ -1,7 +1,26 @@
 {
   "falsador": "F-004d@6.1",
   "rama": "android14-6.1",
-  "med": {},
-  "veredicto": "NO MEDIDO",
-  "fecha_utc": "2026-09-07T13:47:19Z"
+  "med": {
+    "CON CRC": {
+      "rc": 4,
+      "bytes": 68,
+      "crc": 0,
+      "added": 1,
+      "byte_size": 0,
+      "offset": 0,
+      "structs": []
+    },
+    "SIN CRC": {
+      "rc": 4,
+      "bytes": 68,
+      "crc": 0,
+      "added": 1,
+      "byte_size": 0,
+      "offset": 0,
+      "structs": []
+    }
+  },
+  "veredicto": "VERDE: fragmento de OCHO ABI-compatible en android14-6.1, sin parche al ACK",
+  "fecha_utc": "2026-09-07T14:22:59Z"
 }
