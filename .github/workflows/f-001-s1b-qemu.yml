@@ -1,0 +1,59 @@
+name: F-001-S1b G0 systemd + IPC trace
+
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths:
+      - 'tools/f001s1b_qemu.py'
+      - '.github/workflows/f-001-s1b-qemu.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  g0:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - name: Identificar y herramientas
+        run: |
+          set -x
+          uname -a
+          nproc
+          free -m
+          df -h /
+          md5sum tools/f001s1b_qemu.py
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends mmdebstrap dpkg-dev zstd apt-utils qemu-system-arm qemu-utils dwarves e2fsprogs
+          pahole --version | head -1
+          qemu-system-aarch64 --version | head -1
+      - name: G0, construir y arrancar
+        env:
+          S1_OUT: mediciones/f-001-s1b
+          S1_WORK: /tmp/f001s1b
+        run: sudo -E python3 tools/f001s1b_qemu.py
+      - name: Subir evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f001-s1b-g0
+          path: mediciones/f-001-s1b/
+          retention-days: 5
+          if-no-files-found: warn
+      - name: Commitear evidencia R-11
+        if: always()
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" mediciones || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && exit 0
+          git commit -m "evidencia(F-001-S1b): G0 systemd + IPC en QEMU arm64 (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 8))
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: cat mediciones/f-001-s1b/F-001-S1b.json 2>/dev/null || true
