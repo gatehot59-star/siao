@@ -1,24 +1,36 @@
 name: F-004d en android14-6.1
 
-# D9 del auditor: el dispositivo de referencia es Pixel 8/8a, generacion android14-6.1.
-# R-17: un resultado de una generacion NO se cita para otra. Por eso este run compila
-# SU PROPIO baseline en 6.1: el baseline.stg de f-004b es de 6.6 y NO es transferible.
+# VERSION 2. El v1 (run 34049301780) cerro NO MEDIDO por DOS causas de arnes,
+# ninguna del fragmento, y las tres correcciones estan aca:
 #
-# PRE-VUELO YA MEDIDO (cero builds, en brain-env):
-#   android14-6.1 gki_defconfig -> CONFIG_POSIX_MQUEUE=y  YA PRENDIDO
-#   android15-6.6 gki_defconfig -> CONFIG_POSIX_MQUEUE     ausente
-#   O sea que el riesgo que el auditor senalo ('6.1 puede tener otro default de
-#   POSIX_MQUEUE') existe y va A FAVOR: en 6.1 ya esta en y, asi que IPC_NS deberia
-#   sobrevivir con mas margen. INFERIDO hasta que el .config resuelto lo confirme.
+#   1. pahole AUSENTE -> el brazo de ocho compilo 1.429,7 s y murio al linkear:
+#        BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
+#      android14-6.1 trae CONFIG_DEBUG_INFO_BTF=y; android15-6.6 no lo exigia con
+#      el mismo apt-get. Diferencia de herramientas ENTRE generaciones (R-17).
+#      Fix: instalar 'dwarves', que provee pahole, Y VERIFICARLO en el PATH.
+#      Nota medida: el pahole del prebuilt de Google es linux-x86 y este build es
+#      arm64, asi que ahi NO servia. El binario tiene que ser del anfitrion.
 #
-#   Y el dato que CONFIRMA la advertencia del auditor sobre los slots:
-#   en 6.1 el slot 3 YA ESTA USADO (ANDROID_KABI_USE(3, struct {...)), libres 4..8.
-#   El parche de F-004c, escrito sobre los slots 3-4-5, NO compilaria aca.
-#   F-004d no usa parche, asi que no lo toca. Pero D5 (slots a 6-7-8) queda validado.
+#   2. 'fixdep: Permission denied' (Error 126), TRES veces, siempre en el brazo
+#      baseline y siempre en menos de 1 s. El instrumento ahora corre
+#      'make -j1 archscripts' antes del build paralelo: sortea la carrera Y la
+#      pone a prueba, porque si el 126 aparece igual en serie la hipotesis muere.
+#
+#   3. Mi guard roto: el v1 empaqueto un tarball de 20 MB SIN vmlinux adentro y
+#      siguio. Ahora se aborta si falta vmlinux, y despues del tar se verifica
+#      que vmlinux este listado DENTRO del tarball.
+#
+# Y un cambio de metodo: los DOS brazos salen del MISMO instrumento
+# (tools/f004d61_build.py). En el v1 el baseline usaba f004b_kabi.py y el otro
+# f004d_sin_sysvipc.py: dos codigos para dos brazos que se comparan entre si.
+#
+# R-17: baseline PROPIO de 6.1. El .stg de 6.6 no es transferible.
 on:
   push:
     branches: ['titan/f-004-kmi']
-    paths: ['.github/workflows/f-004d-61.yml']
+    paths:
+      - '.github/workflows/f-004d-61.yml'
+      - 'tools/f004d61_build.py'
   workflow_dispatch:
 
 permissions:
@@ -26,7 +38,7 @@ permissions:
 
 jobs:
   build:
-    name: f004d61-${{ matrix.brazo }}
+    name: f004d61v2-${{ matrix.brazo }}
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 350
     strategy:
@@ -42,50 +54,41 @@ jobs:
           nproc
           free -m
           df -h /
-      - name: md5 de los instrumentos
-        run: md5sum tools/f004d_sin_sysvipc.py tools/f004b_kabi.py
-      - name: Herramientas de kernel
+      - name: md5 del instrumento unico
+        run: md5sum tools/f004d61_build.py
+      - name: Herramientas de kernel, con dwarves para pahole
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends clang lld llvm bc bison flex libssl-dev libelf-dev python3 rsync kmod cpio zstd
-          clang --version | head -2
+          sudo apt-get install -y -qq --no-install-recommends clang lld llvm bc bison flex libssl-dev libelf-dev python3 rsync kmod cpio zstd dwarves
+          echo '--- versiones, verbatim ---'
+          clang --version | head -1
+          echo "pahole -> $(command -v pahole || echo AUSENTE)"
+          pahole --version 2>&1 | head -1 || echo 'pahole no responde --version'
       - name: Liberar disco
         run: |
           df -h /
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
           df -h /
-      - name: Compilar en la generacion 6.1
+      - name: Compilar el brazo ${{ matrix.brazo }} en 6.1
         env:
           F004_OUT: mediciones/f-004d-61
           F004_WORK: /tmp/f004d61
           F004_RAMA: android14-6.1
-        run: |
-          if [ "${{ matrix.brazo }}" = "baseline" ]; then
-            python3 tools/f004b_kabi.py build baseline
-          else
-            python3 tools/f004d_sin_sysvipc.py build
-          fi
-      - name: Renombrar por generacion, R-17
+        run: python3 tools/f004d61_build.py ${{ matrix.brazo }}
+      - name: Que quedo en mediciones, antes de subir
         if: always()
-        run: |
-          set -x
-          ls -la mediciones/f-004d-61/ || true
-          for f in mediciones/f-004d-61/elf-*.tar.zst; do
-            [ -e "$f" ] || continue
-            mv -v "$f" "mediciones/f-004d-61/elf-${{ matrix.brazo }}-android14-6.1.tar.zst"
-          done
-          ls -la mediciones/f-004d-61/ || true
+        run: ls -la mediciones/f-004d-61/ || true
       - name: Subir todo, R-11
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: f004d61-${{ matrix.brazo }}
+          name: f004d61v2-${{ matrix.brazo }}
           path: mediciones/f-004d-61/
           retention-days: 5
           if-no-files-found: warn
 
   comparar:
-    name: f004d61-stgdiff-x86
+    name: f004d61v2-stgdiff-x86
     needs: build
     if: always()
     runs-on: ubuntu-24.04
@@ -96,24 +99,27 @@ jobs:
           ref: titan/f-004-kmi
       - uses: actions/download-artifact@v4
         with:
-          pattern: 'f004d61-*'
+          pattern: 'f004d61v2-*'
           path: /tmp/art
       - name: R-11, copiar todo antes de analizar
         run: |
           set -x
           mkdir -p mediciones/f-004d-61
           find /tmp/art -type f | sort
-          cp -rv /tmp/art/f004d61-baseline/* mediciones/f-004d-61/ 2>/dev/null || true
-          cp -rv /tmp/art/f004d61-ocho/* mediciones/f-004d-61/ 2>/dev/null || true
+          cp -rv /tmp/art/f004d61v2-baseline/* mediciones/f-004d-61/ 2>/dev/null || true
+          cp -rv /tmp/art/f004d61v2-ocho/* mediciones/f-004d-61/ 2>/dev/null || true
           ls -la mediciones/f-004d-61/
-      - name: Desempaquetar los dos ELF
+      - name: Desempaquetar y VERIFICAR que cada tarball tenga vmlinux
         run: |
           set -x
           for b in baseline ocho; do
             mkdir -p /tmp/k/$b
             f=$(find /tmp/art mediciones/f-004d-61 -name "elf-$b-android14-6.1.tar.zst" | head -1)
-            if [ -n "$f" ]; then tar -x --zstd -f "$f" -C /tmp/k/$b || true; fi
-            ls -la /tmp/k/$b | head -3 || true
+            if [ -z "$f" ]; then echo "NO llego el tarball de $b"; continue; fi
+            echo "--- contenido de $b, primeras 3 entradas ---"
+            tar -t --zstd -f "$f" | head -3
+            tar -x --zstd -f "$f" -C /tmp/k/$b || true
+            ls -la /tmp/k/$b/vmlinux 2>/dev/null || echo "SIN vmlinux en $b"
           done
       - name: stg y stgdiff de la generacion 6.1
         env:
@@ -128,7 +134,7 @@ jobs:
           rm -f mediciones/f-004d-61/elf-*.tar.zst
           git add -A mediciones
           git diff --cached --quiet && echo 'sin cambios' && exit 0
-          git commit -m "evidencia(F-004d@6.1): generacion android14-6.1 (run ${{ github.run_id }})"
+          git commit -m "evidencia(F-004d@6.1 v2): con dwarves y archscripts serial (run ${{ github.run_id }})"
           for i in 1 2 3 4 5; do
             git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
             sleep $((i * 8))
