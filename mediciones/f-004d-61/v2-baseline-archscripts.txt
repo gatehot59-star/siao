@@ -1,0 +1,16 @@
+### comando
+make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 -j1 archscripts
+
+### rc DEL COMANDO
+0
+
+### stdout ENTERO
+make: Entering directory '/tmp/f004d61/ack'
+make[1]: Entering directory '/tmp/f004d61/out-baseline'
+make[1]: Nothing to be done for 'archscripts'.
+make[1]: Leaving directory '/tmp/f004d61/out-baseline'
+make: Leaving directory '/tmp/f004d61/ack'
+
+
+### stderr ENTERO
+
