@@ -1,5 +1,5 @@
 == F-004d @ android14-6.1 | VERSION 3 | brazo: ocho ==
-  fecha UTC 2026-09-07T13:54:35Z
+  fecha UTC 2026-09-07T13:55:02Z
   PREDICCION: archscripts CON HOSTCFLAGS tarda mas de 0,5 s, el 126 no
   reaparece, los dos brazos producen vmlinux, y el stgdiff da ~68 B.
   R-09 | limpiando archivos previos de este brazo
@@ -13,10 +13,10 @@
      borrado v2-ocho.json
      borrado v2-symvers-ocho.txt
 $ nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1
-  rc=0 en 0.0 s | out 243 B | err 0 B
+  rc=0 en 1.9 s | out 243 B | err 0 B
    | 2
    |                total        used        free      shared  buff/cache   available
-   | Mem:            7911        1211        5089          44        1852        6700
+   | Mem:            7911        1168        5200          44        1783        6743
    | /dev/root        72G   31G   42G  43% /
    | Ubuntu clang version 18.1.3 (1ubuntu1)
   === pahole, medido y no supuesto ===
@@ -25,9 +25,9 @@ $ pahole --version 2>&1 | head -1
   rc=0 en 0.0 s | out 6 B | err 0 B
    | v1.25
   bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android14-6.1.tar.gz
-  bajado 227559362 B en 73.3 s | sha256 40106924d0ef0319a594fcda982be7c9104d23bf988ecfebd8169e3028e4b53b
+  bajado 227584702 B en 74.4 s | sha256 ed84d53a5a0125939deef99dedc051714e36be9dba8169460161e2e6a10a2905
 $ tar -xzf /tmp/f004d61/ack.tar.gz -C /tmp/f004d61/ack
-  rc=0 en 6.3 s | out 0 B | err 0 B
+  rc=0 en 6.5 s | out 0 B | err 0 B
 $ head -5 /tmp/f004d61/ack/Makefile
   rc=0 en 0.0 s | out 92 B | err 0 B
    | # SPDX-License-Identifier: GPL-2.0
@@ -38,7 +38,7 @@ $ head -5 /tmp/f004d61/ack/Makefile
   comando base (HOSTCFLAGS en TODOS los pasos, arreglo del v3):
    | make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE'
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' gki_defconfig
-  rc=0 en 7.5 s | out 710 B | err 0 B
+  rc=0 en 8.1 s | out 710 B | err 0 B
   guardado entero en <out>/v3-ocho-defconfig.txt
   fragmento de OCHO, verbatim:
    | # siao-A: HOST, para que systemd de openKylin arranque
@@ -52,11 +52,11 @@ $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS=
    | CONFIG_PID_NS=y
    | CONFIG_IPC_NS=y
 $ /tmp/f004d61/ack/scripts/kconfig/merge_config.sh -m -O /tmp/f004d61/out-ocho /tmp/f004d61/out-ocho/.config /tmp/f004d61/siao8.fragment
-  rc=0 en 0.1 s | out 934 B | err 0 B
+  rc=0 en 0.0 s | out 934 B | err 0 B
   guardado entero en <out>/v3-ocho-merge.txt
   merge_config rc=0
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' olddefconfig
-  rc=0 en 1.5 s | out 248 B | err 0 B
+  rc=0 en 1.8 s | out 248 B | err 0 B
   estado de los 8 simbolos del fragmento en ESTE brazo:
       CONFIG_DEVTMPFS          y
       CONFIG_DEVTMPFS_MOUNT    y
@@ -79,9 +79,9 @@ $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS=
   En el v2 esto tardo 0,0 s y yo lo lei como 'hipotesis sostenida'.
   Un exito sin trabajo no es un exito: es un NO MEDIDO. Se declara y
   se sigue, porque el build paralelo es el que decide.
-  fixdep: 71464 B | modo 755 | ejecutable: True | mtime 13:55:57
+  fixdep: 71464 B | modo 755 | ejecutable: True | mtime 13:56:29
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j$(nproc) Image modules
-  rc=0 en 1499.0 s | out 246311 B | err 2346 B
+  rc=0 en 1606.0 s | out 243354 B | err 2346 B
   guardado entero en <out>/v3-ocho-build.txt
   --- resumen leido DEL ARCHIVO (R-08) ---
   lineas con pinta de error: 0
@@ -100,4 +100,4 @@ $ tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-and
    tar| ./drivers/bluetooth/btqca.ko
    tar| ---
    tar| 60
-  el tarball CONTIENE vmlinux: True | 154068953 B
+  el tarball CONTIENE vmlinux: True | 154069434 B

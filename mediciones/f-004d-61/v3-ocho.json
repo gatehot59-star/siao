@@ -23,7 +23,7 @@
   },
   "vmlinux": true,
   "module_symvers": true,
-  "fecha_utc": "2026-09-07T14:21:02Z",
+  "fecha_utc": "2026-09-07T14:23:21Z",
   "n_lineas_symvers": 16036,
   "sha256_symvers": "2b3bf55812444c3030707dc60743276fa59c0123bd0b283a67606a627dce2ef7",
   "veredicto": "brazo OK: vmlinux y symvers producidos y verificados"

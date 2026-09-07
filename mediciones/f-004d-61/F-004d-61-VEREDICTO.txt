@@ -1,5 +1,5 @@
 == F-004d en la generacion android14-6.1 ==
-  maquina x86_64 | fecha UTC 2026-09-07T14:22:15Z
+  maquina x86_64 | fecha UTC 2026-09-07T14:26:07Z
   PREDICCION: ~68 B, 0 CRC, 0 byte-size, 0 offsets, 0 structs.
   R-17: baseline PROPIO de 6.1. No se cita nada de 6.6.
   bajado bin/stg               4944792 B
@@ -7,11 +7,11 @@
   bajado lib64/libc++.so       1306352 B
   baseline  vmlinux 353840120 B | modulos 60
 $ /tmp/stg/stg -o mediciones/f-004d-61/baseline-android14-6.1.stg --elf /tmp/k/baseline/vmlinux /tmp/k/baseline/arch/arm64/geniezone/gzvm.ko /tmp/k/baseline/drivers/block/zram/zram.ko /tmp/k/baseline/drivers/bluetooth/btbcm.ko /tmp/k/baseline/drivers/bluetooth/btqca.ko /tmp/k/baseline/drivers/bluetooth/btsdio.ko /tmp/k/baseline/drivers/bluetooth/hci_uart.ko /t
-  rc=0 en 19.7 s
+  rc=0 en 21.4 s
   baseline  .stg 10699061 B | sha256 c91ed3a1963a261b290c624d251f081b
   ocho      vmlinux 354673168 B | modulos 60
 $ /tmp/stg/stg -o mediciones/f-004d-61/ocho-android14-6.1.stg --elf /tmp/k/ocho/vmlinux /tmp/k/ocho/arch/arm64/geniezone/gzvm.ko /tmp/k/ocho/drivers/block/zram/zram.ko /tmp/k/ocho/drivers/bluetooth/btbcm.ko /tmp/k/ocho/drivers/bluetooth/btqca.ko /tmp/k/ocho/drivers/bluetooth/btsdio.ko /tmp/k/ocho/drivers/bluetooth/hci_uart.ko /tmp/k/ocho/drivers/net/can/dev/ca
-  rc=0 en 19.7 s
+  rc=0 en 21.2 s
   ocho      .stg 10699333 B | sha256 047141d8822061e9a61a3865f236dae0
 === pasada CON CRC ===
 $ /tmp/stg/stgdiff --stg mediciones/f-004d-61/baseline-android14-6.1.stg mediciones/f-004d-61/ocho-android14-6.1.stg --format small --output mediciones/f-004d-61/F-004d-61-abi.report

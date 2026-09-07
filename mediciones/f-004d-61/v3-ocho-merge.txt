@@ -5,7 +5,7 @@
 0
 
 ### segundos
-0.12
+0.05
 
 ### stdout ENTERO
 Using /tmp/f004d61/out-ocho/.config as base
