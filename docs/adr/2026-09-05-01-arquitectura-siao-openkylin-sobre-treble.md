@@ -193,8 +193,8 @@ hace el agente, no *cómo* se lo restringe.
   re-lockeable, GKI 6.1/6.6, soporte previo en Halium/Droidian. Candidatos: Pixel 7/8
   (GKI puro, pKVM, kernel abierto), Fairphone 5 (Droidian activo, QCM6490),
   SHIFTphone 8. Un MediaTek secundario para forzar portabilidad.
-- **Fase 1 (mes 1–5) · PoC.** Rootfs openKylin ARM64 (16K aligned) sobre GKI
-  recompilado; contenedor vendor con Halium; pantalla, táctil, Wi-Fi, audio, radio.
+- **Fase 1 (mes 1–5) · PoC.** Rootfs openKylin ARM64 sobre GKI; contenedor vendor
+  con Halium; pantalla, táctil, Wi-Fi, audio, radio.
   **Criterio de salida: llamada de voz real y un `tool_call` MCP → SMS real, sin
   `system_server` de Android corriendo.**
 - **Fase 2 (mes 6–12) · Alpha.** Contenedor de apps con bind del vendor, 20 APKs,
