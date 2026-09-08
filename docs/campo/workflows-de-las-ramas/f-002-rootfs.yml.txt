@@ -1,0 +1,66 @@
+name: F-002 v9 copy vs file
+
+on:
+  push:
+    branches:
+      - 'titan/f-002-rootfs'
+    paths:
+      - 'tools/f002_v9_copy.py'
+      - '.github/workflows/f-002-rootfs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  f002:
+    name: arm64-nativo
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          nproc
+          free -m
+          df -h /
+          id
+
+      - name: md5 del instrumento
+        run: md5sum tools/f002_v9_copy.py
+
+      - name: Herramientas
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            mmdebstrap dpkg-dev zstd apt-utils
+          mmdebstrap --version | head -2
+
+      - name: Correr F-002 v9
+        env:
+          F002_OUT: mediciones/f-002
+          F002_WORK: /tmp/f002v9
+        run: sudo -E python3 tools/f002_v9_copy.py
+
+      - name: Commitear la salida cruda
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          sudo chown -R "$(id -u):$(id -g)" mediciones || true
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(f-002 v9): salidas COMPLETAS en arm64 (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin "${{ github.ref_name }}" && \
+            git push origin HEAD:"${{ github.ref_name }}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+
+      - name: Resumen
+        if: always()
+        run: cat mediciones/f-002/F-002-v9.md >> "$GITHUB_STEP_SUMMARY" || echo 'sin archivo' >> "$GITHUB_STEP_SUMMARY"

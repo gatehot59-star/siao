@@ -1,0 +1,107 @@
+name: F-004 v3 stgdiff x86 (relanzable)
+
+# POR QUE ESTE WORKFLOW EXISTE APARTE, y es una causa medida y no una sospecha:
+# la etapa x86 dentro del run 34009100653 hace checkout del SHA que lo disparó
+# (e3f41d0b), y tools/f004_stg_x86.py se commiteó UN MINUTO DESPUES (bb3b0e13).
+# Ese job no puede ver su propio lector. Asi que la etapa se relanza sola,
+# bajando los artifacts del run de build POR ID en vez de por 'needs'.
+#
+# El id del run se lee de mediciones/f-004-v3/.trigger-stgdiff, que es tambien
+# el archivo que dispara el workflow. Un push a ese archivo = un relanzamiento.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths: ['mediciones/f-004-v3/.trigger-stgdiff']
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'run id del build arm64 cuyos artifacts hay que leer'
+        required: false
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  stgdiff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: titan/f-004-kmi
+
+      - name: Identificar la maquina y resolver el run de build
+        id: r
+        run: |
+          set -x
+          uname -m
+          nproc
+          df -h /
+          rid='${{ github.event.inputs.run_id }}'
+          if [ -z "$rid" ]; then
+            rid=$(grep -oE '[0-9]{6,}' mediciones/f-004-v3/.trigger-stgdiff | head -1)
+          fi
+          echo "run de build a leer: $rid"
+          echo "rid=$rid" >> "$GITHUB_OUTPUT"
+
+      - name: Bajar stg y stgdiff del prebuilt de Google
+        run: |
+          set -x
+          mkdir -p /tmp/stg
+          base=https://android.googlesource.com/kernel/prebuilts/build-tools/+/refs/heads/main/linux-x86/bin
+          curl -sSL "$base/stg?format=TEXT" | base64 -d > /tmp/stg/stg
+          curl -sSL "$base/stgdiff?format=TEXT" | base64 -d > /tmp/stg/stgdiff
+          chmod +x /tmp/stg/stg /tmp/stg/stgdiff
+          ls -la /tmp/stg
+          sha256sum /tmp/stg/stg /tmp/stg/stgdiff
+          file /tmp/stg/stg /tmp/stg/stgdiff
+
+      - name: Bajar los ELF del run de build, POR ID
+        uses: actions/download-artifact@v4
+        with:
+          pattern: 'f004v3-elf-*'
+          path: /tmp/elf
+          run-id: ${{ steps.r.outputs.rid }}
+          github-token: ${{ github.token }}
+
+      - name: Bajar tambien los symvers y bitacoras de ese run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: 'f004v3-baseline'
+          path: /tmp/art
+          run-id: ${{ steps.r.outputs.rid }}
+          github-token: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Desempaquetar los dos ELF
+        run: |
+          set -x
+          find /tmp/elf -type f | xargs -r ls -la
+          for b in baseline siao; do
+            mkdir -p /tmp/k/$b
+            f=$(find /tmp/elf -name elf-$b.tar.zst | head -1)
+            if [ -n "$f" ]; then tar -x --zstd -f "$f" -C /tmp/k/$b || true; fi
+            ls -la /tmp/k/$b | head -5 || true
+          done
+
+      - name: Generar los .stg y correr stgdiff
+        run: python3 tools/f004_stg_x86.py
+
+      - name: Commitear la evidencia
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(f-004 v3): stgdiff x86 sobre el run ${{ steps.r.outputs.rid }} (relanzado en ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 7))
+          done
+          exit 1
+
+      - name: Resumen
+        if: always()
+        run: head -120 mediciones/f-004-v3/F-004-STGDIFF.txt >> "$GITHUB_STEP_SUMMARY" || true

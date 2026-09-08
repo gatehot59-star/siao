@@ -1,0 +1,124 @@
+name: F-004c fragmento sin CGROUP_PIDS
+
+# Mismo arnes que F-004b. UNA sola variable cambia: CONFIG_CGROUP_PIDS sale del
+# fragmento. El parche KABI queda igual. El baseline sigue siendo el arbol limpio
+# con gki_defconfig puro, asi que las tres corridas (v3, b, c) son comparables
+# contra la MISMA referencia.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths:
+      - 'tools/f004c_kabi.py'
+      - 'tools/f004c_stg.py'
+      - '.github/workflows/f-004c-sin-cgroup-pids.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: f004c-${{ matrix.brazo }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        brazo: [baseline, kabi]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Identificar la maquina, verbatim
+        run: |
+          set -x
+          uname -a
+          nproc
+          free -m
+          df -h /
+      - name: md5 de los dos instrumentos
+        run: md5sum tools/f004b_kabi.py tools/f004c_kabi.py
+      - name: Herramientas de kernel
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends clang lld llvm bc bison flex libssl-dev libelf-dev python3 rsync kmod cpio zstd
+          clang --version | head -2
+          openssl version
+      - name: Liberar disco
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc || true
+          df -h /
+      - name: Compilar ${{ matrix.brazo }}
+        working-directory: .
+        env:
+          F004_OUT: mediciones/f-004c
+          F004_WORK: /tmp/f004c
+          F004_RAMA: android15-6.6
+          PYTHONPATH: tools
+        run: python3 tools/f004c_kabi.py build ${{ matrix.brazo }}
+      - name: Subir evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f004c-${{ matrix.brazo }}
+          path: |
+            mediciones/f-004c/f004b-*
+            mediciones/f-004c/symvers-*
+            mediciones/f-004c/config-*
+          retention-days: 5
+          if-no-files-found: warn
+      - name: Subir el ELF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f004c-elf-${{ matrix.brazo }}
+          path: mediciones/f-004c/elf-${{ matrix.brazo }}.tar.zst
+          retention-days: 5
+          if-no-files-found: warn
+
+  stgdiff:
+    name: f004c-stgdiff-x86
+    needs: build
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: 'f004c-elf-*'
+          path: /tmp/elf
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: 'f004c-baseline'
+          path: /tmp/art
+        continue-on-error: true
+      - name: Desempaquetar
+        run: |
+          set -x
+          find /tmp/elf -type f | xargs -r ls -la
+          for b in baseline kabi; do
+            mkdir -p /tmp/k/$b
+            f=$(find /tmp/elf -name elf-$b.tar.zst | head -1)
+            if [ -n "$f" ]; then tar -x --zstd -f "$f" -C /tmp/k/$b || true; fi
+            ls -la /tmp/k/$b | head -4 || true
+          done
+      - name: stg + stgdiff con el criterio corregido
+        env:
+          F004_OUT: mediciones/f-004c
+        run: python3 tools/f004c_stg.py
+      - name: Commitear
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(F-004c): fragmento sin CGROUP_PIDS (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 7))
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: tail -30 mediciones/f-004c/F-004c-VEREDICTO.txt >> "$GITHUB_STEP_SUMMARY" || true

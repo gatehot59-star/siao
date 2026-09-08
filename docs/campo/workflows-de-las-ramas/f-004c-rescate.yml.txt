@@ -1,0 +1,81 @@
+name: F-004c rescate x86
+
+# NO compila. Baja el ELF del brazo kabi del run 34032264479 (que SI cerro en
+# success) y lo compara contra mediciones/f-004b/baseline.stg, que esta commiteado
+# y cuyo sha256 se repitio identico en dos runs independientes.
+# Existe porque el brazo baseline de F-004c murio antes del build y su causa no
+# quedo commiteada: defecto de arnes mio, declarado en el instrumento.
+on:
+  push:
+    branches: ['titan/f-004-kmi']
+    paths:
+      - 'tools/f004c_rescate.py'
+      - '.github/workflows/f-004c-rescate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  rescate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: titan/f-004-kmi
+      - name: Que hay commiteado
+        run: |
+          ls -la mediciones/f-004b/ mediciones/f-004c/
+          sha256sum mediciones/f-004b/baseline.stg
+      - name: Bajar el ELF del brazo kabi de F-004c, por run id
+        uses: actions/download-artifact@v4
+        with:
+          name: f004c-elf-kabi
+          path: /tmp/elf
+          run-id: 34032264479
+          github-token: ${{ github.token }}
+      - name: Bajar tambien la evidencia del brazo caido, para leer su causa
+        uses: actions/download-artifact@v4
+        with:
+          name: f004c-baseline
+          path: /tmp/caido
+          run-id: 34032264479
+          github-token: ${{ github.token }}
+        continue-on-error: true
+      - name: Rescatar la bitacora del brazo caido si existe
+        run: |
+          set -x
+          find /tmp/caido -type f 2>/dev/null | sort || echo 'no llego nada del brazo caido'
+          mkdir -p mediciones/f-004c
+          for f in $(find /tmp/caido -type f 2>/dev/null); do
+            cp -v "$f" "mediciones/f-004c/CAIDO-$(basename $f)" || true
+          done
+          ls -la mediciones/f-004c/ || true
+      - name: Desempaquetar el ELF
+        run: |
+          set -x
+          find /tmp/elf -type f | xargs -r ls -la
+          mkdir -p /tmp/k/kabi
+          f=$(find /tmp/elf -name 'elf-kabi.tar.zst' | head -1)
+          if [ -n "$f" ]; then tar -x --zstd -f "$f" -C /tmp/k/kabi; fi
+          ls -la /tmp/k/kabi | head -4
+      - name: stg + stgdiff
+        run: python3 tools/f004c_rescate.py
+      - name: Commitear
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A mediciones
+          git diff --cached --quiet && echo 'sin cambios' && exit 0
+          git commit -m "evidencia(F-004c): rescate x86 del brazo kabi (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin titan/f-004-kmi && git push origin HEAD:titan/f-004-kmi && exit 0
+            sleep $((i * 6))
+          done
+          exit 1
+      - name: Resumen
+        if: always()
+        run: tail -40 mediciones/f-004c/F-004c-VEREDICTO.txt >> "$GITHUB_STEP_SUMMARY" || true
