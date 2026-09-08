@@ -18,6 +18,21 @@ name: falsador-kvm-runners
 #
 # El job x64 es el CONTROL DE INSTRUMENTO: si el script falla en los dos, no se
 # puede distinguir "no hay KVM" de "mi script esta roto".
+#
+# HARDENING 2026-09-08 (H-06 de la auditoria de Tao): este workflow no escribia
+# `permissions:`, asi que su GITHUB_TOKEN heredaba el default del repo. No es
+# teorico: un token con escritura en un job que corre codigo de medicion es
+# superficie que no hace falta. Este workflow NO escribe nada al repo (su unica
+# salida es GITHUB_STEP_SUMMARY, que no necesita permisos de contents), asi que
+# `contents: read` es el minimo REAL y no una eleccion conservadora.
+#
+# Y el `timeout-minutes`: sin el, el tope es el default de 6 HORAS. Un job
+# colgado esperando un ioctl que no vuelve se come seis horas de cuota antes de
+# que alguien lo note. 20 es holgado: la corrida medida tarda ~2 min, y el paso
+# del SDK es el unico que podria tardar (descarga).
+
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
@@ -32,6 +47,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04-arm, ubuntu-24.04]
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
     steps:
       - name: medir KVM en ${{ matrix.runner }}
         run: |
@@ -110,3 +126,8 @@ jobs:
           else
             echo "sdkmanager AUSENTE: habria que instalar cmdline-tools"
           fi
+          # MEDIDO EN OTRO REPO EL 2026-09-07, y conviene saberlo antes de correr
+          # esto: en `mudh-mobile` el `cmdline-tools` de Google fallo en aarch64 con
+          # `Exec format error` (exit 126), porque el `sdkmanager` moderno delega en
+          # un binario nativo `android` que Google publica SOLO para x86_64. Asi que
+          # si aca dice AUSENTE en el runner arm, instalarlo no es un tramite.
