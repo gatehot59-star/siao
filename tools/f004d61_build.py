@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-F-004d @ android14-6.1, VERSION 4. Un solo instrumento para los dos brazos.
+F-004d @ android14-6.1, VERSION 4.1. Un solo instrumento para los dos brazos.
 
 POR QUE UN INSTRUMENTO UNICO: el v1 usaba f004b_kabi.py para el baseline y
 f004d_sin_sysvipc.py para el brazo de ocho. Dos codigos distintos para dos brazos
@@ -32,12 +32,12 @@ HISTORIAL DE DEFECTOS MEDIDOS, y que arregla cada version:
      en paralelo. Mi candado serial protegia un binario que despues se tiraba.
      Y el 0,0 s lo delataba: un paso de mitigacion que no hace trabajo no mitiga.
 
-  v3 (run 34155... , VERDE en ABI) - el paso serial lleva el MISMO HOSTCFLAGS,
-     mas un guard que declara NO MITIGADO si archscripts tarda ~0 s. Dio 0,02 s,
-     asi que el 126 quedo como carrera GANADA y no cerrada.
+  v3 (VERDE en ABI, 68 B) - el paso serial lleva el MISMO HOSTCFLAGS, mas un
+     guard que declara NO MITIGADO si archscripts tarda ~0 s. Dio 0,02 s, asi que
+     el 126 quedo como carrera GANADA y no cerrada.
 
-  v4 (este) - TRES defectos de empaquetado, y el primero lo encontro FABLE 5.1
-     auditando el codigo, no la salida:
+  v4 - TRES defectos de empaquetado, y el primero lo encontro FABLE 5.1
+     auditando el CODIGO, no la salida:
 
      H-2) el v3 compilaba 'Image modules' y empaquetaba SOLO vmlinux y los .ko.
           'arch/arm64/boot/Image' -- el unico artefacto ARRANCABLE de todo el
@@ -74,7 +74,23 @@ HISTORIAL DE DEFECTOS MEDIDOS, y que arregla cada version:
      acaba de bajar, y si la linea no esta el KAT se declara NO MEDIDO en vez de
      rojo. Un KAT que compara contra una constante recordada mide mi memoria.
 
-PREDICCION DECLARADA ANTES DE CORRER EL v4:
+  v4.1 (este) - un defecto MIO del v4, encontrado por el banco de pruebas
+     'test_f004d61_empaquetado.py' ANTES de gastar un run:
+
+     H-2d) el guard de contenido del tarball usaba la regex '^\\./?vmlinux$'.
+          Eso NO es "punto y barra opcionales": '\\.' es un punto OBLIGATORIO y
+          solo la barra es opcional. Como GNU tar lista 'vmlinux' pelado, la
+          regex nunca matcheaba, el guard daba FALSO NEGATIVO y el instrumento
+          habria abortado con 'NO MEDIDO: tarball sin vmlinux' DESPUES de dos
+          horas de build correcto. Peor: el control negativo del banco
+          ('detecta un tarball SIN Image') estaba PASANDO por la razon
+          equivocada, porque una regex que no matchea nunca tampoco matchea en
+          el caso malo. Un control que pasa sin discriminar no es un control.
+          ARREGLO: '^(?:\\./)?vmlinux$'. Y el listado se lee UNA vez en Python;
+          se fueron los tres 'grep -c' del shell, que eran una segunda fuente de
+          verdad para lo mismo.
+
+PREDICCION DECLARADA ANTES DE CORRER EL v4.1:
   - el brazo 'ocho' produce vmlinux, Module.symvers Y arch/arm64/boot/Image.
   - el KAT da IDENTICO: sha256(objcopy(vmlinux)) == sha256(Image).
   - n_modulos = 60, igual que el v3 (si difiere, algo cambio en el arbol y hay
@@ -85,6 +101,7 @@ PREDICCION DECLARADA ANTES DE CORRER EL v4:
   del mismo link y todo el veredicto de ABI queda en duda.
 
 MODO DE USO:  f004d61_build.py baseline|ocho
+BANCO:        test_f004d61_empaquetado.py   (corre sin kernel, 24 casos)
 """
 import hashlib, json, os, re, shutil, subprocess, sys, time, urllib.request
 
@@ -150,6 +167,14 @@ def sha256_de(path, trozo=1 << 20):
                 break
             h.update(b)
     return h.hexdigest()
+
+
+def en_el_listado(lista, miembro):
+    """Busca un miembro en la salida de 'tar -t'. GNU tar puede listar 'x' o
+    './x' segun como se lo invoco, asi que el prefijo es opcional -- y ESO fue
+    el H-2d: '\\./?x' pide el punto obligatorio y la barra opcional, que es la
+    lectura al reves. El grupo tiene que envolver a los dos."""
+    return re.search(r"^(?:\./)?%s$" % re.escape(miembro), lista, re.M) is not None
 
 
 def errores(path, n=25):
@@ -279,7 +304,7 @@ def main():
         return 3
     os.makedirs(WORK, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
-    w("== F-004d @ %s | VERSION 4 | brazo: %s ==" % (RAMA, brazo))
+    w("== F-004d @ %s | VERSION 4.1 | brazo: %s ==" % (RAMA, brazo))
     w("  fecha UTC %s" % time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     w("  QUE MIDE ESTE RUN: que el brazo produzca arch/arm64/boot/Image, o sea")
     w("  un kernel ARRANCABLE, que el v3 compilaba y tiraba (H-2 de FABLE).")
@@ -359,7 +384,7 @@ def main():
         w("  CONTROL | %-22s %s" % (s_, m.group(1) if m else "NO esta en =y (correcto)"))
     btf = bool(re.search(r"^CONFIG_DEBUG_INFO_BTF=y$", cfg, re.M))
     w("  CONFIG_DEBUG_INFO_BTF=y ? -> %s | pahole -> %s" % (btf, ph or "AUSENTE"))
-    # Los 16 que systemd exige, ya verificados en el .config del v3 (ADR-008 §4).
+    # Los 16 que systemd exige, ya verificados en el .config del v3 (ADR-008 S4).
     # Se re-miden aca porque el inventario se re-mide, no se recuerda.
     SYSTEMD16 = ("BLK_DEV_INITRD RD_GZIP TMPFS DEVTMPFS DEVTMPFS_MOUNT CGROUPS "
                  "UNIX INOTIFY_USER SIGNALFD TIMERFD EPOLL FHANDLE AUTOFS_FS "
@@ -435,7 +460,7 @@ def main():
     w("  %s presente : %s%s"
       % (IMAGE_REL, hay_img,
          " (%d B)" % os.path.getsize(img) if hay_img else "  <-- ESTE es el H-2"))
-    res = {"falsador": "F-004d@6.1 v4", "rama": RAMA, "brazo": brazo,
+    res = {"falsador": "F-004d@6.1 v4.1", "rama": RAMA, "brazo": brazo,
            "rc_archscripts": rc_as, "segundos_archscripts": round(dt_as, 2),
            "archscripts_hizo_trabajo": hizo_trabajo,
            "error_126_serial": e126, "error_126_paralelo": e126b,
@@ -483,23 +508,22 @@ def main():
         res["veredicto"] = "NO MEDIDO: el tar fallo"
         cerrar(brazo, res)
         return 3
-    rc_v, o_v, _, _ = sh("tar -t --zstd -f %s > %s.lista; "
-                         "grep -c '^vmlinux$' %s.lista; "
-                         "grep -cx '\\./*%s' %s.lista; "
-                         "grep -c '[.]ko$' %s.lista"
-                         % (tarball, tarball, tarball, IMAGE_REL, tarball, tarball),
-                         600)
-    cuentas = [l.strip() for l in o_v.splitlines() if l.strip().isdigit()]
-    w("  cuentas dentro del tarball (vmlinux, Image, .ko): %s" % cuentas)
-    lista = open(tarball + ".lista", errors="replace").read()
-    tiene_vm = re.search(r"^\./?vmlinux$", lista, re.M) is not None
-    tiene_img = re.search(r"^\./?%s$" % re.escape(IMAGE_REL), lista, re.M) is not None
+    # H-2d: UNA sola fuente de verdad. Se lista el tarball a archivo y se lee en
+    # Python; los tres 'grep -c' del v4 eran una segunda lectura del mismo dato.
+    listado = tarball + ".lista"
+    rc_v, _, _, _ = sh("tar -t --zstd -f %s > %s" % (tarball, listado), 900)
+    lista = open(listado, errors="replace").read() if os.path.isfile(listado) else ""
+    tiene_vm = en_el_listado(lista, "vmlinux")
+    tiene_img = en_el_listado(lista, IMAGE_REL)
     ko_dentro = len(re.findall(r"\.ko$", lista, re.M))
-    w("  el tarball CONTIENE vmlinux: %s | %s: %s | .ko: %d de %d | %d B"
+    w("  listado del tarball: %d entradas | rc del tar -t = %d"
+      % (len(lista.splitlines()), rc_v))
+    w("  contiene vmlinux: %s | contiene %s: %s | .ko: %d de %d | tarball %d B"
       % (tiene_vm, IMAGE_REL, tiene_img, ko_dentro, len(kos),
          os.path.getsize(tarball)))
     res.update({"tarball_tiene_vmlinux": tiene_vm, "tarball_tiene_image": tiene_img,
                 "ko_dentro_del_tarball": ko_dentro,
+                "entradas_del_tarball": len(lista.splitlines()),
                 "bytes_tarball": os.path.getsize(tarball)})
     if not tiene_vm:
         w("  ABORTO POR GUARD: el tarball existe pero no tiene vmlinux adentro.")

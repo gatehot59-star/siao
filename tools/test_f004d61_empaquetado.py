@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-Banco de pruebas de lo NUEVO del f004d61_build.py v4, para poder ejecutarlo sin
+Banco de pruebas de lo NUEVO del f004d61_build.py v4.1, para poder ejecutarlo sin
 un build de kernel de 2 horas.
 
 POR QUE EXISTE: el metodo prohibe commitear un script sin ejecutarlo, y el v4 no
 se puede ejecutar entero en el taller (2 nucleos Celeron, un build de arm64 no
-termina). Pero las TRES piezas que el v4 agrega no necesitan un kernel: son
-lectura de flags, reconstruccion por objcopy y armado del tarball. Se prueban
-contra un arbol SINTETICO, con controles negativos que tienen que dar rojo.
+termina). Pero las piezas que el v4 agrega no necesitan un kernel: son lectura de
+flags, reconstruccion por objcopy y armado del tarball. Se prueban contra un
+arbol SINTETICO, con controles negativos que tienen que dar rojo.
 
-Si este banco pasa y despues el run de Actions falla, el defecto esta en el
-build, no en el empaquetado: eso es lo que este archivo compra.
+QUE YA PAGO: en su primera corrida encontro el H-2d, un bug MIO del v4. La regex
+'^\\./?vmlinux$' pide un punto OBLIGATORIO y solo la barra opcional, asi que el
+guard de contenido del tarball nunca matcheaba 'vmlinux' pelado y el instrumento
+habria abortado en falso DESPUES de dos horas de build. Y de paso mostro algo
+peor: el control negativo 'detecta un tarball SIN Image' estaba PASANDO por la
+razon equivocada, porque una regex que no matchea nunca tampoco matchea en el
+caso malo. De ahi el caso 'el control negativo DISCRIMINA', que compara los dos
+tarballs con el mismo instrumento: sin eso, un control puede pasar sin medir.
 
 MODO DE USO:  test_f004d61_empaquetado.py
 Salida: PASA/FALLA por caso, y exit 1 si alguno falla.
@@ -41,8 +47,14 @@ def elf_real():
     return None
 
 
+def listar(tb):
+    r = subprocess.run(["bash", "-c", "tar -t --zstd -f %s" % tb],
+                       capture_output=True, text=True)
+    return r.stdout
+
+
 def main():
-    print("== banco de pruebas del empaquetado v4 ==")
+    print("== banco de pruebas del empaquetado v4.1 ==")
     vm_src = elf_real()
     print("  ELF de prueba (hace de vmlinux): %s" % vm_src)
     if not vm_src:
@@ -58,6 +70,23 @@ def main():
     os.makedirs(os.path.join(obj, "arch/arm64/boot"))
     os.makedirs(os.path.join(obj, "drivers/net"))
 
+    # ---- 0. en_el_listado: la funcion donde estaba el H-2d ----
+    print("\n-- 0. en_el_listado: el bug H-2d, con sus dos formas --")
+    caso("matchea 'vmlinux' pelado (esto FALLABA en v4)",
+         B.en_el_listado("vmlinux\notra\n", "vmlinux"))
+    caso("matchea './vmlinux' con prefijo",
+         B.en_el_listado("./vmlinux\notra\n", "vmlinux"))
+    caso("matchea la ruta larga pelada",
+         B.en_el_listado("arch/arm64/boot/Image\n", B.IMAGE_REL))
+    caso("matchea la ruta larga con './'",
+         B.en_el_listado("./arch/arm64/boot/Image\n", B.IMAGE_REL))
+    caso("CONTROL: NO matchea si el miembro no esta",
+         not B.en_el_listado("otra\ncosa\n", "vmlinux"))
+    caso("CONTROL: NO matchea un sufijo parecido",
+         not B.en_el_listado("mi-vmlinux\n", "vmlinux"))
+    caso("CONTROL: NO matchea un prefijo parecido",
+         not B.en_el_listado("vmlinux.o\n", "vmlinux"))
+
     # ---- 1. leer OBJCOPYFLAGS_Image de la FUENTE ----
     print("\n-- 1. flags_objcopy_de_la_fuente --")
     mkf = os.path.join(src, "arch/arm64/Makefile")
@@ -71,7 +100,6 @@ def main():
     caso("devuelve la linea cruda", crudo.strip() == LINEA)
 
     # CONTROL NEGATIVO: sin la linea, tiene que dar None y NO inventar nada
-    open(mkf + ".vacio", "w").write("# nada\n")
     src2 = os.path.join(raiz, "ack-sin-linea")
     os.makedirs(os.path.join(src2, "arch/arm64"))
     open(os.path.join(src2, "arch/arm64/Makefile"), "w").write("# nada de nada\n")
@@ -130,7 +158,6 @@ def main():
     caso("la lista arranca con vmlinux", lineas[0] == "vmlinux")
     caso("la lista trae el Image en segundo lugar", lineas[1] == B.IMAGE_REL)
     caso("la lista tiene 2 + %d lineas" % N, len(lineas) == N + 2, str(len(lineas)))
-    # el defecto que se elimino, medido: cuantos perdia el head -400
     perdidos = max(0, N - 400)
     caso("CONTROL del defecto viejo: head -400 habria perdido %d" % perdidos,
          perdidos == 37, "%d" % perdidos)
@@ -146,12 +173,11 @@ def main():
         caso("tar -T arma el tarball", r.returncode == 0 and os.path.isfile(tb),
              "rc=%d %s" % (r.returncode, r.stderr.strip()[:100]))
         if os.path.isfile(tb):
-            r2 = subprocess.run(["bash", "-c", "tar -t --zstd -f %s" % tb],
-                                capture_output=True, text=True)
-            lista = r2.stdout
-            tiene_vm = re.search(r"^\./?vmlinux$", lista, re.M) is not None
-            tiene_img = re.search(r"^\./?%s$" % re.escape(B.IMAGE_REL),
-                                  lista, re.M) is not None
+            lista = listar(tb)
+            print("     primeras 3 entradas del listado: %r"
+                  % lista.splitlines()[:3])
+            tiene_vm = B.en_el_listado(lista, "vmlinux")
+            tiene_img = B.en_el_listado(lista, B.IMAGE_REL)
             ko_dentro = len(re.findall(r"\.ko$", lista, re.M))
             caso("el tarball contiene vmlinux", tiene_vm)
             caso("el tarball contiene %s" % B.IMAGE_REL, tiene_img)
@@ -159,17 +185,24 @@ def main():
                  str(ko_dentro))
             caso("la cuenta de la lista cierra con la del tarball",
                  ko_dentro == len(kos))
-            # CONTROL NEGATIVO: un tarball SIN Image tiene que fallar el guard
+
+            # CONTROL NEGATIVO: un tarball SIN Image tiene que fallar el guard.
+            # Y se compara CONTRA el bueno con el mismo instrumento, porque un
+            # control que solo mira el caso malo puede pasar sin discriminar:
+            # eso fue exactamente lo que escondio el H-2d.
             lst2 = os.path.join(raiz, "miembros-sin-image.txt")
             open(lst2, "w").write("vmlinux\n")
             tb2 = os.path.join(raiz, "elf-sin-image.tar.zst")
             subprocess.run(["bash", "-c", "cd %s && tar -c --zstd -f %s -T %s"
                             % (obj, tb2, lst2)], capture_output=True, text=True)
-            r3 = subprocess.run(["bash", "-c", "tar -t --zstd -f %s" % tb2],
-                                capture_output=True, text=True)
-            sin_img = re.search(r"^\./?%s$" % re.escape(B.IMAGE_REL),
-                                r3.stdout, re.M) is None
+            lista2 = listar(tb2)
+            sin_img = not B.en_el_listado(lista2, B.IMAGE_REL)
+            con_vm2 = B.en_el_listado(lista2, "vmlinux")
             caso("CONTROL: el guard detecta un tarball SIN Image", sin_img)
+            caso("CONTROL: y en ese mismo tarball SI ve el vmlinux", con_vm2)
+            caso("EL CONTROL NEGATIVO DISCRIMINA (bueno True, malo False)",
+                 tiene_img and sin_img,
+                 "bueno=%s malo_sin_image=%s" % (tiene_img, sin_img))
 
     # ---- 5. sha256 completo, no truncado ----
     print("\n-- 5. sha256_de: 64 hex y no 32 --")
