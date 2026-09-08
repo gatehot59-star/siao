@@ -1,0 +1,92 @@
+### instrumento
+tools/test_f004d61_empaquetado.py  md5 38a4af8b3f9e6cb589d03fe67cbff86b
+tools/f004d61_build.py             md5 3d8de2ad037c7f875f7402a19ddc3f40
+
+### maquina
+brain-env (container aislado), Python 3.12.14, GNU tar 1.35, /usr/bin/objcopy
+
+### rama y commit
+titan/f-004d-61-v4-empaqueta-Image @ e09a21b
+
+### rc
+0
+
+### stdout ENTERO
+== banco de pruebas del empaquetado v4.1 ==
+  ELF de prueba (hace de vmlinux): /bin/ls
+  objcopy disponible: /usr/bin/objcopy
+
+-- 0. en_el_listado: el bug H-2d, con sus dos formas --
+  PASA   matchea 'vmlinux' pelado (esto FALLABA en v4)
+  PASA   matchea './vmlinux' con prefijo
+  PASA   matchea la ruta larga pelada
+  PASA   matchea la ruta larga con './'
+  PASA   CONTROL: NO matchea si el miembro no esta
+  PASA   CONTROL: NO matchea un sufijo parecido
+  PASA   CONTROL: NO matchea un prefijo parecido
+
+-- 1. flags_objcopy_de_la_fuente --
+  PASA   lee los flags del Makefile  | '-O binary -R .note -R .note.gnu.build-id -R .comment -S'
+  PASA   los flags traen -O binary
+  PASA   los flags traen -S
+  PASA   devuelve la linea cruda
+  PASA   CONTROL: sin la linea devuelve None  | no hay linea OBJCOPYFLAGS_Image en arch/arm64/Makefile
+  PASA   CONTROL: sin Makefile devuelve None  | AUSENTE: /tmp/test-f004d61-fof20fef/no-e
+
+-- 2. kat_objcopy --
+  PASA   KAT IDENTICO cuando Image sale del mismo vmlinux  | IDENTICO
+  PASA   el sha256 del KAT tiene 64 hex
+  PASA   CONTROL: Image corrupto da DISTINTO  | DISTINTO
+  PASA   CONTROL: sin flags de la fuente da NO MEDIDO  | NO MEDIDO: sin OBJCOPYFLAGS_Image en la fuente
+  PASA   CONTROL: y kat_identico queda None, no False
+
+-- 3. lista_de_miembros: el tope silencioso --
+  PASA   cuenta los 437 modulos, sin tope  | 437
+  PASA   la lista arranca con vmlinux
+  PASA   la lista trae el Image en segundo lugar
+  PASA   la lista tiene 2 + 437 lineas  | 439
+  PASA   CONTROL del defecto viejo: head -400 habria perdido 37  | 37
+
+-- 4. tar con -T y los guards de contenido --
+  PASA   tar -T arma el tarball  | rc=0
+     primeras 3 entradas del listado: ['vmlinux', 'arch/arm64/boot/Image', 'drivers/mod0000.ko']
+  PASA   el tarball contiene vmlinux
+  PASA   el tarball contiene arch/arm64/boot/Image
+  PASA   el tarball contiene los 437 .ko  | 437
+  PASA   la cuenta de la lista cierra con la del tarball
+  PASA   CONTROL: el guard detecta un tarball SIN Image
+  PASA   CONTROL: y en ese mismo tarball SI ve el vmlinux
+  PASA   EL CONTROL NEGATIVO DISCRIMINA (bueno True, malo False)  | bueno=True malo_sin_image=True
+
+-- 5. sha256_de: 64 hex y no 32 --
+  PASA   sha256_de devuelve 64 hex  | 833d6f9cf3ede222...
+  PASA   y no 32 como el f004d61_stg.py
+
+== RESULTADO: 33 PASA, 0 FALLA ==
+
+### LA PASADA ANTERIOR, la que encontro el bug (codigo v4, md5 d951f1cd2884dd2a597d6c5a5aaf2396)
+-- 4. tar con -T y los guards de contenido --
+  PASA   tar -T arma el tarball  | rc=0
+  FALLA  el tarball contiene vmlinux
+  FALLA  el tarball contiene arch/arm64/boot/Image
+  PASA   el tarball contiene los 437 .ko  | 437
+  PASA   la cuenta de la lista cierra con la del tarball
+  PASA   CONTROL: el guard detecta un tarball SIN Image
+== RESULTADO: 22 PASA, 2 FALLA ==
+  FALLO: el tarball contiene vmlinux
+  FALLO: el tarball contiene arch/arm64/boot/Image
+
+### diagnostico de esa pasada, medido aparte
+$ (cd dbg/out && tar -c --zstd -f /tmp/dbg/t.tar.zst -T /tmp/dbg/lst.txt); tar -t --zstd -f /tmp/dbg/t.tar.zst | cat -A
+rc_tar=0
+vmlinux$
+arch/arm64/boot/Image$
+drivers/a.ko$
+
+El tar SI los tenia. La regex '^\./?vmlinux$' era la rota: '\.' es un punto
+OBLIGATORIO y solo '/' quedaba opcional. Corregido a '^(?:\./)?vmlinux$'.
+Y notar que el control negativo 'detecta un tarball SIN Image' PASABA en esa
+misma pasada: una regex que no matchea nunca tampoco matchea en el caso malo,
+asi que el control pasaba sin discriminar. De ahi el caso nuevo
+'EL CONTROL NEGATIVO DISCRIMINA', que compara los dos tarballs con el mismo
+instrumento.
