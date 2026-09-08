@@ -1,0 +1,39 @@
+### comando
+/tmp/f004d61/ack/scripts/kconfig/merge_config.sh -m -O /tmp/f004d61/out-ocho /tmp/f004d61/out-ocho/.config /tmp/f004d61/siao8.fragment
+
+### rc DEL COMANDO
+0
+
+### segundos
+0.05
+
+### stdout ENTERO
+Using /tmp/f004d61/out-ocho/.config as base
+Merging /tmp/f004d61/siao8.fragment
+Value of CONFIG_DEVTMPFS is redefined by fragment /tmp/f004d61/siao8.fragment:
+Previous value: # CONFIG_DEVTMPFS is not set
+New value: CONFIG_DEVTMPFS=y
+
+Value of CONFIG_FHANDLE is redefined by fragment /tmp/f004d61/siao8.fragment:
+Previous value: # CONFIG_FHANDLE is not set
+New value: CONFIG_FHANDLE=y
+
+Value of CONFIG_TMPFS_XATTR is redefined by fragment /tmp/f004d61/siao8.fragment:
+Previous value: # CONFIG_TMPFS_XATTR is not set
+New value: CONFIG_TMPFS_XATTR=y
+
+Value of CONFIG_AUTOFS_FS is redefined by fragment /tmp/f004d61/siao8.fragment:
+Previous value: # CONFIG_AUTOFS_FS is not set
+New value: CONFIG_AUTOFS_FS=y
+
+Value of CONFIG_PID_NS is redefined by fragment /tmp/f004d61/siao8.fragment:
+Previous value: # CONFIG_PID_NS is not set
+New value: CONFIG_PID_NS=y
+
+#
+# merged configuration written to /tmp/f004d61/out-ocho/.config (needs make)
+#
+
+
+### stderr ENTERO
+

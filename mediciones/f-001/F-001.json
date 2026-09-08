@@ -1,0 +1,115 @@
+{
+  "falsador": "F-001",
+  "version": 3,
+  "fecha_utc": "2026-09-05T20:29:55Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "pagesize": 4096,
+    "kvm": false,
+    "runner_arch": "ARM64",
+    "run_id": "33990241528"
+  },
+  "C_config_real_del_gki": {
+    "veredicto": "ROJO",
+    "rama": "android16-6.12",
+    "url": "https://dl.google.com/android/gki/gki-certified-boot-android16-6.12-2026-06_r1.zip",
+    "kernel": "6.12.81",
+    "sha256_zip": "5469126621456bf79c4a8c8114e13e0a8e5173e61b21754cd056ec188953cd5a",
+    "simbolos": 6522,
+    "en_y": [
+      "CONFIG_NAMESPACES",
+      "CONFIG_NET_NS",
+      "CONFIG_UTS_NS",
+      "CONFIG_CGROUPS",
+      "CONFIG_MEMCG",
+      "CONFIG_CGROUP_BPF",
+      "CONFIG_CGROUP_SCHED",
+      "CONFIG_CGROUP_FREEZER",
+      "CONFIG_SECCOMP",
+      "CONFIG_SECCOMP_FILTER",
+      "CONFIG_INOTIFY_USER",
+      "CONFIG_TMPFS",
+      "CONFIG_PROC_FS",
+      "CONFIG_SYSFS",
+      "CONFIG_OVERLAY_FS",
+      "CONFIG_EXT4_FS",
+      "CONFIG_VETH",
+      "CONFIG_BRIDGE",
+      "CONFIG_VIRTIO",
+      "CONFIG_SERIAL_AMBA_PL011",
+      "CONFIG_SERIAL_AMBA_PL011_CONSOLE",
+      "CONFIG_BLK_DEV_INITRD",
+      "CONFIG_RD_GZIP",
+      "CONFIG_ANDROID_BINDERFS",
+      "CONFIG_ANDROID_BINDER_IPC",
+      "CONFIG_KEYS",
+      "CONFIG_BLK_DEV_LOOP",
+      "CONFIG_IKCONFIG",
+      "CONFIG_MODULES",
+      "CONFIG_ARM64_4K_PAGES"
+    ],
+    "modulos": [
+      "CONFIG_VIRTIO_PCI",
+      "CONFIG_VIRTIO_BLK",
+      "CONFIG_VIRTIO_CONSOLE"
+    ],
+    "apagados": [
+      "CONFIG_PID_NS",
+      "CONFIG_USER_NS",
+      "CONFIG_CGROUP_DEVICE",
+      "CONFIG_CGROUP_PIDS",
+      "CONFIG_FANOTIFY",
+      "CONFIG_TMPFS_POSIX_ACL",
+      "CONFIG_TMPFS_XATTR",
+      "CONFIG_DEVTMPFS",
+      "CONFIG_AUTOFS_FS",
+      "CONFIG_SQUASHFS",
+      "CONFIG_MACVLAN",
+      "CONFIG_VIRTIO_NET",
+      "CONFIG_VIRTIO_MMIO",
+      "CONFIG_CHECKPOINT_RESTORE",
+      "CONFIG_ARM64_16K_PAGES",
+      "CONFIG_ARM64_64K_PAGES"
+    ],
+    "ausentes": [
+      "CONFIG_IPC_NS"
+    ],
+    "criticos_lxc": [
+      "CONFIG_PID_NS",
+      "CONFIG_USER_NS",
+      "CONFIG_IPC_NS"
+    ],
+    "criticos_systemd": [
+      "CONFIG_DEVTMPFS",
+      "CONFIG_TMPFS_XATTR",
+      "CONFIG_FANOTIFY",
+      "CONFIG_AUTOFS_FS",
+      "CONFIG_CGROUP_PIDS"
+    ],
+    "config_commiteado": "mediciones/f-001/gki-android16-6.12.config",
+    "lxc_checkconfig_rc": 0,
+    "lxc_checkconfig": "LXC version 5.0.3\n\n--- Namespaces ---\nNamespaces: enabled\nUtsname namespace: enabled\nIpc namespace: required\nPid namespace: required\nUser namespace: missing\nNetwork namespace: enabled\n\n--- Control groups ---\nCgroups: enabled\nCgroup namespace: enabled\nCgroup v1 mount points: \nCgroup v2 mount points: \n - /sys/fs/cgroup\nCgroup device: missing\nCgroup sched: enabled\nCgroup cpu account: enabled\nCgroup memory controller: enabled\nCgroup cpuset: enabled\n\n--- Misc ---\nVeth pair device: enabled, not loaded\nMacvlan: missing\nVlan: enabled, loaded\nBridges: enabled, loaded\nAdvanced netfilter: enabled, loaded\nCONFIG_IP_NF_TARGET_MASQUERADE: enabled, not loaded\nCONFIG_IP6_NF_TARGET_MASQUERADE: missing\nCONFIG_NETFILTER_XT_TARGET_CHECKSUM: missing\nCONFIG_NETFILTER_XT_MATCH_COMMENT: enabled, not loaded\nFUSE (for use with lxcfs): enabled, not loaded\n\n--- Checkpoint/Restore ---\ncheckpoint restore: missing\nCONFIG_FHANDLE: missing\nCONFIG_EVENTFD: enabled\nCONFIG_EPOLL: enabled\nCONFIG_UNIX_DIAG: missing\nCONFIG_INET_DIAG: enabled\nCONFIG_PACKET_DIAG: missing\nCONFIG_NETLINK_DIAG: missing\nFile capabilities: enabled\n\nNote : Before booting a new kernel, you can check its configuration\nusage : CONFIG=/path/to/config /usr/bin/lxc-checkconfig\n\n"
+  },
+  "F002_rootfs": {
+    "veredicto": "ROJO",
+    "rc": 25,
+    "via": "ninguna de las dos vias",
+    "nota": "fallo de INSTRUMENTO, no del userland"
+  },
+  "F003_alineacion": {
+    "veredicto": "NO MEDIDO"
+  },
+  "P_control_positivo": {
+    "veredicto": "NO MEDIDO"
+  },
+  "S_sujeto_gki": {
+    "veredicto": "NO MEDIDO",
+    "rama": "android16-6.12"
+  },
+  "prediccion_registrada_antes_de_correr": "Predigo que S NO llega a multi-user: con PID_NS y USER_NS apagados y DEVTMPFS apagado, systemd no tiene con que. Lo escribo ANTES para que pueda refutarme.",
+  "no_medido": [
+    "sin rootfs: P y S quedan NO MEDIDO"
+  ]
+}

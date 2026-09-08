@@ -1,0 +1,2 @@
+== F-004 comparar ==
+  falta un brazo: baseline=False siao=False

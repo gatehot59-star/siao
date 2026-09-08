@@ -1,0 +1,13 @@
+### comando
+mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt='Acquire::AllowInsecureRepositories true' --aptopt='APT::Get::AllowUnauthenticated true' --setup-hook='set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64"' --skip=cleanup/apt/lists --verbose huanghe /tmp/f001s1b/rootfs deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] copy:/tmp/f001s1b/overlay huanghe main
+
+### rc
+25
+
+### stdout ENTERO
+
+
+### stderr ENTERO
+I: chroot architecture arm64 is equal to the host's architecture
+E: invalid mirror: deb
+

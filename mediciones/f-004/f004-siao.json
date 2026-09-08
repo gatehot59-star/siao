@@ -1,0 +1,19 @@
+{
+  "brazo": "siao",
+  "rama": "android15-6.6",
+  "rc_build": 0,
+  "simbolos_del_fragmento": {
+    "CONFIG_DEVTMPFS": "y",
+    "CONFIG_DEVTMPFS_MOUNT": "y",
+    "CONFIG_FHANDLE": "y",
+    "CONFIG_SYSVIPC": "y",
+    "CONFIG_POSIX_MQUEUE": "y",
+    "CONFIG_TMPFS_XATTR": "y",
+    "CONFIG_AUTOFS_FS": "y",
+    "CONFIG_PID_NS": "y",
+    "CONFIG_IPC_NS": "y",
+    "CONFIG_CGROUP_PIDS": "y"
+  },
+  "module_symvers": false,
+  "fecha_utc": "2026-09-06T02:37:47Z"
+}

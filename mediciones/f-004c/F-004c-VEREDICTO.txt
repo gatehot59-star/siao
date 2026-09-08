@@ -1,0 +1,50 @@
+== F-004c RESCATE: kabi de F-004c vs baseline reproducible de F-004b ==
+maquina: x86_64 | fecha UTC 2026-09-06T12:42:13Z
+PREDICCION: 0 'byte size changed' y 0 'offset changed' en el reporte sin CRC.
+  bajado bin/stg               4944792 B
+  bajado bin/stgdiff           5000176 B
+  bajado lib64/libc++.so       1306352 B
+  baseline reusado: mediciones/f-004b/baseline.stg | 11317742 B | sha256 440f48ed6759f80e7f97eabcc09efc6f
+  (identico en los runs 34009100653 y 34030115053: reproducibilidad medida)
+  vmlinux 174811088 B | modulos 97
+$ /tmp/stg/stg -o mediciones/f-004c/kabi.stg --elf /tmp/k/kabi/vmlinux /tmp/k/kabi/arch/arm64/geniezone/gzvm.ko /tmp/k/kabi/drivers/base/regmap/regmap-kunit.ko /tmp/k/kabi/drivers/base/regmap/regmap-ram.ko /tmp/k/kabi/drivers/base/regmap/regmap-raw-ram.ko /tmp/k/kabi/drivers/block/virtio_blk.ko /tmp/k/kabi/drivers/block/zram/zram.ko /tmp/k/kabi/drivers/bluetooth/btbcm.ko /tmp/k/k
+  rc=0 en 21.7 s
+  kabi.stg 11319319 B | sha256 c66fd3fcb6c6f8078ffa35ef729e2b7c
+=== pasada CON CRC ===
+$ /tmp/stg/stgdiff --stg mediciones/f-004b/baseline.stg mediciones/f-004c/kabi.stg --format small --output mediciones/f-004c/F-004c-abi.report
+  rc=4 en 0.8 s
+  rc=4 | 495 B | 'CRC changed' x 0 | 'was added' x 3
+  'byte size changed' x 0 | 'offset changed' x 0
+  structs que cambiaron: ['struct task_struct']
+=== pasada SIN CRC ===
+$ /tmp/stg/stgdiff --stg mediciones/f-004b/baseline.stg mediciones/f-004c/kabi.stg --ignore linux_symbol_crc --format small --output mediciones/f-004c/F-004c-abi-sin-crc.report
+  rc=4 en 0.8 s
+  rc=4 | 495 B | 'CRC changed' x 0 | 'was added' x 3
+  'byte size changed' x 0 | 'offset changed' x 0
+  structs que cambiaron: ['struct task_struct']
+  --- reporte sin CRC, ENTERO ---
+   | function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   | 
+   | type 'struct task_struct' changed
+   |   member 'u64 android_kabi_reserved3' was removed
+   |   member 'u64 android_kabi_reserved4' was removed
+   |   member 'u64 android_kabi_reserved5' was removed
+   |   member 'union { struct sysv_sem sysvsem; struct { u64 android_kabi_reserved3; }; union { }; }' was added
+   |   member 'union { struct sysv_shm sysvshm; struct { u64 android_kabi_reserved4; u64 android_kabi_reserved5; }; union { }; }' was added
+   | 
+
+================ VEREDICTO CONTRA LA PREDICCION ================
+  criterio: 'byte size changed' y 'offset changed' ROMPEN el KMI.
+            un slot android_kabi_reservedN que pasa a union es NOMINAL.
+
+  F-004 v3 (sin parche, con CGROUP_PIDS): SIN CRC 15.221 B | offsets muchos
+  F-004b   (con parche, con CGROUP_PIDS): SIN CRC  6.877 B | offsets 51
+  F-004c   (con parche, SIN CGROUP_PIDS): SIN CRC    495 B | offsets 0
+  byte size changed: 0
+  CRC cambiados: 10.867 -> 6.307 -> 0
+
+  PREDICCION CUMPLIDA: cero cambios de tamano y cero offsets movidos.
+  El fragmento de 9 simbolos con el parche KABI es KMI-SAFE: un DLKM
+  binario de vendor sigue cargando en este kernel.
+  Y queda AISLADO que CGROUP_PIDS era la causa de los tres structs de
+  cgroup: fue la unica variable que cambio respecto de F-004b.

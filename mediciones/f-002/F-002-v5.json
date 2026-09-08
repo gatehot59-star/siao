@@ -1,0 +1,76 @@
+{
+  "falsador": "F-002",
+  "version": 5,
+  "fecha_utc": "2026-09-06T01:46:56Z",
+  "maquina": {
+    "arch": "aarch64",
+    "nproc": 2,
+    "kernel": "6.17.0-1022-azure",
+    "runner_arch": "ARM64",
+    "run_id": "34004759364"
+  },
+  "prediccion_del_auditor": "ROJO por dependencias: libcryptsetup12 2.8.4 de main probablemente arrastra algo mas que libdevmapper",
+  "prediccion_mia": "VERDE: el unico Depends de libcryptsetup12 que main no satisface es libdevmapper1.02.1",
+  "pre_vuelo_en_brain_env": "apt-get install -s rc=0, 68 paquetes, y del overlay solo libdevmapper1.02.1. Ya refuto la prediccion del auditor antes de gastar runner (R-05).",
+  "controles": {
+    "N1_solo_main": {
+      "esperado": "FALLA por libdevmapper",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "causa_detectada": true,
+      "evidencia": " libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed"
+    },
+    "N2_overlay_sin_release": {
+      "esperado": "FALLA: sin Release no entra en el narrow",
+      "instalo": false,
+      "rc": 25,
+      "discrimina": true,
+      "evidencia": "E: Unable to correct problems, you have held broken packages.\nE: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?and(?or(?priority(required),?priority(important)),?not(?essential))) failed\nW: hooklistener errored out: E: received eof on socket\nI: main()"
+    }
+  },
+  "sujeto": {
+    "instalo": false,
+    "rc": 25
+  },
+  "no_medido": [],
+  "manifiesto": [
+    {
+      "paquete": "libdevmapper1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927",
+      "bytes": 127826,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/libdevmapper1.02.1_1.02.205-ok1_arm64.deb"
+    },
+    {
+      "paquete": "dmsetup",
+      "version": "2:1.02.205-ok1",
+      "sha256": "92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19",
+      "bytes": 73304,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/dmsetup_1.02.205-ok1_arm64.deb"
+    },
+    {
+      "paquete": "libdevmapper-event1.02.1",
+      "version": "2:1.02.205-ok1",
+      "sha256": "6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3",
+      "bytes": 11934,
+      "origen": "huanghe-proposed/pool/main/l/lvm2/libdevmapper-event1.02.1_1.02.205-ok1_arm64.deb"
+    }
+  ],
+  "criterio_c": {
+    "veredicto": "PARCIAL",
+    "paquete": "openkylin-keyring",
+    "bytes": 6288,
+    "sha256": "b98ea294fa06d583c5950818b7fd5932ad1f5ced4f6987da3e04aae0f9d46ea6",
+    "sha256_ok": true,
+    "motivo": "keyring obtenido y su sha256 verificado contra el indice, pero el indice mismo se bajo sin firma verificada: es circular. Cerrar (c) exige el fingerprint desde fuente primaria fuera del mirror.",
+    "contenido": "drwxr-xr-x root/root         0 2026-03-30 08:19 ./\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/apt/\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./etc/apt/trusted.gpg.d/\n-rw-r--r-- root/root      2290 2026-03-30 08:19 ./etc/apt/trusted.gpg.d/openkylin-archive-keyring.gpg\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/doc/\ndrwxr-xr-x root/root         0 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/\n-rw-r--r-- root/root       365 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/changelog.Debian.gz\n-rw-r--r-- root/root       192 2026-03-30 08:19 ./usr/share/doc/openkylin-keyring/copyright\ndr"
+  },
+  "veredicto": {
+    "a_construye": "ROJO",
+    "b_origen": "NO MEDIDO",
+    "c_firmas": "PARCIAL"
+  },
+  "prediccion_del_auditor_acerto": true,
+  "segundos": 55.6
+}

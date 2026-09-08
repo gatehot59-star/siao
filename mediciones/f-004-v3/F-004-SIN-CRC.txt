@@ -1,0 +1,133 @@
+== F-004 v3: stgdiff ignorando linux_symbol_crc ==
+maquina: x86_64 | fecha UTC 2026-09-06T04:13:59Z
+  bajado bin/stgdiff             5000176 B | sha256 1c74def7edaa8222d4aed2c26ea42f81
+  bajado lib64/libc++.so         1306352 B | sha256 7b91de1cba2ad902aad871b77e58af40
+  mediciones/f-004-v3/baseline.stg: 11317742 B
+  mediciones/f-004-v3/siao.stg: 11319347 B
+$ /tmp/stg/stgdiff --stg mediciones/f-004-v3/baseline.stg mediciones/f-004-v3/siao.stg --ignore linux_symbol_crc --format small --output mediciones/f-004-v3/F-004-abi-sin-crc.report
+  rc=4 en 0.8 s
+  rc=4
+  reporte SIN CRC: 15221 B | 335 lineas
+  (el primero, CON CRC, media 1.521.915 B)
+   S| variable symbol 'struct static_key_true pids_cgrp_subsys_enabled_key' was added
+   S| 
+   S| variable symbol 'struct static_key_true pids_cgrp_subsys_on_dfl_key' was added
+   S| 
+   S| function symbol 'void put_pid_ns(struct pid_namespace*)' was added
+   S| 
+   S| type 'struct task_struct' changed
+   S|   member 'struct sysv_sem sysvsem' was added
+   S|   member 'struct sysv_shm sysvshm' was added
+   S|   member 'unsigned long last_switch_count' changed
+   S|     offset changed from 16960 to 17152
+   S|   member 'unsigned long last_switch_time' changed
+   S|     offset changed from 17024 to 17216
+   S|   member 'struct fs_struct* fs' changed
+   S|     offset changed from 17088 to 17280
+   S|   member 'struct files_struct* files' changed
+   S|     offset changed from 17152 to 17344
+   S|   member 'struct io_uring_task* io_uring' changed
+   S|     offset changed from 17216 to 17408
+   S|   member 'struct nsproxy* nsproxy' changed
+   S|     offset changed from 17280 to 17472
+   S|   member 'struct signal_struct* signal' changed
+   S|     offset changed from 17344 to 17536
+   S|   member 'struct sighand_struct* sighand' changed
+   S|     offset changed from 17408 to 17600
+   S|   member 'sigset_t blocked' changed
+   S|     offset changed from 17472 to 17664
+   S|   member 'sigset_t real_blocked' changed
+   S|     offset changed from 17536 to 17728
+   S|   member 'sigset_t saved_sigmask' changed
+   S|     offset changed from 17600 to 17792
+   S|   member 'struct sigpending pending' changed
+   S|     offset changed from 17664 to 17856
+   S|   member 'unsigned long sas_ss_sp' changed
+   S|     offset changed from 17856 to 18048
+   S|   member 'size_t sas_ss_size' changed
+   S|     offset changed from 17920 to 18112
+   S|   member 'unsigned int sas_ss_flags' changed
+   S|     offset changed from 17984 to 18176
+   S|   member 'struct callback_head* task_works' changed
+   S|     offset changed from 18048 to 18240
+   S|   member 'struct audit_context* audit_context' changed
+   S|     offset changed from 18112 to 18304
+   S|   member 'kuid_t loginuid' changed
+   S|     offset changed from 18176 to 18368
+   S|   member 'unsigned int sessionid' changed
+   S|     offset changed from 18208 to 18400
+   S|   member 'struct seccomp seccomp' changed
+   S|     offset changed from 18240 to 18432
+   S|   member 'struct syscall_user_dispatch syscall_dispatch' changed
+   S|     offset changed from 18368 to 18560
+   S|   member 'u64 parent_exec_id' changed
+   S|     offset changed from 18368 to 18560
+   S|   member 'u64 self_exec_id' changed
+   S|     offset changed from 18432 to 18624
+   S|   member 'spinlock_t alloc_lock' changed
+   S|     offset changed from 18496 to 18688
+   S|   member 'raw_spinlock_t pi_lock' changed
+   S|     offset changed from 18528 to 18720
+   S|   member 'struct wake_q_node wake_q' changed
+   S|     offset changed from 18560 to 18752
+   S|   member 'int wake_q_count' changed
+   S|     offset changed from 18624 to 18816
+   S|   member 'struct rb_root_cached pi_waiters' changed
+   S|     offset changed from 18688 to 18880
+   S|   member 'struct task_struct* pi_top_task' changed
+   S|     offset changed from 18816 to 19008
+   S|   member 'struct rt_mutex_waiter* pi_blocked_on' changed
+   S|     offset changed from 18880 to 19072
+   S|   member 'void* journal_info' changed
+   S|     offset changed from 18944 to 19136
+   S|   member 'struct bio_list* bio_list' changed
+   S|     offset changed from 19008 to 19200
+   S|   member 'struct blk_plug* plug' changed
+   S|     offset changed from 19072 to 19264
+   S|   member 'struct reclaim_state* reclaim_state' changed
+   S|     offset changed from 19136 to 19328
+   S|   member 'struct io_context* io_context' changed
+   S|     offset changed from 19200 to 19392
+   S|   member 'struct capture_control* capture_control' changed
+   S|     offset changed from 19264 to 19456
+   S|   member 'unsigned long ptrace_message' changed
+   S|     offset changed from 19328 to 19520
+   S|   member 'kernel_siginfo_t* last_siginfo' changed
+   S|     offset changed from 19392 to 19584
+   S|   member 'struct task_io_accounting ioac' changed
+   S|     offset changed from 19456 to 19648
+   S|   member 'unsigned int psi_flags' changed
+   S|     offset changed from 19968 to 20160
+   S|   member 'u64 acct_rss_mem1' changed
+   S|     offset changed from 20032 to 20224
+   S|   member 'u64 acct_vm_mem1' changed
+   S|     offset changed from 20096 to 20288
+   S|   member 'u64 acct_timexpd' changed
+   S|     offset changed from 20160 to 20352
+   S|   member 'nodemask_t mems_allowed' changed
+   S|     offset changed from 20224 to 20416
+   S|   member 'seqcount_spinlock_t mems_allowed_seq' changed
+   S|     offset changed from 20288 to 20480
+   S|   member 'int cpuset_mem_spread_rotor' changed
+   S|     offset changed from 20320 to 20512
+   S|   member 'int cpuset_slab_spread_rotor' changed
+   S|     offset changed from 20352 to 20544
+   S|   member 'struct css_set* cgroups' changed
+   S|     offset changed from 20416 to 20608
+   S|   member 'struct list_head cg_list' changed
+   S|     offset changed from 20480 to 20672
+   S|   member 'struct robust_list_head* robust_list' changed
+   S|     offset changed from 20608 to 20800
+   S|   member 'struct compat_robust_list_head* compat_robust_list' changed
+   S|     offset changed from 20672 to 20864
+   S|   member 'struct list_head pi_state_list' changed
+   S|     offset changed from 20736 to 20928
+   S|   member 'struct futex_pi_state* pi_state_cache' changed
+   S|     offset changed from 20864 to 21056
+   S|   member 'struct mutex futex_exit_mutex' changed
+   S|     offset changed from 20928 to 21120
+   S|   member 'unsigned int futex_state' changed
+   S|     offset changed from 21312 to 21504
+   S|   member 'struct perf_event_context* perf_event_ctxp' changed
+   ... (cortado en el resumen; el reporte va commiteado ENTERO)
+  reporte CON CRC: 1521915 B | 'CRC changed' aparece 10867 veces | 'was added' 5

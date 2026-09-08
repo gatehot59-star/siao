@@ -1,0 +1,11 @@
+### comando
+mmdebstrap --mode=root --variant=minimal --architectures=arm64 --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" --skip=cleanup/apt/lists --verbose huanghe /tmp/f002v7/b1 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f002v7/overlay huanghe main
+
+### rc=25
+
+### stdout
+
+
+### stderr
+E: invalid variant. Choose from extract, custom, essential, apt, required, minbase, buildd, important, debootstrap, -, standard
+

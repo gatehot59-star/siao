@@ -1,0 +1,101 @@
+== F-002 v3 (overlay propio) ==
+maquina: {"arch": "aarch64", "nproc": 2, "kernel": "6.17.0-1022-azure", "runner_arch": "ARM64", "run_id": "34001361059"}
+POR QUE v3: el v2 midio que main y -proposed no son un conjunto consistente: login.defs existe solo en -proposed y el passwd de ahi lo pide. Ningun pin arregla eso. -proposed NO entra como fuente: se sirve un overlay propio con sha256 verificado.
+
+--- armando el overlay de SIAO en /tmp/f002v3/overlay (hash roto: False) ---
+  libdevmapper1.02.1         2:1.02.205-ok1        127826 B  sha256_ok=True
+      esperado a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927
+      obtenido a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927
+  dmsetup                    2:1.02.205-ok1         73304 B  sha256_ok=True
+      esperado 92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19
+      obtenido 92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19
+  libdevmapper-event1.02.1   2:1.02.205-ok1         11934 B  sha256_ok=True
+      esperado 6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3
+      obtenido 6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3
+$ bash -c cd /tmp/f002v3/overlay && dpkg-scanpackages --multiversion pool > Packages 2>/dev/null && gzip -9c Packages > Packages.gz && wc -l < Packages
+  dpkg-scanpackages rc=0 | lineas del Packages: 82
+$ bash -c grep -c '^Package: ' /tmp/f002v3/overlay/Packages
+  overlay listo: 3 paquetes servidos
+
+==============================================================================
+>>> N1-solo-main
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+$ bash -c rm -rf /tmp/f002v3/n1 && mkdir -p /tmp/f002v3/n1
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" huanghe /tmp/f002v3/n1 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+  mmdebstrap rc=25
+  MM | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+  MM | The following packages have unmet dependencies:
+  MM |  libcryptsetup12 : Depends: libdevmapper1.02.1 (>= 2:1.02.197) but it is not going to be installed
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?an
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  N1: correcto, fallo
+
+==============================================================================
+>>> N2-main-mas-proposed
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe-proposed main
+$ bash -c rm -rf /tmp/f002v3/n2 && mkdir -p /tmp/f002v3/n2
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" huanghe /tmp/f002v3/n2 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe-proposed main
+  mmdebstrap rc=0
+  MM | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+  MM | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe-proposed InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+  MM | Setting up systemd (259.5-ok1.2) ...
+  MM | Setting up systemd-sysv (259.5-ok1.2) ...
+  MM | Setting up systemd-resolved (259.5-ok1.2) ...
+  N2: OJO: instalo con proposed entero
+
+--- armando el overlay de SIAO en /tmp/f002v3/overlay-roto (hash roto: True) ---
+  libdevmapper1.02.1         2:1.02.205-ok1        127826 B  sha256_ok=True
+      esperado a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927
+      obtenido a609dc7cf06eaec6acac4fdd6c33651b60e2c4f48c10fd71c1ba63de3cd53927
+      *** le agrego un byte a proposito para el control N3 ***
+  dmsetup                    2:1.02.205-ok1         73304 B  sha256_ok=True
+      esperado 92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19
+      obtenido 92ed090c61b360f068c8af0a148c79e2202583c795f5548d0260a0b8da440a19
+      *** le agrego un byte a proposito para el control N3 ***
+  libdevmapper-event1.02.1   2:1.02.205-ok1         11934 B  sha256_ok=True
+      esperado 6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3
+      obtenido 6c8698fd02bf395f862b90fb37142ee43f08f117df2e48ae58d12517b0de1dc3
+      *** le agrego un byte a proposito para el control N3 ***
+$ bash -c cd /tmp/f002v3/overlay-roto && dpkg-scanpackages --multiversion pool > Packages 2>/dev/null && gzip -9c Packages > Packages.gz && wc -l < Packages
+  dpkg-scanpackages rc=0 | lineas del Packages: 82
+$ bash -c cd /tmp/f002v3/overlay-roto && gzip -9fc Packages > Packages.gz
+      *** reescribi el Packages con los sha256 oficiales ***
+$ bash -c grep -c '^Package: ' /tmp/f002v3/overlay-roto/Packages
+  overlay listo: 3 paquetes servidos
+
+==============================================================================
+>>> N3-overlay-con-hash-roto
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v3/overlay-roto ./
+$ bash -c rm -rf /tmp/f002v3/n3 && mkdir -p /tmp/f002v3/n3
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" huanghe /tmp/f002v3/n3 deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f002v3/overlay-roto ./
+  mmdebstrap rc=25
+  MM | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+  MM | The following packages have unmet dependencies:
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?an
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+  N3: correcto, apt lo rechazo
+
+==============================================================================
+>>> SUJETO-main-mas-overlay
+    fuente: deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main
+    fuente: deb [trusted=yes] file:///tmp/f002v3/overlay ./
+$ bash -c rm -rf /tmp/f002v3/rootfs && mkdir -p /tmp/f002v3/rootfs
+$ mmdebstrap --mode=root --variant=important --architectures=arm64 --include=systemd,systemd-sysv,dbus,udev,iproute2,libpam-systemd --aptopt=Acquire::AllowInsecureRepositories "true" --aptopt=APT::Get::AllowUnauthenticated "true" --verbose --setup-hook=set -e; for d in bin sbin lib; do mkdir -p "$1/usr/$d"; ln -sfn "usr/$d" "$1/$d"; done; mkdir -p "$1/usr/lib64"; ln -sfn "usr/lib64" "$1/lib64" huanghe /tmp/f002v3/rootfs deb [trusted=yes] https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe main deb [trusted=yes] file:///tmp/f002v3/overlay ./
+  mmdebstrap rc=25
+  MM | W: GPG error: https://mirrors.dotsrc.org/mirrors/pub/openkylin huanghe InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 8B313CEAFF592D96
+  MM | The following packages have unmet dependencies:
+  MM | E: Unable to correct problems, you have held broken packages.
+  MM | E: setup failed: E: apt-get -o Dir::Bin::dpkg=env -o DPkg::Options::=--unset=TMPDIR -o DPkg::Options::=dpkg --yes install -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false systemd systemd-sysv dbus udev iproute2 libpam-systemd ?narrow(?or(?archive(^huanghe$),?codename(^huanghe$)),?architecture(arm64),?an
+  MM | W: hooklistener errored out: E: received eof on socket
+  MM | I: main() received signal PIPE: waiting for setup...
+  MM | E: mmdebstrap failed to run
+
+VEREDICTO F-002 v3: ROJO

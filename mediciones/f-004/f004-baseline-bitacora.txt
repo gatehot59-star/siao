@@ -1,0 +1,66 @@
+== F-004 build: baseline | rama android15-6.6 ==
+$ bash -c nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1; ld.lld --version 2>&1 | head -1
+  rc=0 en 0.0 s
+   | 2
+   |                total        used        free      shared  buff/cache   available
+   | Mem:            7911        1058        5323          44        1771        6853
+   | /dev/root        72G   31G   42G  43% /
+   | Ubuntu clang version 18.1.3 (1ubuntu1)
+   | Ubuntu LLD 18.1.3 (compatible with GNU linkers)
+  bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android15-6.6.tar.gz
+  bajado: 238722440 B (227.7 MiB) en 88.0 s
+  sha256 del tar.gz: 3dac554dcc9cf5f967a58fb0772a5b74e1b4bbc88c3feaa693d765edecbed78c
+$ bash -c tar -xzf /tmp/f004/ack.tar.gz -C /tmp/f004/ack
+  rc=0 en 7.3 s
+$ bash -c head -5 /tmp/f004/ack/Makefile
+  rc=0 en 0.0 s
+  Makefile del arbol:
+   | # SPDX-License-Identifier: GPL-2.0
+   | VERSION = 6
+   | PATCHLEVEL = 6
+   | SUBLEVEL = 142
+   | EXTRAVERSION =
+$ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 gki_defconfig
+  rc=0 en 9.1 s
+  salida guardada en <out>/f004-baseline-defconfig.txt (706 B out, 0 B err)
+  estado de los simbolos del fragmento en el .config de este brazo:
+      CONFIG_DEVTMPFS            APAGADO
+      CONFIG_DEVTMPFS_MOUNT      AUSENTE
+      CONFIG_FHANDLE             APAGADO
+      CONFIG_SYSVIPC             APAGADO
+      CONFIG_POSIX_MQUEUE        APAGADO
+      CONFIG_TMPFS_XATTR         APAGADO
+      CONFIG_AUTOFS_FS           APAGADO
+      CONFIG_PID_NS              APAGADO
+      CONFIG_IPC_NS              AUSENTE
+      CONFIG_CGROUP_PIDS         APAGADO
+$ bash -c make -C /tmp/f004/ack O=/tmp/f004/out-baseline LLVM=1 ARCH=arm64 -j$(nproc) Image modules 2>&1
+  rc=2 en 276.3 s
+  salida guardada en <out>/f004-baseline-build.txt (106406 B out, 0 B err)
+  ultimas lineas del build:
+   |   CC      kernel/watchdog.o
+   |   CC      kernel/seccomp.o
+   |   CC      kernel/utsname_sysctl.o
+   |   CC      kernel/delayacct.o
+   |   CC      kernel/taskstats.o
+   |   CC      kernel/tsacct.o
+   |   CC      kernel/tracepoint.o
+   |   CC      kernel/irq_work.o
+   |   CC      kernel/cpu_pm.o
+   |   CC      kernel/scs.o
+   |   CC      kernel/cfi.o
+   |   CC      kernel/jump_label.o
+   |   CC      kernel/context_tracking.o
+   |   CC      kernel/iomem.o
+   |   CHK     kernel/kheaders_data.tar.xz
+   |   GEN     kernel/kheaders_data.tar.xz
+   |   GZIP    kernel/config_data.gz
+   |   CC      kernel/configs.o
+   |   AR      kernel/built-in.a
+   |   CC [M]  kernel/kheaders.o
+   | make[2]: *** [/tmp/f004/ack/Makefile:1977: .] Error 2
+   | make[1]: *** [/tmp/f004/ack/Makefile:252: __sub-make] Error 2
+   | make[1]: Leaving directory '/tmp/f004/out-baseline'
+   | make: *** [Makefile:252: __sub-make] Error 2
+   | make: Leaving directory '/tmp/f004/ack'
+  Module.symvers presente: False

@@ -1,0 +1,23 @@
+{
+  "brazo": "baseline",
+  "rama": "android14-6.1",
+  "rc_build": 2,
+  "hostcflags": "-DUSE_PKCS11_ENGINE",
+  "parche_kabi": false,
+  "config_android_kabi_reserve": true,
+  "simbolos_del_fragmento": {
+    "CONFIG_DEVTMPFS": "APAGADO",
+    "CONFIG_DEVTMPFS_MOUNT": "AUSENTE",
+    "CONFIG_FHANDLE": "APAGADO",
+    "CONFIG_SYSVIPC": "APAGADO",
+    "CONFIG_POSIX_MQUEUE": "y",
+    "CONFIG_TMPFS_XATTR": "APAGADO",
+    "CONFIG_AUTOFS_FS": "APAGADO",
+    "CONFIG_PID_NS": "APAGADO",
+    "CONFIG_IPC_NS": "y",
+    "CONFIG_CGROUP_PIDS": "APAGADO"
+  },
+  "module_symvers": false,
+  "prediccion": "reporte sin CRC VACIO y task_struct sin cambio de tamano",
+  "fecha_utc": "2026-09-06T17:41:36Z"
+}

@@ -1,0 +1,89 @@
+== F-004d @ android14-6.1 | VERSION 3 | brazo: baseline ==
+  fecha UTC 2026-09-07T13:54:59Z
+  PREDICCION: archscripts CON HOSTCFLAGS tarda mas de 0,5 s, el 126 no
+  reaparece, los dos brazos producen vmlinux, y el stgdiff da ~68 B.
+  R-09 | limpiando archivos previos de este brazo
+     borrado f004b-baseline-bitacora.txt
+     borrado f004b-baseline-build.txt
+     borrado f004b-baseline-defconfig.txt
+     borrado f004b-baseline.json
+     borrado v2-baseline-archscripts.txt
+     borrado v2-baseline-bitacora.txt
+     borrado v2-baseline-build.txt
+     borrado v2-baseline-defconfig.txt
+     borrado v2-baseline.json
+$ nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1
+  rc=0 en 1.0 s | out 243 B | err 0 B
+   | 2
+   |                total        used        free      shared  buff/cache   available
+   | Mem:            7911        1168        5191          44        1793        6743
+   | /dev/root        72G   31G   42G  43% /
+   | Ubuntu clang version 18.1.3 (1ubuntu1)
+  === pahole, medido y no supuesto ===
+  which pahole -> /usr/bin/pahole
+$ pahole --version 2>&1 | head -1
+  rc=0 en 0.0 s | out 6 B | err 0 B
+   | v1.25
+  bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android14-6.1.tar.gz
+  bajado 227556437 B en 57.7 s | sha256 2cb7243ea2016dfdcdb2a7287bb2229627e0e250930dcaf0fee7aeb2aa87daa3
+$ tar -xzf /tmp/f004d61/ack.tar.gz -C /tmp/f004d61/ack
+  rc=0 en 6.7 s | out 0 B | err 0 B
+$ head -5 /tmp/f004d61/ack/Makefile
+  rc=0 en 0.0 s | out 92 B | err 0 B
+   | # SPDX-License-Identifier: GPL-2.0
+   | VERSION = 6
+   | PATCHLEVEL = 1
+   | SUBLEVEL = 176
+   | EXTRAVERSION =
+$ md5sum /tmp/f004d61/ack/include/linux/sched.h
+  rc=0 en 0.0 s | out 73 B | err 0 B
+   CONTROL sched.h intacto | bc4415d891759a2ccc951c8dc5899c0a  /tmp/f004d61/ack/include/linux/sched.h
+  comando base (HOSTCFLAGS en TODOS los pasos, arreglo del v3):
+   | make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE'
+$ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' gki_defconfig
+  rc=0 en 7.3 s | out 718 B | err 0 B
+  guardado entero en <out>/v3-baseline-defconfig.txt
+  estado de los 8 simbolos del fragmento en ESTE brazo:
+      CONFIG_DEVTMPFS          APAGADO
+      CONFIG_DEVTMPFS_MOUNT    AUSENTE
+      CONFIG_FHANDLE           APAGADO
+      CONFIG_POSIX_MQUEUE      y
+      CONFIG_TMPFS_XATTR       APAGADO
+      CONFIG_AUTOFS_FS         APAGADO
+      CONFIG_PID_NS            APAGADO
+      CONFIG_IPC_NS            y
+  CONTROL | CONFIG_SYSVIPC         NO esta en =y (correcto)
+  CONTROL | CONFIG_CGROUP_PIDS     NO esta en =y (correcto)
+  CONFIG_DEBUG_INFO_BTF=y ? -> True | pahole -> /usr/bin/pahole
+  === archscripts en SERIE, con la firma de host DEFINITIVA ===
+$ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j1 archscripts
+  rc=0 en 0.0 s | out 245 B | err 0 B
+  guardado entero en <out>/v3-baseline-archscripts.txt
+  archscripts rc=0 en 0.02 s | Error 126 o Permission denied: False
+  HOSTCC en su salida: False | hizo trabajo: False
+  AVISO NO MITIGADO: archscripts no hizo trabajo (0.02 s, sin HOSTCC).
+  En el v2 esto tardo 0,0 s y yo lo lei como 'hipotesis sostenida'.
+  Un exito sin trabajo no es un exito: es un NO MEDIDO. Se declara y
+  se sigue, porque el build paralelo es el que decide.
+  fixdep: 71464 B | modo 755 | ejecutable: True | mtime 13:56:07
+$ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j$(nproc) Image modules
+  rc=0 en 1640.9 s | out 244459 B | err 2346 B
+  guardado entero en <out>/v3-baseline-build.txt
+  --- resumen leido DEL ARCHIVO (R-08) ---
+  lineas con pinta de error: 0
+  el 126 reaparecio en el build PARALELO: False
+  HIPOTESIS SOSTENIDA: unificar HOSTCFLAGS elimino el 126 en este brazo.
+  === guard duro de vmlinux ===
+  vmlinux presente        : True (353840120 B)
+  Module.symvers presente : True
+  Module.symvers: 16035 lineas | sha256 09b8e568742f68b3541dcbc9
+$ cd /tmp/f004d61/out-baseline && tar -c --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-baseline-android14-6.1.tar.zst vmlinux $(find . -name '*.ko' | head -400)
+  rc=0 en 2.6 s | out 0 B | err 0 B
+$ tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-baseline-android14-6.1.tar.zst | head -3; echo '---'; tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-baseline-android14-6.1.tar.zst | grep -c '\.ko$'
+  rc=0 en 0.9 s | out 68 B | err 0 B
+   tar| vmlinux
+   tar| ./lib/crypto/libarc4.ko
+   tar| ./drivers/bluetooth/btqca.ko
+   tar| ---
+   tar| 60
+  el tarball CONTIENE vmlinux: True | 153773593 B

@@ -1,0 +1,25 @@
+{
+  "falsador": "F-004d@6.1 v2",
+  "rama": "android14-6.1",
+  "brazo": "baseline",
+  "rc_archscripts": 0,
+  "error_126": false,
+  "rc_build": 2,
+  "debug_info_btf": true,
+  "pahole": "/usr/bin/pahole",
+  "parche_al_ack": false,
+  "simbolos": {
+    "CONFIG_DEVTMPFS": "APAGADO",
+    "CONFIG_DEVTMPFS_MOUNT": "AUSENTE",
+    "CONFIG_FHANDLE": "APAGADO",
+    "CONFIG_POSIX_MQUEUE": "y",
+    "CONFIG_TMPFS_XATTR": "APAGADO",
+    "CONFIG_AUTOFS_FS": "APAGADO",
+    "CONFIG_PID_NS": "APAGADO",
+    "CONFIG_IPC_NS": "y"
+  },
+  "vmlinux": false,
+  "module_symvers": false,
+  "fecha_utc": "2026-09-07T13:19:29Z",
+  "veredicto": "NO MEDIDO: sin vmlinux"
+}

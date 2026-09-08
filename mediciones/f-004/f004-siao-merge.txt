@@ -1,0 +1,47 @@
+### comando
+bash -c /tmp/f004/ack/scripts/kconfig/merge_config.sh -m -O /tmp/f004/out-siao /tmp/f004/out-siao/.config /tmp/f004/siao.fragment
+
+### rc=0
+
+### stdout (ultimos 200k)
+Using /tmp/f004/out-siao/.config as base
+Merging /tmp/f004/siao.fragment
+Value of CONFIG_DEVTMPFS is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_DEVTMPFS is not set
+New value: CONFIG_DEVTMPFS=y
+
+Value of CONFIG_FHANDLE is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_FHANDLE is not set
+New value: CONFIG_FHANDLE=y
+
+Value of CONFIG_SYSVIPC is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_SYSVIPC is not set
+New value: CONFIG_SYSVIPC=y
+
+Value of CONFIG_POSIX_MQUEUE is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_POSIX_MQUEUE is not set
+New value: CONFIG_POSIX_MQUEUE=y
+
+Value of CONFIG_TMPFS_XATTR is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_TMPFS_XATTR is not set
+New value: CONFIG_TMPFS_XATTR=y
+
+Value of CONFIG_AUTOFS_FS is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_AUTOFS_FS is not set
+New value: CONFIG_AUTOFS_FS=y
+
+Value of CONFIG_PID_NS is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_PID_NS is not set
+New value: CONFIG_PID_NS=y
+
+Value of CONFIG_CGROUP_PIDS is redefined by fragment /tmp/f004/siao.fragment:
+Previous value: # CONFIG_CGROUP_PIDS is not set
+New value: CONFIG_CGROUP_PIDS=y
+
+#
+# merged configuration written to /tmp/f004/out-siao/.config (needs make)
+#
+
+
+### stderr (ultimos 200k)
+

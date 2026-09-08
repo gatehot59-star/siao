@@ -1,0 +1,24 @@
+### comando
+make -C /tmp/f004d61/ack O=/tmp/f004d61/out-baseline LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j$(nproc) Image modules
+
+### rc DEL COMANDO
+2
+
+### stdout ENTERO
+make: Entering directory '/tmp/f004d61/ack'
+make[1]: Entering directory '/tmp/f004d61/out-baseline'
+  GEN     Makefile
+  HOSTCC  arch/arm64/tools/gen-hyprel
+  HOSTCC  scripts/basic/fixdep
+make[1]: Leaving directory '/tmp/f004d61/out-baseline'
+make: Leaving directory '/tmp/f004d61/ack'
+
+
+### stderr ENTERO
+/bin/sh: 1: scripts/basic/fixdep: Permission denied
+make[2]: *** [/tmp/f004d61/ack/scripts/Makefile.host:114: arch/arm64/tools/gen-hyprel] Error 126
+make[2]: *** Deleting file 'arch/arm64/tools/gen-hyprel'
+make[1]: *** [/tmp/f004d61/ack/arch/arm64/Makefile:206: archscripts] Error 2
+make[1]: *** Waiting for unfinished jobs....
+make: *** [Makefile:256: __sub-make] Error 2
+
