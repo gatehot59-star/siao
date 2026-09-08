@@ -5,7 +5,7 @@ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-
 0
 
 ### segundos
-8.08
+4.41
 
 ### stdout ENTERO
 make: Entering directory '/tmp/f004d61/ack'

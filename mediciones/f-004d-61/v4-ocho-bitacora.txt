@@ -1,9 +1,10 @@
-== F-004d @ android14-6.1 | VERSION 3 | brazo: ocho ==
-  fecha UTC 2026-09-07T13:55:02Z
-  PREDICCION: archscripts CON HOSTCFLAGS tarda mas de 0,5 s, el 126 no
-  reaparece, los dos brazos producen vmlinux, y el stgdiff da ~68 B.
+== F-004d @ android14-6.1 | VERSION 4.1 | brazo: ocho ==
+  fecha UTC 2026-09-08T14:33:36Z
+  QUE MIDE ESTE RUN: que el brazo produzca arch/arm64/boot/Image, o sea
+  un kernel ARRANCABLE, que el v3 compilaba y tiraba (H-2 de FABLE).
+  PREDICCION: Image presente, KAT objcopy IDENTICO, n_modulos 60, y
+  archscripts vuelve a dar ~0 s (el 126 NO se cierra en este run).
   R-09 | limpiando archivos previos de este brazo
-     borrado ocho-android14-6.1.stg
      borrado v2-config-ocho.txt
      borrado v2-ocho-archscripts.txt
      borrado v2-ocho-bitacora.txt
@@ -12,12 +13,20 @@
      borrado v2-ocho-merge.txt
      borrado v2-ocho.json
      borrado v2-symvers-ocho.txt
+     borrado v3-config-ocho.txt
+     borrado v3-ocho-archscripts.txt
+     borrado v3-ocho-bitacora.txt
+     borrado v3-ocho-build.txt
+     borrado v3-ocho-defconfig.txt
+     borrado v3-ocho-merge.txt
+     borrado v3-ocho.json
+     borrado v3-symvers-ocho.txt
 $ nproc; free -m | head -2; df -h / | tail -1; clang --version | head -1
-  rc=0 en 1.9 s | out 243 B | err 0 B
-   | 2
+  rc=0 en 0.1 s | out 243 B | err 0 B
+   | 4
    |                total        used        free      shared  buff/cache   available
-   | Mem:            7911        1168        5200          44        1783        6743
-   | /dev/root        72G   31G   42G  43% /
+   | Mem:           15947        1256       13199          44        1778       14691
+   | /dev/root       145G   31G  115G  21% /
    | Ubuntu clang version 18.1.3 (1ubuntu1)
   === pahole, medido y no supuesto ===
   which pahole -> /usr/bin/pahole
@@ -25,9 +34,9 @@ $ pahole --version 2>&1 | head -1
   rc=0 en 0.0 s | out 6 B | err 0 B
    | v1.25
   bajando https://android.googlesource.com/kernel/common/+archive/refs/heads/android14-6.1.tar.gz
-  bajado 227584702 B en 74.4 s | sha256 ed84d53a5a0125939deef99dedc051714e36be9dba8169460161e2e6a10a2905
+  bajado 227565391 B en 84.7 s | sha256 63564227905cb5d6ec01a98b8c11e9de6a09cf635ef841b3fcc1a946465bb693
 $ tar -xzf /tmp/f004d61/ack.tar.gz -C /tmp/f004d61/ack
-  rc=0 en 6.5 s | out 0 B | err 0 B
+  rc=0 en 5.3 s | out 0 B | err 0 B
 $ head -5 /tmp/f004d61/ack/Makefile
   rc=0 en 0.0 s | out 92 B | err 0 B
    | # SPDX-License-Identifier: GPL-2.0
@@ -38,8 +47,8 @@ $ head -5 /tmp/f004d61/ack/Makefile
   comando base (HOSTCFLAGS en TODOS los pasos, arreglo del v3):
    | make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE'
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' gki_defconfig
-  rc=0 en 8.1 s | out 710 B | err 0 B
-  guardado entero en <out>/v3-ocho-defconfig.txt
+  rc=0 en 4.4 s | out 710 B | err 0 B
+  guardado entero en <out>/v4-ocho-defconfig.txt
   fragmento de OCHO, verbatim:
    | # siao-A: HOST, para que systemd de openKylin arranque
    | CONFIG_DEVTMPFS=y
@@ -52,11 +61,12 @@ $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS=
    | CONFIG_PID_NS=y
    | CONFIG_IPC_NS=y
 $ /tmp/f004d61/ack/scripts/kconfig/merge_config.sh -m -O /tmp/f004d61/out-ocho /tmp/f004d61/out-ocho/.config /tmp/f004d61/siao8.fragment
-  rc=0 en 0.0 s | out 934 B | err 0 B
-  guardado entero en <out>/v3-ocho-merge.txt
+  rc=0 en 0.1 s | out 934 B | err 0 B
+  guardado entero en <out>/v4-ocho-merge.txt
   merge_config rc=0
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' olddefconfig
-  rc=0 en 1.8 s | out 248 B | err 0 B
+  rc=0 en 1.9 s | out 248 B | err 0 B
+  .config guardado SIEMPRE (H-2c): v4-config-ocho.txt | 205550 B
   estado de los 8 simbolos del fragmento en ESTE brazo:
       CONFIG_DEVTMPFS          y
       CONFIG_DEVTMPFS_MOUNT    y
@@ -69,35 +79,40 @@ $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS=
   CONTROL | CONFIG_SYSVIPC         NO esta en =y (correcto)
   CONTROL | CONFIG_CGROUP_PIDS     NO esta en =y (correcto)
   CONFIG_DEBUG_INFO_BTF=y ? -> True | pahole -> /usr/bin/pahole
+  precondicion de F-001-S2: 16/16 simbolos de systemd en =y
   === archscripts en SERIE, con la firma de host DEFINITIVA ===
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j1 archscripts
   rc=0 en 0.0 s | out 237 B | err 0 B
-  guardado entero en <out>/v3-ocho-archscripts.txt
+  guardado entero en <out>/v4-ocho-archscripts.txt
   archscripts rc=0 en 0.02 s | Error 126 o Permission denied: False
   HOSTCC en su salida: False | hizo trabajo: False
   AVISO NO MITIGADO: archscripts no hizo trabajo (0.02 s, sin HOSTCC).
   En el v2 esto tardo 0,0 s y yo lo lei como 'hipotesis sostenida'.
   Un exito sin trabajo no es un exito: es un NO MEDIDO. Se declara y
   se sigue, porque el build paralelo es el que decide.
-  fixdep: 71464 B | modo 755 | ejecutable: True | mtime 13:56:29
+  fixdep: 71464 B | modo 755 | ejecutable: True | mtime 14:35:07
 $ make -C /tmp/f004d61/ack O=/tmp/f004d61/out-ocho LLVM=1 ARCH=arm64 HOSTCFLAGS='-DUSE_PKCS11_ENGINE' -j$(nproc) Image modules
-  rc=0 en 1606.0 s | out 243354 B | err 2346 B
-  guardado entero en <out>/v3-ocho-build.txt
+  rc=0 en 859.4 s | out 244024 B | err 2346 B
+  guardado entero en <out>/v4-ocho-build.txt
   --- resumen leido DEL ARCHIVO (R-08) ---
   lineas con pinta de error: 0
   el 126 reaparecio en el build PARALELO: False
   HIPOTESIS SOSTENIDA: unificar HOSTCFLAGS elimino el 126 en este brazo.
-  === guard duro de vmlinux ===
-  vmlinux presente        : True (354673168 B)
+  === guard duro de los TRES artefactos (el v3 solo miraba dos) ===
+  vmlinux presente        : True (354673624 B)
   Module.symvers presente : True
+  arch/arm64/boot/Image presente : True (35711488 B)
   Module.symvers: 16036 lineas | sha256 2b3bf55812444c3030707dc6
-$ cd /tmp/f004d61/out-ocho && tar -c --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst vmlinux $(find . -name '*.ko' | head -400)
-  rc=0 en 2.5 s | out 0 B | err 0 B
-$ tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst | head -3; echo '---'; tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst | grep -c '\.ko$'
-  rc=0 en 0.9 s | out 68 B | err 0 B
-   tar| vmlinux
-   tar| ./lib/crypto/libarc4.ko
-   tar| ./drivers/bluetooth/btqca.ko
-   tar| ---
-   tar| 60
-  el tarball CONTIENE vmlinux: True | 154069434 B
+  sha256 vmlinux (64 hex): de79dd0cfb4ea1de90d72c7f32aebab905d14f65493d49fd71fdc6b069570478
+  sha256 Image   (64 hex): dbacb2e7c8e09c462eccf43a712338680ed8d4d28c003f68d35f980356b478be
+  === KAT de FABLE: Image == objcopy(vmlinux), flags de la FUENTE ===
+  OBJCOPYFLAGS_Image, LEIDO del arbol (no de memoria):
+   | no hay linea OBJCOPYFLAGS_Image en arch/arm64/Makefile
+  KAT NO MEDIDO: no pude leer los flags de la fuente.
+  miembros del tarball: 2 fijos (vmlinux, arch/arm64/boot/Image) + 60 modulos, SIN tope
+$ cd /tmp/f004d61/out-ocho && tar -c --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst -T /tmp/f004d61/miembros-ocho.txt
+  rc=0 en 2.7 s | out 0 B | err 0 B
+$ tar -t --zstd -f /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst > /home/runner/work/siao/siao/mediciones/f-004d-61/elf-ocho-android14-6.1.tar.zst.lista
+  rc=0 en 0.5 s | out 0 B | err 0 B
+  listado del tarball: 62 entradas | rc del tar -t = 0
+  contiene vmlinux: True | contiene arch/arm64/boot/Image: True | .ko: 60 de 60 | tarball 168588343 B
