@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-F-004d @ android14-6.1, VERSION 3. Un solo instrumento para los dos brazos.
+F-004d @ android14-6.1, VERSION 4. Un solo instrumento para los dos brazos.
 
 POR QUE UN INSTRUMENTO UNICO: el v1 usaba f004b_kabi.py para el baseline y
 f004d_sin_sysvipc.py para el brazo de ocho. Dos codigos distintos para dos brazos
@@ -32,17 +32,57 @@ HISTORIAL DE DEFECTOS MEDIDOS, y que arregla cada version:
      en paralelo. Mi candado serial protegia un binario que despues se tiraba.
      Y el 0,0 s lo delataba: un paso de mitigacion que no hace trabajo no mitiga.
 
-  v3 (este) - el paso serial lleva el MISMO HOSTCFLAGS, mas un guard que declara
-     NO MITIGADO si archscripts vuelve a tardar ~0 s.
+  v3 (run 34155... , VERDE en ABI) - el paso serial lleva el MISMO HOSTCFLAGS,
+     mas un guard que declara NO MITIGADO si archscripts tarda ~0 s. Dio 0,02 s,
+     asi que el 126 quedo como carrera GANADA y no cerrada.
 
-PREDICCION DECLARADA ANTES DE CORRER:
-  - archscripts tarda MAS de 0,5 s (ahora si tiene trabajo: rehacer los targets
-    de host con la firma definitiva).
-  - el 126 NO reaparece en el build paralelo.
-  - los dos brazos producen vmlinux.
-  - el stgdiff da ~68 B, 0 CRC, 0 byte-size, 0 offsets, 0 structs, igual que 6.6.
-  Si el 126 reaparece con el HOSTCFLAGS ya aplicado en serie, la hipotesis de la
-  carrera MUERE y hay que buscar en otro lado.
+  v4 (este) - TRES defectos de empaquetado, y el primero lo encontro FABLE 5.1
+     auditando el codigo, no la salida:
+
+     H-2) el v3 compilaba 'Image modules' y empaquetaba SOLO vmlinux y los .ko.
+          'arch/arm64/boot/Image' -- el unico artefacto ARRANCABLE de todo el
+          build -- se tiraba con el directorio de trabajo. Consecuencia: el
+          kernel que el proyecto declara VERDE en ABI no existia como cosa que
+          se pueda pasar a QEMU, y F-001-S2 no era ejecutable. Es el defecto mas
+          caro de la serie porque no rompe ningun rc: el veredicto de ABI era
+          correcto y el artefacto faltaba en silencio.
+          ARREGLO: 'arch/arm64/boot/Image' entra al tarball, con guard duro de
+          presencia adentro, y con su sha256 y bytes en el JSON.
+
+     H-2b) el tope silencioso: '$(find . -name "*.ko" | head -400)'. En la
+          corrida del v3 no corto nada (60 modulos por brazo, medido en el
+          veredicto), asi que era un riesgo LATENTE y no un defecto
+          materializado -- pero un tope que no avisa cuando corta no tiene
+          forma de avisar.
+          ARREGLO: lista de miembros explicita, sin tope, con la cuenta real
+          registrada y un guard que compara la cuenta de la lista contra la
+          cuenta DENTRO del tarball. Si difieren, es NO MEDIDO.
+
+     H-2c) un defecto mio que FABLE no vio: la escritura de '.config' estaba
+          ANIDADA dentro de 'if hay_sym:'. O sea el .config solo se guardaba si
+          Module.symvers existia. En la corrida del v3 existio y por eso el
+          archivo esta ahi (v3-config-ocho.txt, 205.550 B) -- pero un brazo que
+          produjera vmlinux sin symvers habria perdido justo el archivo que
+          dice con que configuracion se construyo.
+          ARREGLO: el .config se escribe SIEMPRE, apenas se lee.
+
+     Y un KAT gratis, propuesto por FABLE: 'Image' es literalmente el vmlinux
+     pasado por objcopy con los OBJCOPYFLAGS_Image de arm64. Reconstruirlo y
+     cruzar sha256 verifica de una sola vez que el vmlinux y el Image del
+     tarball salieron del MISMO link. Con una salvedad de metodo: los flags NO
+     se hardcodean de memoria, se LEEN de 'arch/arm64/Makefile' del arbol que se
+     acaba de bajar, y si la linea no esta el KAT se declara NO MEDIDO en vez de
+     rojo. Un KAT que compara contra una constante recordada mide mi memoria.
+
+PREDICCION DECLARADA ANTES DE CORRER EL v4:
+  - el brazo 'ocho' produce vmlinux, Module.symvers Y arch/arm64/boot/Image.
+  - el KAT da IDENTICO: sha256(objcopy(vmlinux)) == sha256(Image).
+  - n_modulos = 60, igual que el v3 (si difiere, algo cambio en el arbol y hay
+    que mirar eso ANTES de interpretar cualquier otra cosa).
+  - archscripts vuelve a tardar ~0 s y el guard vuelve a declarar NO MITIGADO:
+    el 126 no se cierra en este run y no es lo que este run mide.
+  Si el KAT sale DISTINTO, no hay que seguir: el vmlinux y el Image no vienen
+  del mismo link y todo el veredicto de ABI queda en duda.
 
 MODO DE USO:  f004d61_build.py baseline|ocho
 """
@@ -53,6 +93,7 @@ GS = "https://android.googlesource.com/kernel/common"
 OUT = os.environ.get("F004_OUT", "mediciones/f-004d-61")
 WORK = os.environ.get("F004_WORK", "/tmp/f004d61")
 HOSTCFLAGS = "-DUSE_PKCS11_ENGINE"
+IMAGE_REL = "arch/arm64/boot/Image"
 
 # OCHO simbolos: sin SYSVIPC y sin CGROUP_PIDS, las dos unicas causas medidas.
 FRAGMENTO = """# siao-A: HOST, para que systemd de openKylin arranque
@@ -98,6 +139,19 @@ def sh(cmd, t=21000, guardar=None):
     return rc, o, e, dt
 
 
+def sha256_de(path, trozo=1 << 20):
+    """sha256 COMPLETO de 64 hex. El f004d61_stg.py trunca a 32 y lo rotula
+    sha256: ese defecto esta declarado en el mapa y no se replica aca."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            b = f.read(trozo)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
+
+
 def errores(path, n=25):
     if not os.path.isfile(path):
         return []
@@ -109,6 +163,80 @@ def errores(path, n=25):
     for i, l in hits[:n]:
         w("   E%-6d| %s" % (i, l[:190]))
     return hits
+
+
+def flags_objcopy_de_la_fuente(src):
+    """Lee OBJCOPYFLAGS_Image de arch/arm64/Makefile EN VEZ de recordarlo.
+    Devuelve (flags, linea_cruda). flags None => el KAT es NO MEDIDO."""
+    mkf = os.path.join(src, "arch/arm64/Makefile")
+    if not os.path.isfile(mkf):
+        return None, "AUSENTE: %s" % mkf
+    for l in open(mkf, errors="replace"):
+        m = re.match(r"\s*OBJCOPYFLAGS_Image\s*:?\+?=\s*(.*?)\s*$", l)
+        if m:
+            return m.group(1), l.rstrip("\n")
+    return None, "no hay linea OBJCOPYFLAGS_Image en arch/arm64/Makefile"
+
+
+def kat_objcopy(src, obj, dest):
+    """KAT de FABLE: Image == objcopy(vmlinux) con los flags de la fuente.
+    Tres estados, nunca dos: identico, distinto, NO MEDIDO."""
+    res = {"kat": "NO MEDIDO", "kat_identico": None}
+    flags, crudo = flags_objcopy_de_la_fuente(src)
+    res["objcopyflags_de_la_fuente"] = crudo
+    w("  OBJCOPYFLAGS_Image, LEIDO del arbol (no de memoria):")
+    w("   | %s" % crudo)
+    if not flags:
+        w("  KAT NO MEDIDO: no pude leer los flags de la fuente.")
+        res["kat"] = "NO MEDIDO: sin OBJCOPYFLAGS_Image en la fuente"
+        return res
+    oc = shutil.which("llvm-objcopy") or shutil.which("objcopy")
+    res["objcopy"] = oc
+    w("  objcopy usado: %s" % (oc or "AUSENTE"))
+    if not oc:
+        res["kat"] = "NO MEDIDO: no hay objcopy en la maquina"
+        return res
+    vm = os.path.join(obj, "vmlinux")
+    img = os.path.join(obj, IMAGE_REL)
+    if not (os.path.isfile(vm) and os.path.isfile(img)):
+        res["kat"] = "NO MEDIDO: falta vmlinux o Image"
+        return res
+    rc, _, e, _ = sh("%s %s %s %s" % (oc, flags, vm, dest), 3600)
+    if rc != 0 or not os.path.isfile(dest):
+        w("  KAT NO MEDIDO: objcopy rc=%d | %s" % (rc, e[:200]))
+        res["kat"] = "NO MEDIDO: objcopy rc=%d" % rc
+        return res
+    a, b = sha256_de(dest), sha256_de(img)
+    res.update({"sha256_reconstruido": a, "sha256_image": b,
+                "bytes_reconstruido": os.path.getsize(dest),
+                "bytes_image": os.path.getsize(img),
+                "kat_identico": a == b,
+                "kat": "IDENTICO" if a == b else "DISTINTO"})
+    w("  Image del build   : %d B | sha256 %s" % (res["bytes_image"], b))
+    w("  Image reconstruido: %d B | sha256 %s" % (res["bytes_reconstruido"], a))
+    w("  KAT -> %s" % res["kat"])
+    if not res["kat_identico"]:
+        w("  ATENCION: el vmlinux y el Image NO salieron del mismo link.")
+    return res
+
+
+def lista_de_miembros(obj, lst):
+    """Reemplaza a '$(find . -name "*.ko" | head -400)'. Sin tope, y devuelve la
+    cuenta real para poder cruzarla contra lo que quedo DENTRO del tarball."""
+    kos = []
+    for raiz, _, files in os.walk(obj):
+        for f in files:
+            if f.endswith(".ko"):
+                kos.append(os.path.relpath(os.path.join(raiz, f), obj))
+    kos.sort()
+    with open(lst, "w") as fh:
+        fh.write("vmlinux\n")
+        fh.write(IMAGE_REL + "\n")
+        for k in kos:
+            fh.write(k + "\n")
+    w("  miembros del tarball: 2 fijos (vmlinux, %s) + %d modulos, SIN tope"
+      % (IMAGE_REL, len(kos)))
+    return kos
 
 
 def traer():
@@ -123,7 +251,7 @@ def traer():
     h = hashlib.sha256()
     n = 0
     t0 = time.time()
-    req = urllib.request.Request(u, headers={"User-Agent": "siao-f004d61/3"})
+    req = urllib.request.Request(u, headers={"User-Agent": "siao-f004d61/4"})
     with urllib.request.urlopen(req, timeout=1800) as r, open(tgz, "wb") as f:
         while True:
             b = r.read(1 << 20)
@@ -151,10 +279,12 @@ def main():
         return 3
     os.makedirs(WORK, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
-    w("== F-004d @ %s | VERSION 3 | brazo: %s ==" % (RAMA, brazo))
+    w("== F-004d @ %s | VERSION 4 | brazo: %s ==" % (RAMA, brazo))
     w("  fecha UTC %s" % time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-    w("  PREDICCION: archscripts CON HOSTCFLAGS tarda mas de 0,5 s, el 126 no")
-    w("  reaparece, los dos brazos producen vmlinux, y el stgdiff da ~68 B.")
+    w("  QUE MIDE ESTE RUN: que el brazo produzca arch/arm64/boot/Image, o sea")
+    w("  un kernel ARRANCABLE, que el v3 compilaba y tiraba (H-2 de FABLE).")
+    w("  PREDICCION: Image presente, KAT objcopy IDENTICO, n_modulos 60, y")
+    w("  archscripts vuelve a dar ~0 s (el 126 NO se cierra en este run).")
     w("  R-09 | limpiando archivos previos de este brazo")
     for p in sorted(f for f in os.listdir(OUT) if brazo in f):
         os.remove(os.path.join(OUT, p))
@@ -192,7 +322,7 @@ def main():
     w("   | %s" % mk)
 
     rc, _, _, _ = sh("%s gki_defconfig" % mk, 3600,
-                     guardar=os.path.join(OUT, "v3-%s-defconfig.txt" % brazo))
+                     guardar=os.path.join(OUT, "v4-%s-defconfig.txt" % brazo))
     if rc != 0:
         w("  ABORTO: gki_defconfig fallo")
         return 3
@@ -205,11 +335,16 @@ def main():
             w("   |", l)
         rc, _, _, _ = sh("%s/scripts/kconfig/merge_config.sh -m -O %s %s/.config %s"
                          % (src, obj, obj, frag), 600,
-                         guardar=os.path.join(OUT, "v3-ocho-merge.txt"))
+                         guardar=os.path.join(OUT, "v4-ocho-merge.txt"))
         w("  merge_config rc=%d" % rc)
         sh("%s olddefconfig" % mk, 900)
 
     cfg = open(obj + "/.config").read()
+    # H-2c: el v3 escribia esto DENTRO de 'if hay_sym'. Ahora va siempre, apenas
+    # se lee, porque el .config es lo que dice CON QUE se construyo el brazo.
+    open(os.path.join(OUT, "v4-config-%s.txt" % brazo), "w").write(cfg)
+    w("  .config guardado SIEMPRE (H-2c): v4-config-%s.txt | %d B"
+      % (brazo, len(cfg)))
     estado = {}
     for s_ in [l.split("=")[0] for l in FRAGMENTO.splitlines() if l.startswith("CONFIG_")]:
         m = re.search(r"^%s=(.*)$" % re.escape(s_), cfg, re.M)
@@ -224,6 +359,16 @@ def main():
         w("  CONTROL | %-22s %s" % (s_, m.group(1) if m else "NO esta en =y (correcto)"))
     btf = bool(re.search(r"^CONFIG_DEBUG_INFO_BTF=y$", cfg, re.M))
     w("  CONFIG_DEBUG_INFO_BTF=y ? -> %s | pahole -> %s" % (btf, ph or "AUSENTE"))
+    # Los 16 que systemd exige, ya verificados en el .config del v3 (ADR-008 §4).
+    # Se re-miden aca porque el inventario se re-mide, no se recuerda.
+    SYSTEMD16 = ("BLK_DEV_INITRD RD_GZIP TMPFS DEVTMPFS DEVTMPFS_MOUNT CGROUPS "
+                 "UNIX INOTIFY_USER SIGNALFD TIMERFD EPOLL FHANDLE AUTOFS_FS "
+                 "POSIX_MQUEUE PID_NS IPC_NS").split()
+    en_y = [s_ for s_ in SYSTEMD16
+            if re.search(r"^CONFIG_%s=y$" % s_, cfg, re.M)]
+    w("  precondicion de F-001-S2: %d/16 simbolos de systemd en =y" % len(en_y))
+    if len(en_y) < len(SYSTEMD16):
+        w("  FALTAN: %s" % " ".join(s_ for s_ in SYSTEMD16 if s_ not in en_y))
 
     if brazo == "ocho" and estado.get("CONFIG_IPC_NS") != "y":
         w("  ABORTO POR GUARD: IPC_NS quedo en %r, no en 'y'."
@@ -232,7 +377,7 @@ def main():
         return 3
 
     w("  === archscripts en SERIE, con la firma de host DEFINITIVA ===")
-    logs = os.path.join(OUT, "v3-%s-archscripts.txt" % brazo)
+    logs = os.path.join(OUT, "v4-%s-archscripts.txt" % brazo)
     rc_as, o_as, e_as, dt_as = sh("%s -j1 archscripts" % mk, 3600, guardar=logs)
     e126 = "Error 126" in (o_as + e_as) or "Permission denied" in (o_as + e_as)
     hizo_trabajo = dt_as >= 0.5 or "HOSTCC" in (o_as + e_as)
@@ -266,7 +411,7 @@ def main():
                        "hizo_trabajo": hizo_trabajo, "simbolos": estado})
         return 3
 
-    logb = os.path.join(OUT, "v3-%s-build.txt" % brazo)
+    logb = os.path.join(OUT, "v4-%s-build.txt" % brazo)
     rc, _, _, _ = sh("%s -j$(nproc) Image modules" % mk, 20000, guardar=logb)
     w("  --- resumen leido DEL ARCHIVO (R-08) ---")
     hits = errores(logb)
@@ -278,20 +423,27 @@ def main():
     else:
         w("  HIPOTESIS SOSTENIDA: unificar HOSTCFLAGS elimino el 126 en este brazo.")
 
-    w("  === guard duro de vmlinux ===")
+    w("  === guard duro de los TRES artefactos (el v3 solo miraba dos) ===")
     vm = obj + "/vmlinux"
     sym = obj + "/Module.symvers"
-    hay_vm, hay_sym = os.path.isfile(vm), os.path.isfile(sym)
+    img = os.path.join(obj, IMAGE_REL)
+    hay_vm, hay_sym, hay_img = (os.path.isfile(vm), os.path.isfile(sym),
+                                os.path.isfile(img))
     w("  vmlinux presente        : %s%s"
       % (hay_vm, " (%d B)" % os.path.getsize(vm) if hay_vm else ""))
     w("  Module.symvers presente : %s" % hay_sym)
-    res = {"falsador": "F-004d@6.1 v3", "rama": RAMA, "brazo": brazo,
+    w("  %s presente : %s%s"
+      % (IMAGE_REL, hay_img,
+         " (%d B)" % os.path.getsize(img) if hay_img else "  <-- ESTE es el H-2"))
+    res = {"falsador": "F-004d@6.1 v4", "rama": RAMA, "brazo": brazo,
            "rc_archscripts": rc_as, "segundos_archscripts": round(dt_as, 2),
            "archscripts_hizo_trabajo": hizo_trabajo,
            "error_126_serial": e126, "error_126_paralelo": e126b,
            "rc_build": rc, "debug_info_btf": btf, "pahole": ph,
            "parche_al_ack": False, "simbolos": estado,
-           "vmlinux": hay_vm, "module_symvers": hay_sym,
+           "systemd16_en_y": len(en_y),
+           "vmlinux": hay_vm, "module_symvers": hay_sym, "image": hay_img,
+           "cap_head_400": "eliminado en v4",
            "fecha_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     if hay_sym:
         raw = open(sym).read()
@@ -299,43 +451,91 @@ def main():
         res["sha256_symvers"] = hashlib.sha256(raw.encode()).hexdigest()
         w("  Module.symvers: %d lineas | sha256 %s"
           % (res["n_lineas_symvers"], res["sha256_symvers"][:24]))
-        open(os.path.join(OUT, "v3-symvers-%s.txt" % brazo), "w").write(raw)
-        open(os.path.join(OUT, "v3-config-%s.txt" % brazo), "w").write(cfg)
+        open(os.path.join(OUT, "v4-symvers-%s.txt" % brazo), "w").write(raw)
     if not hay_vm:
         w("  ABORTO POR GUARD: no hay vmlinux, no se empaqueta nada.")
         res["veredicto"] = "NO MEDIDO: sin vmlinux"
         cerrar(brazo, res)
         return 3
+    if not hay_img:
+        w("  ABORTO POR GUARD: no hay %s. El v3 llegaba hasta aca sin notarlo."
+          % IMAGE_REL)
+        res["veredicto"] = "NO MEDIDO: sin Image"
+        cerrar(brazo, res)
+        return 3
+    res["bytes_vmlinux"] = os.path.getsize(vm)
+    res["bytes_image"] = os.path.getsize(img)
+    res["sha256_vmlinux"] = sha256_de(vm)
+    res["sha256_image_del_build"] = sha256_de(img)
+    w("  sha256 vmlinux (64 hex): %s" % res["sha256_vmlinux"])
+    w("  sha256 Image   (64 hex): %s" % res["sha256_image_del_build"])
 
+    w("  === KAT de FABLE: Image == objcopy(vmlinux), flags de la FUENTE ===")
+    res["kat_objcopy"] = kat_objcopy(src, obj, WORK + "/Image-desde-vmlinux-" + brazo)
+
+    lst = WORK + "/miembros-%s.txt" % brazo
+    kos = lista_de_miembros(obj, lst)
+    res["n_modulos"] = len(kos)
     tarball = os.path.abspath(os.path.join(OUT, "elf-%s-android14-6.1.tar.zst" % brazo))
-    rc_t, _, _, _ = sh("cd %s && tar -c --zstd -f %s vmlinux "
-                       "$(find . -name '*.ko' | head -400)" % (obj, tarball), 3600)
+    rc_t, _, _, _ = sh("cd %s && tar -c --zstd -f %s -T %s" % (obj, tarball, lst), 3600)
     if rc_t != 0 or not os.path.isfile(tarball):
         w("  ABORTO: el tar fallo con rc=%d" % rc_t)
         res["veredicto"] = "NO MEDIDO: el tar fallo"
         cerrar(brazo, res)
         return 3
-    rc_v, o_v, _, _ = sh("tar -t --zstd -f %s | head -3; echo '---'; "
-                         "tar -t --zstd -f %s | grep -c '\\.ko$'" % (tarball, tarball), 600)
-    for l in o_v.splitlines():
-        w("   tar|", l[:120])
-    tiene_vm = "vmlinux" in o_v
-    w("  el tarball CONTIENE vmlinux: %s | %d B" % (tiene_vm, os.path.getsize(tarball)))
+    rc_v, o_v, _, _ = sh("tar -t --zstd -f %s > %s.lista; "
+                         "grep -c '^vmlinux$' %s.lista; "
+                         "grep -cx '\\./*%s' %s.lista; "
+                         "grep -c '[.]ko$' %s.lista"
+                         % (tarball, tarball, tarball, IMAGE_REL, tarball, tarball),
+                         600)
+    cuentas = [l.strip() for l in o_v.splitlines() if l.strip().isdigit()]
+    w("  cuentas dentro del tarball (vmlinux, Image, .ko): %s" % cuentas)
+    lista = open(tarball + ".lista", errors="replace").read()
+    tiene_vm = re.search(r"^\./?vmlinux$", lista, re.M) is not None
+    tiene_img = re.search(r"^\./?%s$" % re.escape(IMAGE_REL), lista, re.M) is not None
+    ko_dentro = len(re.findall(r"\.ko$", lista, re.M))
+    w("  el tarball CONTIENE vmlinux: %s | %s: %s | .ko: %d de %d | %d B"
+      % (tiene_vm, IMAGE_REL, tiene_img, ko_dentro, len(kos),
+         os.path.getsize(tarball)))
+    res.update({"tarball_tiene_vmlinux": tiene_vm, "tarball_tiene_image": tiene_img,
+                "ko_dentro_del_tarball": ko_dentro,
+                "bytes_tarball": os.path.getsize(tarball)})
     if not tiene_vm:
         w("  ABORTO POR GUARD: el tarball existe pero no tiene vmlinux adentro.")
         res["veredicto"] = "NO MEDIDO: tarball sin vmlinux"
         cerrar(brazo, res)
         return 3
-    res["veredicto"] = "brazo OK: vmlinux y symvers producidos y verificados"
+    if not tiene_img:
+        w("  ABORTO POR GUARD: el tarball no tiene %s adentro. Es el H-2 otra vez."
+          % IMAGE_REL)
+        res["veredicto"] = "NO MEDIDO: tarball sin Image"
+        cerrar(brazo, res)
+        return 3
+    if ko_dentro != len(kos):
+        w("  ABORTO POR GUARD: la lista tenia %d .ko y el tarball tiene %d."
+          % (len(kos), ko_dentro))
+        w("  Un tope silencioso es exactamente lo que el v4 vino a eliminar.")
+        res["veredicto"] = "NO MEDIDO: la cuenta de modulos no cierra"
+        cerrar(brazo, res)
+        return 3
+    kat = res["kat_objcopy"].get("kat")
+    if kat == "DISTINTO":
+        w("  VEREDICTO ROJO: el KAT dice que vmlinux y Image no son del mismo link.")
+        res["veredicto"] = "ROJO: KAT objcopy DISTINTO"
+        cerrar(brazo, res)
+        return 3
+    res["veredicto"] = ("brazo OK: vmlinux, Image y symvers producidos y "
+                        "verificados | KAT objcopy: %s" % kat)
     cerrar(brazo, res)
     return 0
 
 
 def cerrar(brazo, res):
-    json.dump(res, open(os.path.join(OUT, "v3-%s.json" % brazo), "w"),
+    json.dump(res, open(os.path.join(OUT, "v4-%s.json" % brazo), "w"),
               indent=2, ensure_ascii=False)
-    open(os.path.join(OUT, "v3-%s-bitacora.txt" % brazo), "w").write("\n".join(log) + "\n")
-    w("  cerrado: v3-%s.json y v3-%s-bitacora.txt" % (brazo, brazo))
+    open(os.path.join(OUT, "v4-%s-bitacora.txt" % brazo), "w").write("\n".join(log) + "\n")
+    w("  cerrado: v4-%s.json y v4-%s-bitacora.txt" % (brazo, brazo))
 
 
 if __name__ == "__main__":
