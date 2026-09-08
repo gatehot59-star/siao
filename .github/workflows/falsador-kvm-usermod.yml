@@ -22,6 +22,40 @@ name: falsador-kvm-usermod
 # del repo del corpus) lo marco ROJO: "heredoc sin cierre PY". Un heredoc anidado
 # dentro de comillas simples no se cierra. Ahora el probe se escribe a un archivo
 # y `sg` solo lo ejecuta, que ademas hace el probe reutilizable por las tres vias.
+#
+# ===================================================================
+# HARDENING 2026-09-08 · H-06 de la auditoria de Tao
+# ===================================================================
+#
+# 1. `permissions: contents: read`. Antes no habia bloque, asi que el
+#    GITHUB_TOKEN heredaba el default del repo. Este workflow no escribe NADA al
+#    repo, asi que read es el minimo REAL, no una eleccion conservadora.
+#
+# 2. `timeout-minutes: 15`. Sin el, el tope es el default de SEIS HORAS, y esta
+#    corrida tarda ~1 min. Un ioctl colgado se comia seis horas de cuota.
+#
+# 3. El guard del `chmod 666 /dev/kvm`, que es el punto que Tao marco con razon.
+#    Hoy este workflow declara `runs-on: ubuntu-24.04`, o sea un runner HOSTED y
+#    efimero: la maquina se destruye y el 666 se va con ella. **El riesgo es de
+#    reutilizacion**: el ecosistema ya opera un runner self-hosted en
+#    `mudh-mobile`, y basta cambiar una label o copiar este archivo para dejar
+#    /dev/kvm WORLD-WRITABLE de forma PERSISTENTE en una maquina real.
+#
+#    Y EL GUARD TRAE SU PROPIO TESTIGO, que es lo que lo hace distinto de un
+#    `if:` cualquiera: hoy mismo, en este proyecto, encontramos un guard que
+#    corrio, devolvio rc=0 y NO HIZO TRABAJO (el `archscripts` del Error 126, con
+#    `segundos: 0.02` y `Nothing to be done`). La leccion quedo escrita: **un
+#    paso de mitigacion que no hace trabajo no mitigo nada.** Un `if:` que saltea
+#    en silencio es la misma familia, asi que el paso siguiente MIDE si V2 corrio
+#    o se salteo, y lo dice. Si la expresion `runner.environment` estuviera mal
+#    escrita, se ve en el resumen en vez de pasar por verde.
+#
+#    NO MEDIDO: la expresion `runner.environment == 'github-hosted'` no se
+#    verifico en corrida. El paso 0 la imprime justamente para cerrar eso en la
+#    proxima.
+
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
@@ -32,7 +66,20 @@ on:
 jobs:
   destrabar:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
+      - name: paso 0 - de que entorno es este runner (hace medible el guard)
+        run: |
+          set -uo pipefail
+          echo "runner.environment = '${{ runner.environment }}'"
+          echo "runner.os          = '${{ runner.os }}'"
+          echo "runner.arch        = '${{ runner.arch }}'"
+          {
+            echo "### entorno del runner"
+            echo "- \`runner.environment\` = \`${{ runner.environment }}\`"
+            echo "- el paso V2 (chmod 666) corre SOLO si esto vale \`github-hosted\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: estado inicial
         run: |
           set -uo pipefail
@@ -100,12 +147,38 @@ jobs:
           # el grupo nuevo no aplica a la sesion actual: sg lo re-evalua
           sg kvm -c 'python3 /tmp/probe_kvm.py V1-usermod-sg'
 
-      - name: V2 chmod 666
+      # SOLO en runner hosted y efimero. En un self-hosted esto dejaria /dev/kvm
+      # world-writable de forma permanente, que es el riesgo real que Tao marco.
+      - name: V2 chmod 666 (SOLO hosted)
+        if: runner.environment == 'github-hosted'
         run: |
           set -uo pipefail
           sudo chmod 666 /dev/kvm && echo "chmod rc=0"
           ls -la /dev/kvm
           python3 /tmp/probe_kvm.py V2-chmod-666
+          touch /tmp/V2_CORRIO
+
+      - name: el guard hizo trabajo? (testigo del if, no del comando)
+        if: always()
+        run: |
+          set -uo pipefail
+          # Este paso existe por una cicatriz de HOY: un guard que corre, devuelve
+          # rc=0 y no hace trabajo se lee igual que uno que funciono. Aca el
+          # marcador distingue "V2 corrio" de "V2 se salteo" de "V2 fallo".
+          if [ -f /tmp/V2_CORRIO ]; then
+            EST="V2_CORRIO (runner hosted, el chmod se aplico)"
+          else
+            EST="V2_SALTEADO (el guard lo bloqueo, o el paso fallo antes del touch)"
+          fi
+          echo "$EST"
+          echo "runner.environment fue '${{ runner.environment }}'"
+          echo "modo actual de /dev/kvm:"
+          ls -la /dev/kvm 2>&1 || echo "/dev/kvm AUSENTE"
+          {
+            echo "### testigo del guard"
+            echo "- $EST"
+            echo "- \`runner.environment\` = \`${{ runner.environment }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: prueba de USO REAL, no de permisos
         run: |
