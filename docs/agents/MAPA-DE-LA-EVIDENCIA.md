@@ -68,6 +68,36 @@ Verbatim de `mediciones/f-004d-61/F-004d-61-VEREDICTO.txt`:
   R-13: esto dice ABI-compatible. Que un .ko real CARGUE es F-007c.
 ```
 
+### 2.0 · CUALES son los ocho simbolos del fragmento
+
+El nombre "fragmento de OCHO" no dice cuales. Estaban solo en el JSON de la
+evidencia, y por eso un auditor externo propuso correr un falsador (su F-004e:)
+"fragmento con POSIX_MQUEUE + IPC_NS y sin SYSVIPC") que **ya es este
+fragmento y ya dio verde**. Verbatim de `mediciones/f-004d-61/v3-ocho.json`:
+
+```
+CONFIG_DEVTMPFS     y    CONFIG_DEVTMPFS_MOUNT  y    CONFIG_FHANDLE     y
+CONFIG_POSIX_MQUEUE y    CONFIG_TMPFS_XATTR     y    CONFIG_AUTOFS_FS   y
+CONFIG_PID_NS       y    CONFIG_IPC_NS          y
+
+CONTROL | CONFIG_SYSVIPC     NO esta en =y (correcto)
+CONTROL | CONFIG_CGROUP_PIDS NO esta en =y (correcto)
+```
+
+**Tres cosas que se leen de esa lista y no estaban escritas en ningun indice:**
+
+1. **El rojo de `IPC_NS` de F-001 esta cerrado por el fragmento**: esta en `y`.
+2. **`POSIX_MQUEUE` es lo que habilita `IPC_NS` sin `SYSVIPC`**, porque su
+dependencia Kconfig es `SYSVIPC || POSIX_MQUEUE`. Esa es la via por la que
+F-004d@6.1 dio verde **sin parche al ACK**: `POSIX_MQUEUE` toca
+`struct ipc_namespace`, no `task_struct`.
+3. **`DEVTMPFS` y `DEVTMPFS_MOUNT` estan presentes**, asi que systemd va a
+tener `/dev`: el baseline los tiene `APAGADO` y `AUSENTE`.
+
+**Lo que esa lista NO dice, y es otro sujeto:** que el userland funcione sin
+SysV IPC. UKUI es Qt, y Qt 5.x usa backend SysV para `QSharedMemory`. Eso es
+F-009 y sigue **NO MEDIDO**.
+
 ### 2.1 · DOS salvedades, y las dos hay que leer antes de citar este verde
 
 **(a) Alcance, declarado por el propio veredicto (R-13):** dice **ABI-compatible**, **no** dice que un módulo real cargue. Eso es **F-007c** y sigue **NO MEDIDO**.
